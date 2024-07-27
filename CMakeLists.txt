@@ -115,9 +115,9 @@ message(STATUS "CMAKE_CXX_COMPILE_OBJECT='${CMAKE_CXX_COMPILE_OBJECT}'")
 #
 #-------------------------------------------------------------------------------
 
-include_directories(src)
-include_directories(src/gui)
-include_directories(src/posix)
+include_directories(Src)
+include_directories(Src/gui)
+include_directories(Src/posix)
 
 add_definitions(-DDATA_DIR="/usr/local/share/beebem")
 add_definitions(-DVERSION="4.19")
@@ -136,65 +136,65 @@ add_definitions(-DWITH_FS_FPS) # Enable fullscreen FPS indicator
 # add_definitions(-DWITH_FORCED_CM) # Compile with a forced colormap for 8 bit displays
 
 set(SRCS
-    src/6502core.cpp
-    src/atodconv.cpp
-    src/avi.cpp
-    src/beebem_pages_disks.cpp
-    src/beebem_pages.cpp
-    src/beebmem.cpp
-    src/beebsound.cpp
-    src/beebwin.cpp
-    src/csw.cpp
-    src/debug.cpp
-    src/disc1770.cpp
-    src/disc8271.cpp
-    src/econet.cpp
-    src/hardware.cpp
-    src/i86.cpp
-    src/i386dasm.cpp
-    # src/log.c
-    src/main.cpp
-    src/sasi.cpp
-    src/scsi.cpp
-    src/sdl.cpp
-    src/serial.cpp
-    src/serialdevices.cpp
-    src/speech.cpp
-    src/sysvia.cpp
-    src/teletext.cpp
-    src/tube.cpp
-    src/uef.cpp
-    src/uefstate.cpp
-    src/user_config.c
-    src/userkybd.cpp
-    src/uservia.cpp
-    src/via.cpp
-    src/video.cpp
-    src/z80_support.cpp
-    src/z80.cpp
-    src/z80dis.cpp
-    src/gui/box.c
-    src/gui/button.c
-    src/gui/functions.c
-    src/gui/label.c
-    src/gui/log.c
-    src/gui/messagebox.c
-    src/gui/progressbar.c
-    src/gui/radiobutton.c
-    src/gui/radiogroup.c
-    src/gui/sdl.c
-    src/gui/slidebar.c
-    src/gui/tabgroup.c
-    src/gui/tabpage.c
-    src/gui/tickbox.c
-    src/gui/togglebutton.c
-    src/gui/widget_shared.c
-    src/gui/widget.c
-    src/gui/window.c
-    src/posix/cregistry.cpp
-    src/posix/fake_registry.c
-    src/posix/windows.cpp
-    # src/win/cregistry.cpp
+    Src/6502core.cpp
+    Src/AtoDConv.cpp
+    Src/AVIWriter.cpp
+    Src/BeebEmPages.cpp
+    Src/BeebEmPagesDisks.cpp
+    Src/BeebMem.cpp
+    Src/BeebWin.cpp
+    Src/Csw.cpp
+    Src/Debug.cpp
+    Src/Disc1770.cpp
+    Src/Disc8271.cpp
+    Src/Econet.cpp
+    Src/Hardware.cpp
+    Src/i86.cpp
+    Src/i386dasm.cpp
+    # Src/Log.c
+    Src/Main.cpp
+    Src/Sasi.cpp
+    Src/Scsi.cpp
+    Src/Sdl.cpp
+    Src/Serial.cpp
+    Src/SerialDevices.cpp
+    Src/Sound.cpp
+    Src/Speech.cpp
+    Src/SysVia.cpp
+    Src/Teletext.cpp
+    Src/Tube.cpp
+    Src/Uef.cpp
+    Src/UefState.cpp
+    Src/UserConfig.c
+    Src/UserKeyboardDialog.cpp
+    Src/UserVia.cpp
+    Src/Via.cpp
+    Src/Video.cpp
+    Src/z80Support.cpp
+    Src/z80.cpp
+    Src/z80dis.cpp
+    Src/gui/box.c
+    Src/gui/button.c
+    Src/gui/functions.c
+    Src/gui/label.c
+    Src/gui/log.c
+    Src/gui/messagebox.c
+    Src/gui/progressbar.c
+    Src/gui/radiobutton.c
+    Src/gui/radiogroup.c
+    Src/gui/sdl.c
+    Src/gui/slidebar.c
+    Src/gui/tabgroup.c
+    Src/gui/tabpage.c
+    Src/gui/tickbox.c
+    Src/gui/togglebutton.c
+    Src/gui/widget_shared.c
+    Src/gui/widget.c
+    Src/gui/window.c
+    Src/posix/CRegistry.cpp
+    Src/posix/FakeRegistry.c
+    Src/posix/Windows.cpp
+    # Src/win/CRegistry.cpp
 )
 
 add_executable(beebem ${SRCS})
