@@ -170,9 +170,9 @@ set(SRCS
     Src/UserVia.cpp
     Src/Via.cpp
     Src/Video.cpp
-    Src/z80Support.cpp
-    Src/z80.cpp
-    Src/z80dis.cpp
+    Src/Z80Support.cpp
+    Src/Z80.cpp
+    Src/Z80dis.cpp
     Src/gui/box.c
     Src/gui/button.c
     Src/gui/functions.c
