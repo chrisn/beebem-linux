@@ -47,8 +47,8 @@
 #include "Scsi.h"
 #include "Sasi.h"
 #include "UefState.h"
-#include "z80mem.h"
-#include "z80.h"
+#include "Z80mem.h"
+#include "Z80.h"
 #include "Econet.h"		//Rob
 #include "Debug.h"		//Rob added for INTON/OFF reporting only
 #include "Teletext.h"

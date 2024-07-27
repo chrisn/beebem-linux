@@ -17,8 +17,8 @@
 #include "Resource.h"
 #include "6502core.h"
 #include "Debug.h"
-#include "z80mem.h"
-#include "z80.h"
+#include "Z80mem.h"
+#include "Z80.h"
 
 int DebugEnabled = false;        // Debug dialog visible
 

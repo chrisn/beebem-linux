@@ -7,8 +7,8 @@
 
 #include "Main.h"
 #include "Debug.h"
-#include "z80mem.h"
-#include "z80.h"
+#include "Z80mem.h"
+#include "Z80.h"
 #include "BeebMem.h"
 
 #include "Tube.h"

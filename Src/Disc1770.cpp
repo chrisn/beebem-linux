@@ -35,8 +35,8 @@ can be determined under normal use".
 #include "Main.h"
 #include "Resource.h"
 #include "UefState.h"
-#include "z80mem.h"
-#include "z80.h"
+#include "Z80mem.h"
+#include "Z80.h"
 
 extern FILE *tlog;
 extern int trace;
