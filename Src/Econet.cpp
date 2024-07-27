@@ -19,16 +19,16 @@
 
 
 #include <stdio.h>
-#include "windows.h"
-#include "main.h"
-#include "beebwin.h"
-#include "econet.h"
-#include "debug.h"
+#include "Windows.h"
+#include "Main.h"
+#include "BeebWin.h"
+#include "Econet.h"
+#include "Debug.h"
 #include "6502core.h"
-#include "sysvia.h"
+#include "SysVia.h"
 
 //+>
-#include "user_config.h"
+#include "UserConfig.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>

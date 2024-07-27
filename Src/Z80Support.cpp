@@ -5,13 +5,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "main.h"
-#include "debug.h"
+#include "Main.h"
+#include "Debug.h"
 #include "z80mem.h"
 #include "z80.h"
-#include "beebmem.h"
+#include "BeebMem.h"
 
-#include "tube.h"
+#include "Tube.h"
 
 extern int trace;
 

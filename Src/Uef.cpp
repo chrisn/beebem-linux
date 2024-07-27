@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "uef.h"
+#include "Uef.h"
 
 //## [TODO] ------------------
 //## Tapes are loaded over serial, and serial.cpp is currently disabled. So all this code does nothing at the moment.

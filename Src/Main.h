@@ -30,8 +30,8 @@
 # include <config.h>
 #endif
 
-#include "windows.h"
-#include "beebwin.h"
+#include "Windows.h"
+#include "BeebWin.h"
 
 #include <functions.h>
 #include "sdl.h"
@@ -45,7 +45,7 @@ extern int Tmp_Command_Line_Fullscreen;
  */
 
 
-#include "cregistry.h"
+#include "CRegistry.h"
 extern cRegistry SysReg;
 extern char FDCDLL[256];
 

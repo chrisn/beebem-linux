@@ -27,11 +27,11 @@
 #	include <config.h>
 #endif
 
-#include "beebsound.h"
+#include "Sound.h"
 
 #include <iostream>
 #include <fstream>
-#include "windows.h"
+#include "Windows.h"
 //-- #include <process.h>
 #include <math.h>
 
@@ -44,13 +44,13 @@
 #include <stdio.h>
 
 #include "6502core.h"
-#include "port.h"
-#include "beebmem.h"
-#include "beebwin.h"
-#include "uefstate.h"
-#include "avi.h"
-#include "main.h"
-#include "speech.h"
+#include "Port.h"
+#include "BeebMem.h"
+#include "BeebWin.h"
+#include "UefState.h"
+#include "AVIWriter.h"
+#include "Main.h"
+#include "Speech.h"
 
 //-- extern AVIWriter *aviWriter;
 

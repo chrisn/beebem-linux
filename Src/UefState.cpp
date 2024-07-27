@@ -10,16 +10,16 @@
 
 #include <stdio.h>
 #include "6502core.h"
-#include "beebmem.h"
-#include "video.h"
-#include "via.h"
-#include "beebwin.h"
-#include "main.h"
-#include "beebsound.h"
-#include "disc8271.h"
-#include "disc1770.h"
-#include "tube.h"
-#include "serial.h"
+#include "BeebMem.h"
+#include "Video.h"
+#include "Via.h"
+#include "BeebWin.h"
+#include "Main.h"
+#include "Sound.h"
+#include "Disc8271.h"
+#include "Disc1770.h"
+#include "Tube.h"
+#include "Serial.h"
 
 FILE *UEFState;
 

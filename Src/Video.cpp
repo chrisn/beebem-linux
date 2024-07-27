@@ -37,15 +37,15 @@
 #include <stdio.h>
 
 #include "6502core.h"
-#include "beebmem.h"
-#include "beebwin.h"
-#include "main.h"
-#include "sysvia.h"
-#include "video.h"
-#include "uefstate.h"
-#include "beebsound.h"
-#include "debug.h"
-#include "teletext.h"
+#include "BeebMem.h"
+#include "BeebWin.h"
+#include "Main.h"
+#include "SysVia.h"
+#include "Video.h"
+#include "UefState.h"
+#include "Sound.h"
+#include "Debug.h"
+#include "Teletext.h"
 
 #ifdef BEEB_DOTIME
 #include <sys/times.h>
@@ -59,7 +59,7 @@
 
 //++
 #include "sdl.h"
-#include "user_config.h"
+#include "UserConfig.h"
 //<+
 
 using namespace std;

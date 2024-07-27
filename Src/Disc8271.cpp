@@ -33,14 +33,14 @@
 #include <string.h>
 
 #include "6502core.h"
-#include "disc8271.h"
-#include "uefstate.h"
+#include "Disc8271.h"
+#include "UefState.h"
 
 //--#ifdef WIN32
-#include "windows.h"
-#include "main.h"
-#include "beebmem.h"
-#include "disc1770.h"
+#include "Windows.h"
+#include "Main.h"
+#include "BeebMem.h"
+#include "Disc1770.h"
 //--#endif
 
 using namespace std;

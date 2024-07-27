@@ -9,10 +9,10 @@
 #endif
 
 #include <SDL.h>
-#include "log.h"
-#include "sdl.h"
+#include "Log.h"
+#include "Sdl.h"
 
-#include "beebem_pages.h"
+#include "BeebEmPages.h"
 
 /* NOTE: We cannot define WIN32 and fake our way through the BeebEm code..
  *       This would break the SDL library - as if it's header was ever included

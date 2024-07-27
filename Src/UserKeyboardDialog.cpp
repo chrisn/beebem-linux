@@ -26,11 +26,11 @@
 #endif
 
 #include <stdio.h>
-#include "windows.h"
+#include "Windows.h"
 #include <string.h>
-#include "main.h"
-#include "beebemrc.h"
-#include "userkybd.h"
+#include "Main.h"
+#include "Resource.h"
+#include "UserKeyboardDialog.h"
 
 #define	IDD_GETKEY  400
 #define gkWidth		200

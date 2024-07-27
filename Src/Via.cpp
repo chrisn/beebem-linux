@@ -29,13 +29,13 @@
 
 #include <iostream>
 #include <fstream>
-#include "via.h"
+#include "Via.h"
 #include <stdio.h>
-#include "sysvia.h"
-#include "uservia.h"
-#include "uefstate.h"
-#include "viastate.h"
-#include "debug.h"
+#include "SysVia.h"
+#include "UserVia.h"
+#include "UefState.h"
+#include "ViaState.h"
+#include "Debug.h"
 
 using namespace std;
 

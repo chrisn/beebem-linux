@@ -31,7 +31,7 @@
 //-- #ifdef WIN32
 /* Always compile sound code - it is switched on and off using SoundEnabled */
 //-- #define SOUNDSUPPORT
-#include "windows.h"
+#include "Windows.h"
 //-- #endif
 
 #define MUTED 0

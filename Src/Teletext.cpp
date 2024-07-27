@@ -13,11 +13,11 @@ Offset  Description                 Access
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "teletext.h"
-#include "debug.h"
+#include "Teletext.h"
+#include "Debug.h"
 #include "6502core.h"
-#include "main.h"
-#include "beebmem.h"
+#include "Main.h"
+#include "BeebMem.h"
 
 char TeleTextAdapterEnabled=0;
 int TeleTextStatus = 0xef;

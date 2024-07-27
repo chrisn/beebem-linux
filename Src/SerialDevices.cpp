@@ -7,21 +7,21 @@
  *
  */
 
-#include <windows.h>
+#include "Windows.h"
 #include <stdio.h>
 
-#include "serialdevices.h"
+#include "SerialDevices.h"
 #include "6502core.h"
-#include "uef.h"
-#include "main.h"
-#include "serial.h"
-#include "beebsound.h"
-#include "beebwin.h"
-#include "debug.h"
-#include "uefstate.h"
-#include "csw.h"
-#include "uservia.h"
-#include "atodconv.h"
+#include "Uef.h"
+#include "Main.h"
+#include "Serial.h"
+#include "Sound.h"
+#include "BeebWin.h"
+#include "Debug.h"
+#include "UefState.h"
+#include "Csw.h"
+#include "UserVia.h"
+#include "AtoDConv.h"
 
 #define TS_BUFF_SIZE	128
 #define TS_DELAY		8192			// Cycles to wait for data to be TX'd or RX'd

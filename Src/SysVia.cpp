@@ -30,21 +30,21 @@ keyboard emulation - David Alan Gilbert 30/10/94 */
 #include <fstream>
 #include <stdio.h>
 #include <time.h>
-#include "windows.h"
+#include "Windows.h"
 
 #include "6502core.h"
-#include "beebsound.h"
-#include "beebmem.h"
-#include "beebwin.h"
-#include "sysvia.h"
-#include "via.h"
-#include "main.h"
-#include "viastate.h"
-#include "debug.h"
-#include "speech.h"
+#include "Sound.h"
+#include "BeebMem.h"
+#include "BeebWin.h"
+#include "SysVia.h"
+#include "Via.h"
+#include "Main.h"
+#include "ViaState.h"
+#include "Debug.h"
+#include "Speech.h"
 
 //--#ifdef WIN32
-#include "windows.h"
+#include "Windows.h"
 //--#endif
 
 using namespace std;

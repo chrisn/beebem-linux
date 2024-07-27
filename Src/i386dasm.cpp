@@ -5,7 +5,7 @@
    NEC V-Series support by Bryan McPhail (currently incomplete)
 */
 
-#include "windows.h"
+#include "Windows.h"
 
 #include <stdio.h>
 #include <string.h>

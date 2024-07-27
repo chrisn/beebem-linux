@@ -32,24 +32,24 @@
 #include <stdlib.h>
 
 #include "6502core.h"
-#include "beebmem.h"
-#include "beebsound.h"
-#include "disc8271.h"
-#include "sysvia.h"
-#include "uservia.h"
-#include "video.h"
-#include "atodconv.h"
-#include "main.h"
-#include "disc1770.h"
-#include "serial.h"
-#include "tube.h"
-#include "debug.h"
-#include "uefstate.h"
+#include "BeebMem.h"
+#include "Sound.h"
+#include "Disc8271.h"
+#include "SysVia.h"
+#include "UserVia.h"
+#include "Video.h"
+#include "AtoDConv.h"
+#include "Main.h"
+#include "Disc1770.h"
+#include "Serial.h"
+#include "Tube.h"
+#include "Debug.h"
+#include "UefState.h"
 #include "z80mem.h"
 #include "z80.h"
-#include "econet.h"
-#include "scsi.h"
-#include "debug.h"
+#include "Econet.h"
+#include "Scsi.h"
+#include "Debug.h"
 
 //--#ifdef WIN32
 #define INLINE inline
@@ -1071,7 +1071,7 @@ void Init6502core(void) {
   NMILock=0;
 } /* Init6502core */
 
-#include "via.h"
+#include "Via.h"
 
 /*-------------------------------------------------------------------------*/
 void DoInterrupt(void) {

@@ -7,7 +7,7 @@
 /* ----------------------------------------------------------------------------
 
 #include <vfw.h>
-#include "beebwin.h"
+#include "BeebWin.h"
 
 class AVIWriter  
 {

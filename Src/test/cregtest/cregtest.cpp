@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "cregistry.h"
+#include "CRegistry.h"
 #include "log.h"
 #ifndef _WIN32
-#include "fake_registry.h"
+#include "FakeRegistry.h"
 #endif
 
 static char *TEST_REG_KEY = "Software\\cregtest";

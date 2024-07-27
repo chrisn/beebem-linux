@@ -31,7 +31,7 @@ char *perl_params =
     "dfd_inline=1,"
     "ed_inline=1";
 
-#include "main.h"
+#include "Main.h"
 #include "z80mem.h"
 #include "z80.h"
 

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
-#include "tube.h"
+#include "Tube.h"
 
 #include "z80mem.h"
 #include "z80.h"

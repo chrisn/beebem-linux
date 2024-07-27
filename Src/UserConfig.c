@@ -30,10 +30,10 @@
 #       include <config.h>
 #endif
 
-#include "user_config.h"
+#include "UserConfig.h"
 #include <gui.h>
 #include <sdl.h>
-#include "beebem.h"
+#include "BeebEm.h"
 
 #include <stdio.h>
 #include <stdlib.h>

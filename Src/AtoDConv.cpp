@@ -27,11 +27,11 @@
 #include <stdio.h>
 
 #include "6502core.h"
-#include "atodconv.h"
-#include "sysvia.h"
+#include "AtoDConv.h"
+#include "SysVia.h"
 
 //--#ifdef WIN32
-#include "windows.h"
+#include "Windows.h"
 //--#endif
 
 int JoystickEnabled = 0;

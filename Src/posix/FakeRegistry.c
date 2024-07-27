@@ -7,12 +7,12 @@
 #       include <config.h>
 #endif
 
-#include "fake_registry.h"
+#include "FakeRegistry.h"
 
 #include <functions.h>
 #include <gui.h>
 
-#include "user_config.h"
+#include "UserConfig.h"
 
 #include <stdio.h>
 #include <stdlib.h>

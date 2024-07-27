@@ -8,15 +8,15 @@
 #	include <config.h>
 #endif
 
-#include "windows.h"
+#include "Windows.h"
 #include <ctype.h>
 #include <string.h>
-#include "main.h"
-#include "beebmem.h"
-#include "tube.h"
-#include "beebemrc.h"
+#include "Main.h"
+#include "BeebMem.h"
+#include "Tube.h"
+#include "Resource.h"
 #include "6502core.h"
-#include "debug.h"
+#include "Debug.h"
 #include "z80mem.h"
 #include "z80.h"
 

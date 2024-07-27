@@ -28,8 +28,8 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "windows.h"
-#include "port.h"
+#include "Windows.h"
+#include "Port.h"
 
 // Public declarations.
 

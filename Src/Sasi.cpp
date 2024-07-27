@@ -19,12 +19,12 @@ Offset  Description                 Access
 #include <stdio.h>
 #include <stdlib.h>
 #include "6502core.h"
-#include "main.h"
-#include "sasi.h"
-#include "beebmem.h"
+#include "Main.h"
+#include "Sasi.h"
+#include "BeebMem.h"
 
 //+>
-#include "user_config.h"
+#include "UserConfig.h"
 //<+
 
 enum phase_s {

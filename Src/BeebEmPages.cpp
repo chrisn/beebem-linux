@@ -1,17 +1,17 @@
-#include "main.h"
+#include "Main.h"
 #include <gui/gui.h>
-#include "beebem_pages.h"
-#include "beebwin.h"
+#include "BeebEmPages.h"
+#include "BeebWin.h"
 
-#include "beebemrc.h"
-#include "beebwin.h"
+#include "Resource.h"
+#include "BeebWin.h"
 
-#include "fake_registry.h"
+#include "FakeRegistry.h"
 
-#include "beebem.h"
-#include "beebsound.h"
+#include "BeebEm.h"
+#include "Sound.h"
 
-#include "windows.h"
+#include "Windows.h"
 
 #include <gtk/gtk.h>
 

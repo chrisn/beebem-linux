@@ -23,11 +23,11 @@
 
 #include <ctype.h>
 
-#include "cregistry.h"
+#include "CRegistry.h"
 
 //+>
-#include "windows.h"
-#include "fake_registry.h"
+#include "Windows.h"
+#include "FakeRegistry.h"
 //<-
 
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/sysinfo/base/regcreatekey.asp

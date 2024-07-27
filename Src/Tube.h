@@ -27,7 +27,7 @@
 #	include <config.h>
 #endif
 
-#include "port.h"
+#include "Port.h"
 
 extern unsigned char R1Status;
 void ResetTube(void);

@@ -29,8 +29,8 @@ keyboard emulation - David Alan Gilbert 30/10/94 */
 #	include <config.h>
 #endif
 
-#include "via.h"
-#include "viastate.h"
+#include "Via.h"
+#include "ViaState.h"
 
 extern VIAState SysVIAState;
 extern unsigned char IC32State;

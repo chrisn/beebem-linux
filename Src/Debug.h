@@ -9,8 +9,8 @@
 #	include <config.h>
 #endif
 
-#include "windows.h"
-#include "viastate.h"
+#include "Windows.h"
+#include "ViaState.h"
 
 extern int DebugEnabled;
 

@@ -29,12 +29,12 @@ can be determined under normal use".
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "windows.h"
-#include "disc1770.h"
+#include "Windows.h"
+#include "Disc1770.h"
 #include "6502core.h"
-#include "main.h"
-#include "beebemrc.h"
-#include "uefstate.h"
+#include "Main.h"
+#include "Resource.h"
+#include "UefState.h"
 #include "z80mem.h"
 #include "z80.h"
 

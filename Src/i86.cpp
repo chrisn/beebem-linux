@@ -5,13 +5,13 @@
 /* 26.March 2000 PeT changed set_irq_line */
 
 
-#include "windows.h"
+#include "Windows.h"
 #include <stdio.h>
 #include <string.h>
 
-#include "main.h"
-#include "tube.h"
-#include "beebmem.h"
+#include "Main.h"
+#include "Tube.h"
+#include "BeebMem.h"
 
 #define LSB_FIRST
 

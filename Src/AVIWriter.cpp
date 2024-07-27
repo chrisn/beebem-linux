@@ -8,7 +8,7 @@
 
 #include "include/windows.h"
 #include <mmreg.h>
-#include "avi.h"
+#include "AVIWriter.h"
 
 AVIWriter::AVIWriter()
 	: m_pAVIFile(NULL),

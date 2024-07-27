@@ -29,24 +29,24 @@ can be determined under normal use".
 // order to use VC profiling.
 //#define PROFILING
 
-//->#include <windows.h>
+//->#include "Windows.h"
 //++
-#include "windows.h"
+#include "Windows.h"
 //<-
 #include <stdio.h>
 
 #include "6502core.h"
-#include "uef.h"
-#include "main.h"
-#include "serial.h"
-#include "beebsound.h"
-#include "beebwin.h"
-#include "beebemrc.h"
-#include "debug.h"
-#include "uefstate.h"
-#include "csw.h"
-#include "serialdevices.h"
-#include "debug.h"
+#include "Uef.h"
+#include "Main.h"
+#include "Serial.h"
+#include "Sound.h"
+#include "BeebWin.h"
+#include "Resource.h"
+#include "Debug.h"
+#include "UefState.h"
+#include "Csw.h"
+#include "SerialDevices.h"
+#include "Debug.h"
 
 #define CASSETTE 0  // Device in 
 #define RS423 1		// use defines

@@ -29,8 +29,8 @@
 #	include <config.h>
 #endif
 
-#include "viastate.h"
-#include "via.h"
+#include "ViaState.h"
+#include "Via.h"
 
 extern VIAState UserVIAState;
 extern unsigned char WTDelay1,WTDelay2;

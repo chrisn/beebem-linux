@@ -32,20 +32,20 @@
 #include <stdlib.h>
 
 #include "6502core.h"
-#include "main.h"
-#include "beebmem.h"
-#include "tube.h"
-#include "debug.h"
-#include "uefstate.h"
+#include "Main.h"
+#include "BeebMem.h"
+#include "Tube.h"
+#include "Debug.h"
+#include "UefState.h"
 #include "z80mem.h"
 #include "z80.h"
 
 //>++
-#include "user_config.h"
+#include "UserConfig.h"
 //<--
 
 //-- #ifdef WIN32
-#include "windows.h"
+#include "Windows.h"
 #define INLINE inline
 //-- #else
 //-- #define INLINE
@@ -1493,7 +1493,7 @@ void Init65C02core(void) {
   ResetTube();
 }
 
-#include "via.h"
+#include "Via.h"
 
 /*-------------------------------------------------------------------------*/
 void DoTubeInterrupt(void) {

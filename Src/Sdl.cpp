@@ -30,15 +30,15 @@
 #include "types.h"
 
 // Remove this once command line stuff fixed
-#include "main.h"
+#include "Main.h"
 
 // For PaletteType
-#include "beebwin.h"
+#include "BeebWin.h"
 
 #include <string.h>
 
 
-#include "beebem_pages.h"
+#include "BeebEmPages.h"
 
 
 

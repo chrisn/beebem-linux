@@ -28,10 +28,10 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "windows.h"
+#include "Windows.h"
 //-- #include <ddraw.h>
-#include "port.h"
-#include "video.h"
+#include "Port.h"
+#include "Video.h"
 
 /* Used in message boxes */
 #define GETHWND (mainWin == NULL ? NULL : mainWin->GethWnd())

@@ -40,28 +40,28 @@
 
 #include <iostream>
 #include <fstream>
-#include "windows.h"
+#include "Windows.h"
 
 #include "6502core.h"
-#include "beebmem.h"
-#include "beebsound.h"
-#include "sysvia.h"
-#include "uservia.h"
-#include "beebwin.h"
-#include "disc8271.h"
-#include "video.h"
-#include "via.h"
-#include "atodconv.h"
-#include "disc1770.h"
-#include "serial.h"
-#include "tube.h"
-#include "econet.h"	//Rob
+#include "BeebMem.h"
+#include "Sound.h"
+#include "SysVia.h"
+#include "UserVia.h"
+#include "BeebWin.h"
+#include "Disc8271.h"
+#include "Video.h"
+#include "Via.h"
+#include "AtoDConv.h"
+#include "Disc1770.h"
+#include "Serial.h"
+#include "Tube.h"
+#include "Econet.h"	//Rob
 
-#include "scsi.h"	// Dave: Needed for reset on break
-#include "sasi.h"
+#include "Scsi.h"	// Dave: Needed for reset on break
+#include "Sasi.h"
 
 #include "i86.h"
-#include "teletext.h"
+#include "Teletext.h"
 #include "z80mem.h"
 #include "z80.h"
 
@@ -71,8 +71,8 @@
 
 #include <gui.h>
 
-#include "beebem_pages.h"
-#include "fake_registry.h"
+#include "BeebEmPages.h"
+#include "FakeRegistry.h"
 
 // Can remove this (only needed to calc string hash)
 //#include <gui_functions.h>

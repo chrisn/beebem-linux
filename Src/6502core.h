@@ -26,7 +26,7 @@
 #	include <config.h>
 #endif
 
-#include "port.h"
+#include "Port.h"
 #include <stdio.h>
 
 void DumpRegs(void);

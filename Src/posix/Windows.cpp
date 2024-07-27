@@ -3,9 +3,9 @@
 #endif
 
 #include "log.h"
-#include "windows.h"
-#include "beebem_pages.h"
-#include "fake_registry.h"
+#include "Windows.h"
+#include "BeebEmPages.h"
+#include "FakeRegistry.h"
 
 #include <gui.h>
 

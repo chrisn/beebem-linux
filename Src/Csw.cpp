@@ -11,16 +11,16 @@
 #include <string.h>
 #include <stdlib.h>
 #include "zlib.h"
-#include "main.h"
-#include "csw.h"
+#include "Main.h"
+#include "Csw.h"
 
 #include "6502core.h"
-#include "uef.h"
-#include "serial.h"
-#include "beebsound.h"
-#include "beebwin.h"
-#include "debug.h"
-#include "uefstate.h"
+#include "Uef.h"
+#include "Serial.h"
+#include "Sound.h"
+#include "BeebWin.h"
+#include "Debug.h"
+#include "UefState.h"
 
 FILE *csw_file;
 unsigned char file_buf[BUFFER_LEN];

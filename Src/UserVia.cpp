@@ -30,16 +30,16 @@
 #include <stdio.h>
 
 #include "6502core.h"
-#include "uservia.h"
-#include "via.h"
-#include "viastate.h"
-#include "debug.h"
-#include "tube.h"
-#include "beebemrc.h"
+#include "UserVia.h"
+#include "Via.h"
+#include "ViaState.h"
+#include "Debug.h"
+#include "Tube.h"
+#include "Resource.h"
 
 //--#ifdef WIN32
-#include "windows.h"
-#include "main.h"
+#include "Windows.h"
+#include "Main.h"
 //--#endif
 
 using namespace std;

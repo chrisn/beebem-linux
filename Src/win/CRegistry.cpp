@@ -23,7 +23,7 @@
 
 #include <ctype.h>
 
-#include "cregistry.h"
+#include "CRegistry.h"
 
 
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/sysinfo/base/regcreatekey.asp

@@ -26,48 +26,48 @@
 #endif
 
 #include <stdio.h>
-#include "windows.h"
+#include "Windows.h"
 //-- #include <initguid.h>
-#include "main.h"
-#include "beebwin.h"
-#include "port.h"
+#include "Main.h"
+#include "BeebWin.h"
+#include "Port.h"
 #include "6502core.h"
-#include "disc8271.h"
-#include "disc1770.h"
-#include "sysvia.h"
-#include "uservia.h"
-#include "video.h"
-#include "beebsound.h"
-#include "beebmem.h"
-#include "beebemrc.h"
-#include "atodconv.h"
-#include "userkybd.h"
-#include "cregistry.h" // David Overton's registry access code.
-#include "serial.h"
-#include "econet.h"	 // Rob O'Donnell Christmas 2004.
-#include "tube.h"
+#include "Disc8271.h"
+#include "Disc1770.h"
+#include "SysVia.h"
+#include "UserVia.h"
+#include "Video.h"
+#include "Sound.h"
+#include "BeebMem.h"
+#include "Resource.h"
+#include "AtoDConv.h"
+#include "UserKeyboardDialog.h"
+#include "CRegistry.h" // David Overton's registry access code.
+#include "Serial.h"
+#include "Econet.h"	 // Rob O'Donnell Christmas 2004.
+#include "Tube.h"
 
 //->#include "ext1770.h"
 //++
-#include "hardware.h"
-#include "user_config.h"
+#include "Hardware.h"
+#include "UserConfig.h"
 //<-
 
-#include "uefstate.h"
-#include "debug.h"
-#include "scsi.h"
-#include "sasi.h"
+#include "UefState.h"
+#include "Debug.h"
+#include "Scsi.h"
+#include "Sasi.h"
 #include "z80mem.h"
 #include "z80.h"
-#include "userkybd.h"
-#include "speech.h"
-#include "teletext.h"
-#include "avi.h"
-#include "csw.h"
-#include "serialdevices.h"
+#include "UserKeyboardDialog.h"
+#include "Speech.h"
+#include "Teletext.h"
+#include "AVIWriter.h"
+#include "Csw.h"
+#include "SerialDevices.h"
 
 //+>
-#include "beebem_pages.h"
+#include "BeebEmPages.h"
 //<+
 
 // some LED based macros

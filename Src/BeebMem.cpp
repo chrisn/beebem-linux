@@ -33,28 +33,28 @@
 #include <fstream>
 
 #include "6502core.h"
-#include "disc8271.h"
-#include "main.h"
-#include "sysvia.h"
-#include "uservia.h"
-#include "video.h"
-#include "atodconv.h"
-#include "beebmem.h"
-#include "disc1770.h"
-#include "serial.h"
-#include "tube.h"
+#include "Disc8271.h"
+#include "Main.h"
+#include "SysVia.h"
+#include "UserVia.h"
+#include "Video.h"
+#include "AtoDConv.h"
+#include "BeebMem.h"
+#include "Disc1770.h"
+#include "Serial.h"
+#include "Tube.h"
 //-- #include "include/errno.h"
-#include "scsi.h"
-#include "sasi.h"
-#include "uefstate.h"
+#include "Scsi.h"
+#include "Sasi.h"
+#include "UefState.h"
 #include "z80mem.h"
 #include "z80.h"
-#include "econet.h"		//Rob
-#include "debug.h"		//Rob added for INTON/OFF reporting only
-#include "teletext.h"
+#include "Econet.h"		//Rob
+#include "Debug.h"		//Rob added for INTON/OFF reporting only
+#include "Teletext.h"
 
 //+>
-#include "user_config.h"
+#include "UserConfig.h"
 //<+
 
 using namespace std;

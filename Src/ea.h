@@ -1,4 +1,4 @@
-#include "windows.h"
+#include "Windows.h"
 
 UINT8 new_cpu_readop(offs_t A);
 UINT8 new_cpu_readop_arg(offs_t A);
