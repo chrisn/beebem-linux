@@ -1,7 +1,6 @@
 /****************************************************************
 BeebEm - BBC Micro and Master 128 Emulator
-Copyright (C) 2001  Richard Gellman
-Copyright (C) 2005  Greg Cook
+Copyright (C) 2023  Chris Needham
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,34 +18,19 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA  02110-1301, USA.
 ****************************************************************/
 
-/* 1770 FDC Support for Beebem */
-/* Written by Richard Gellman */
+#ifndef IC32LATCH_HEADER
+#define IC32LATCH_HEADER
 
-#ifndef DISC1770_HEADER
-#define DISC1770_HEADER
+constexpr unsigned char IC32_SOUND_WRITE     = 0x01;
+constexpr unsigned char IC32_SPEECH_READ     = 0x02; // BBC B only
+constexpr unsigned char IC32_SPEECH_WRITE    = 0x04; // BBC B only
+constexpr unsigned char IC32_RTC_READ        = 0x02; // Master only
+constexpr unsigned char IC32_RTC_DATA_STROBE = 0x04; // Master only
+constexpr unsigned char IC32_KEYBOARD_WRITE  = 0x08;
+constexpr unsigned char IC32_SCREEN_ADDRESS  = 0x30;
+constexpr unsigned char IC32_CAPS_LOCK       = 0x40;
+constexpr unsigned char IC32_SHIFT_LOCK      = 0x80;
 
-#include "DiscType.h"
-
-extern bool DWriteable[2]; // Write Protect
-extern bool Disc1770Enabled;
-extern bool InvertTR00;
-
-enum class Disc1770Result {
-	OpenedReadWrite,
-	OpenedReadOnly,
-	Failed
-};
-
-unsigned char Read1770Register(int Register);
-void Write1770Register(int Register, unsigned char Value);
-Disc1770Result Load1770DiscImage(const char *FileName, int Drive, DiscType Type);
-void WriteFDCControlReg(unsigned char Value);
-unsigned char ReadFDCControlReg();
-void Reset1770();
-void Poll1770(int NCycles);
-bool CreateADFSImage(const char *FileName, int Tracks);
-void Close1770Disc(int Drive);
-void Save1770UEF(FILE *SUEF);
-void Load1770UEF(FILE *SUEF,int Version);
+extern unsigned char IC32State;
 
 #endif

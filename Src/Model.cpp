@@ -1,7 +1,6 @@
 /****************************************************************
 BeebEm - BBC Micro and Master 128 Emulator
-Copyright (C) 2001  Richard Gellman
-Copyright (C) 2005  Greg Cook
+Copyright (C) 2024  Chris Needham
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,34 +18,24 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA  02110-1301, USA.
 ****************************************************************/
 
-/* 1770 FDC Support for Beebem */
-/* Written by Richard Gellman */
+#include "Model.h"
 
-#ifndef DISC1770_HEADER
-#define DISC1770_HEADER
+/****************************************************************************/
 
-#include "DiscType.h"
-
-extern bool DWriteable[2]; // Write Protect
-extern bool Disc1770Enabled;
-extern bool InvertTR00;
-
-enum class Disc1770Result {
-	OpenedReadWrite,
-	OpenedReadOnly,
-	Failed
+static const char* const szModel[] =
+{
+	"BBC Model B",
+	"BBC Model B + Integra-B",
+	"BBC Model B Plus",
+	"BBC Master 128",
+	"BBC Master ET"
 };
 
-unsigned char Read1770Register(int Register);
-void Write1770Register(int Register, unsigned char Value);
-Disc1770Result Load1770DiscImage(const char *FileName, int Drive, DiscType Type);
-void WriteFDCControlReg(unsigned char Value);
-unsigned char ReadFDCControlReg();
-void Reset1770();
-void Poll1770(int NCycles);
-bool CreateADFSImage(const char *FileName, int Tracks);
-void Close1770Disc(int Drive);
-void Save1770UEF(FILE *SUEF);
-void Load1770UEF(FILE *SUEF,int Version);
+/****************************************************************************/
 
-#endif
+const char* GetModelName(Model model)
+{
+	return szModel[static_cast<int>(model)];
+}
+
+/****************************************************************************/

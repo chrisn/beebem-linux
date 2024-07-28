@@ -1,6 +1,6 @@
 /****************************************************************
 BeebEm - BBC Micro and Master 128 Emulator
-Copyright (C) 2006  Jon Welch
+Copyright (C) 2009  Mike Wyatt
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -12,22 +12,32 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public
-License along with this program; if not, write to the Free
+You should have received a copy of the GNU General Public 
+License along with this program; if not, write to the Free 
 Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA  02110-1301, USA.
 ****************************************************************/
-/* SASI Support for Beebem */
-/* Written by Jon Welch */
 
-#ifndef SCSI_HEADER
-#define SCSI_HEADER
+#include <stdio.h>
 
-extern bool SCSIDriveEnabled;
+#include "DiscInfo.h"
+#include "DiscEdit.h"
+#include "FileUtils.h"
 
-void SCSIReset();
-void SCSIWrite(int Address, unsigned char Value);
-unsigned char SCSIRead(int Address);
-void SCSIClose();
+DiscInfoType DiscInfo[2];
 
-#endif
+bool IsDoubleSidedSSD(const char *FileName, FILE *pFile)
+{
+	if (!HasFileExt(FileName, ".ssd"))
+	{
+		return false;
+	}
+
+	fseek(pFile, 0, SEEK_END);
+
+	long Size = ftell(pFile);
+
+	fseek(pFile, 0, SEEK_SET);
+
+	return Size > 80 * DFS_SECTORS_PER_TRACK * DFS_SECTOR_SIZE;
+}

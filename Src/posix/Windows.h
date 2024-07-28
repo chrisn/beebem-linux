@@ -22,7 +22,7 @@
  */
 
 
-#define _MAX_PATH 1024
+#define MAX_PATH 1024
 
 
 /* Command line args (variables in main.cpp)
@@ -40,6 +40,8 @@ typedef struct{
 }LARGE_INTEGER;
 
 typedef Uint8* PBYTE;
+
+typedef float FLOAT;
 
 
 // this is its correct value.
@@ -89,7 +91,7 @@ typedef Uint32 COLORREF;
 */
 
 #ifndef BOOL
-#	define BOOL short int
+#	define BOOL int
 #	define FALSE 0
 #	define TRUE 1
 #endif
@@ -103,23 +105,60 @@ typedef int JOYCAPS;
 typedef int HGDIOBJ;
 typedef int bmiData;
 typedef int HBITMAP;
-typedef int LPDIRECTDRAW;
-typedef int LPDIRECTDRAW2;
-typedef int LPDIRECTDRAWSURFACE;
-typedef int LPDIRECTDRAWSURFACE2;
+typedef void* LPDIRECTDRAW;
+typedef void* LPDIRECTDRAW2;
+typedef void* LPDIRECTDRAWSURFACE;
+typedef void* LPDIRECTDRAWSURFACE2;
 typedef int HRESULT;
-typedef int LPDIRECTDRAWCLIPPER;
+typedef void* LPDIRECTDRAWCLIPPER;
 
+typedef void* LPDIRECT3D9;
+typedef void* LPDIRECT3DDEVICE9;
+typedef void* LPDIRECT3DVERTEXBUFFER9;
+typedef void* LPDIRECT3DTEXTURE9;
 
+typedef int D3DVECTOR;
+typedef int D3DCOLOR;
+typedef int D3DMATRIX;
 
+typedef int POINT;
+typedef void* WNDPROC;
+
+// Text to speech
+typedef void ISpVoice;
+typedef void ISpObjectToken;
+
+typedef unsigned int ULONG_PTR;
 // beebsound
-typedef int LPDIRECTSOUND;
-typedef int LPDIRECTSOUNDBUFFER;
+typedef void* LPDIRECTSOUND;
+typedef void* LPDIRECTSOUNDBUFFER;
 
 // serial
 typedef int HINSTANCE;
 
+// Econet
+typedef int SOCKET;
+constexpr SOCKET INVALID_SOCKET = -1;
+constexpr int SOCKET_ERROR = -1;
 
+typedef char WCHAR;
+typedef void CLSID;
+typedef int WPARAM;
+
+// Time
+struct SYSTEMTIME
+{
+	WORD wYear;
+	WORD wMonth;
+	WORD wDayOfWeek;
+	WORD wDay;
+	WORD wHour;
+	WORD wMinute;
+	WORD wSecond;
+	WORD wMilliseconds;
+};
+
+void GetLocalTime(SYSTEMTIME* pTime);
 
 // --- Windows message box:
 

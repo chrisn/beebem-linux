@@ -630,8 +630,10 @@ static EG_BOOL MoveFocus(EG_Window *window_ptr, int direction)
 /* Public functions:
  */
 
-EG_Window* EG_Window_Create(char *name_ptr, SDL_Surface *surface_ptr
- , SDL_Color background_color, SDL_Rect dimension)
+EG_Window* EG_Window_Create(const char *name_ptr,
+                            SDL_Surface *surface_ptr,
+                            SDL_Color background_color,
+                            SDL_Rect dimension)
 {
 	EG_Window *window_ptr = NULL;
 
@@ -958,8 +960,10 @@ static EG_BOOL Process_SDL_Event(EG_Window *window_ptr, SDL_Event *event_ptr)
  * 10ms so it can perform house keeping (timers) and finish events (such as
  * mouse movement grouping, animating, keyboard auto repeat etc).
  */
-EG_BOOL EG_Window_ProcessEvent(EG_Window *window_ptr, SDL_Event *event_ptr
- , int x_displacement, int y_displacement)
+EG_BOOL EG_Window_ProcessEvent(EG_Window *window_ptr,
+                               SDL_Event *event_ptr,
+                               int x_displacement,
+                               int y_displacement)
 {
 	long i;
 	EG_Widget *tmp_widget_ptr;
@@ -1042,7 +1046,6 @@ EG_BOOL EG_Window_Hide(EG_Window *window_ptr)
 {
 	CHECK_EG_WINDOW_IS_VALID(window_ptr, EG_FALSE);
 
-
 	//printf("CALLED WINDOW HIDE\n");
 
 	/* Do nothing if already hidden.
@@ -1098,7 +1101,6 @@ EG_BOOL EG_Window_Show(EG_Window *window_ptr)
 {
 	CHECK_EG_WINDOW_IS_VALID(window_ptr, EG_FALSE);
 
-
 	//printf("CALLED WINDOW SHOW\n");
 
 	/* Do nothing if already shown.
@@ -1111,13 +1113,13 @@ EG_BOOL EG_Window_Show(EG_Window *window_ptr)
 	if (window_ptr->window_background_surface_ptr != NULL)
 		SDL_FreeSurface(window_ptr->window_background_surface_ptr);
 
-	window_ptr->window_background_surface_ptr =
-	 SDL_ConvertSurface(window_ptr->surface_ptr
-	 , window_ptr->surface_ptr->format, SDL_SWSURFACE);
+	window_ptr->window_background_surface_ptr = SDL_ConvertSurface(window_ptr->surface_ptr,
+	                                                               window_ptr->surface_ptr->format,
+	                                                               SDL_SWSURFACE);
 
-        if (window_ptr->window_background_surface_ptr == NULL){
+	if (window_ptr->window_background_surface_ptr == NULL) {
 		EG_Log(EG_LOG_ERROR, dL"Window failed to store background", dR);
-        }       
+	}
 
 	/* Set window state to none hidden.
 	 */
@@ -1135,7 +1137,6 @@ EG_BOOL EG_Window_Show(EG_Window *window_ptr)
 	return(EG_TRUE);
 }
 
-
 /* Actions to control the presentation of child widgets:
  */
 
@@ -1146,7 +1147,6 @@ EG_BOOL EG_Window_SetFocusToThisWidget(EG_Widget *widget_ptr)
 {
 	EG_Widget *focused_widget_ptr = NULL;
 	EG_Window *window_ptr = NULL;
-
 
 	/* If widget is not attached to a window then cannot change focus, so
 	 * fail.

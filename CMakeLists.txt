@@ -99,7 +99,7 @@ if(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7"
     set(CMAKE_CXX_FLAGS "-std=c++11")
 endif()
 
-set(COMMON_FLAGS "-Wall -Wextra -Wconversion -pedantic")
+set(COMMON_FLAGS "-Wall -Wextra -pedantic") # -Wconversion 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
 set(CMAKE_C_FLAGS ${COMMON_FLAGS})
 
@@ -139,6 +139,7 @@ set(SRCS
     Src/6502core.cpp
     Src/AtoDConv.cpp
     Src/AVIWriter.cpp
+    Src/Bcd.cpp
     Src/BeebEmPages.cpp
     Src/BeebEmPagesDisks.cpp
     Src/BeebMem.cpp
@@ -147,12 +148,23 @@ set(SRCS
     Src/Debug.cpp
     Src/Disc1770.cpp
     Src/Disc8271.cpp
+    Src/DiscEdit.cpp
+    Src/DiscInfo.cpp
     Src/Econet.cpp
+    Src/FileType.cpp
+    Src/FileUtils.cpp
     Src/Hardware.cpp
     Src/i86.cpp
     Src/i386dasm.cpp
+    Src/IC32Latch.cpp
+    Src/KeyMap.cpp
     # Src/Log.c
     Src/Main.cpp
+    Src/Model.cpp
+    Src/PALRom.cpp
+    Src/Preferences.cpp
+    Src/RomConfigFile.cpp
+    Src/Rtc.cpp
     Src/Sasi.cpp
     Src/Scsi.cpp
     Src/Sdl.cpp
@@ -160,6 +172,7 @@ set(SRCS
     Src/SerialDevices.cpp
     Src/Sound.cpp
     Src/Speech.cpp
+    Src/StringUtils.cpp
     Src/SysVia.cpp
     Src/Teletext.cpp
     Src/Tube.cpp

@@ -1,75 +1,112 @@
-/****************************************************************************/
-/*              Beebem - (c) David Alan Gilbert 1994                        */
-/*              ------------------------------------                        */
-/* This program may be distributed freely within the following restrictions:*/
-/*                                                                          */
-/* 1) You may not charge for this program or for any part of it.            */
-/* 2) This copyright message must be distributed with all copies.           */
-/* 3) This program must be distributed complete with source code.  Binary   */
-/*    only distribution is not permitted.                                   */
-/* 4) The author offers no warrenties, or guarentees etc. - you use it at   */
-/*    your own risk.  If it messes something up or destroys your computer   */
-/*    thats YOUR problem.                                                   */
-/* 5) You may use small sections of code from this program in your own      */
-/*    applications - but you must acknowledge its use.  If you plan to use  */
-/*    large sections then please ask the author.                            */
-/*                                                                          */
-/* If you do not agree with any of the above then please do not use this    */
-/* program.                                                                 */
-/* Please report any problems to the author at beebem@treblig.org           */
-/****************************************************************************/
+/****************************************************************
+BeebEm - BBC Micro and Master 128 Emulator
+Copyright (C) 1994  David Alan Gilbert
+Copyright (C) 1997  Mike Wyatt
+Copyright (C) 2001  Richard Gellman
+Copyright (C) 2004  Ken Lowe
+Copyright (C) 2004  Rob O'Donnell
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA  02110-1301, USA.
+****************************************************************/
+
 /* Beebemulator - memory subsystem - David Alan Gilbert 16/10/94 */
+
 #ifndef BEEBMEM_HEADER
 #define BEEBMEM_HEADER
 
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
-
 #include <stdio.h>
+#include <stdlib.h>
 
-extern int RomWritable[16]; /* Allow writing to ROMs on an individual basis */
+#include "Model.h"
+#include "RomConfigFile.h"
+#include "Windows.h"
+
+enum class BankType
+{
+	Rom,
+	Ram,
+	Empty
+};
+
+extern bool RomWritable[ROM_BANK_COUNT]; // Allow writing to banks on an individual basis
+extern BankType RomBankType[ROM_BANK_COUNT]; // Identifies what is in each bank
 
 extern unsigned char WholeRam[65536];
-extern unsigned char Roms[16][16384];
+extern unsigned char Roms[ROM_BANK_COUNT][16384];
 extern unsigned char ROMSEL;
-extern int PagedRomReg;
+extern unsigned char PagedRomReg;
+
 /* Master 128 Specific Stuff */
 extern unsigned char FSRam[8192]; // 8K Filing System RAM
 extern unsigned char PrivateRAM[4096]; // 4K Private RAM (VDU Use mainly)
-extern int CMOSRAM[64]; // 50 Bytes CMOS RAM
 extern unsigned char ShadowRAM[32768]; // 20K Shadow RAM
 extern unsigned char ACCCON; // ACCess CONtrol register
-struct CMOSType {
-	unsigned char Enabled;
-	unsigned char ChipSelect;
-	unsigned char Address;
-    unsigned char StrobedData;
-	unsigned char DataStrobe;
-	unsigned char Op;
+
+extern bool MemSel, PrvEn, ShEn, Prvs1, Prvs4, Prvs8;
+
+enum RomFlags
+{
+	RomService=128,
+	RomLanguage=64,
+	RomRelocate=32,
+	RomSoftKey=16, // Electron only
+	RomFlag3=8,
+	RomFlag2=4,
+	RomFlag1=2,
+	RomFlag0=1,
 };
-extern struct CMOSType CMOS;
-extern unsigned char Sh_Display,Sh_CPUX,Sh_CPUE,PRAM,FRAM;
-extern char RomPath[512];
+
+constexpr int MAX_ROMINFO_LENGTH = 255;
+
+struct RomInfo {
+	int Slot;
+	int LanguageAddr;
+	int ServiceAddr;
+	int WorkspaceAddr;
+	RomFlags Flags;
+	int Version;
+	char Title[MAX_ROMINFO_LENGTH + 1];
+	char VersionStr[MAX_ROMINFO_LENGTH + 1];
+	char Copyright[MAX_ROMINFO_LENGTH + 1];
+	int RelocationAddr;
+};
+
+extern bool Sh_Display;
 /* End of Master 128 Specific Stuff, note initilised anyway regardless of Model Type in use */
-/* NOTE: Only to be used if 'a' doesn't change the address */
-#define BEEBREADMEM_FAST(a) ((a<0xfc00)?WholeRam[a]:BeebReadMem(a))
-/* as BEEBREADMEM_FAST but then increments a */
-#define BEEBREADMEM_FASTINC(a) ((a<0xfc00)?WholeRam[a++]:BeebReadMem(a++))
 
-int BeebReadMem(int Address);
-void BeebWriteMem(int Address, int Value);
-#define BEEBWRITEMEM_FAST(Address, Value) if (Address<0x8000) WholeRam[Address]=Value; else BeebWriteMem(Address,Value);
-#define BEEBWRITEMEM_DIRECT(Address, Value) WholeRam[Address]=Value;
-char *BeebMemPtrWithWrap(int a, int n);
-char *BeebMemPtrWithWrapMo7(int a, int n);
+extern RomConfigFile RomConfig;
+extern char RomPath[MAX_PATH];
+extern char RomFile[MAX_PATH];
+
+extern char HardDrivePath[MAX_PATH]; // JGH
+
+unsigned char BeebReadMem(int Address);
+void BeebWriteMem(int Address, unsigned char Value);
+#define BEEBWRITEMEM_DIRECT(Address, Value) WholeRam[Address] = Value
+const unsigned char *BeebMemPtrWithWrap(int Address, int Length);
+const unsigned char *BeebMemPtrWithWrapMode7(int Address, int Length);
 void BeebReadRoms(void);
-void BeebMemInit(unsigned char LoadRoms,unsigned char SkipIntegraBConfig);
+void BeebMemInit(bool LoadRoms, bool SkipIntegraBConfig);
+void IntegraBRTCReset();
 
+/* used by debugger */
+bool ReadRomInfo(int bank, RomInfo* info);
 /* Used to show the Rom titles from the options menu */
-char *ReadRomTitle( int bank, char *Title, int BufSize );
+char *ReadRomTitle(int bank, char *Title, int BufSize);
 
-void beebmem_dumpstate(void);
 void SaveMemUEF(FILE *SUEF);
 extern int EFDCAddr; // 1770 FDC location
 extern int EDCAddr; // Drive control location
@@ -79,6 +116,11 @@ void LoadMainMemUEF(FILE *SUEF);
 void LoadShadMemUEF(FILE *SUEF);
 void LoadPrivMemUEF(FILE *SUEF);
 void LoadFileMemUEF(FILE *SUEF);
-void LoadSWRMMemUEF(FILE *SUEF);
+void LoadSWRamMemUEF(FILE *SUEF);
+void LoadSWRomMemUEF(FILE *SUEF);
+bool LoadPALRomEUF(FILE *SUEF, unsigned int ChunkLength);
 void LoadIntegraBHiddenMemUEF(FILE *SUEF);
+//void LoadJIMPageRegUEF(FILE *SUEF);
+void DebugMemoryState();
+
 #endif

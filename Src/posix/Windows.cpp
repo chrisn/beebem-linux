@@ -259,3 +259,19 @@ lpDefault
 
 	return(strlen(callers_string_ptr));
 }
+
+void GetLocalTime(SYSTEMTIME* pTime)
+{
+	time_t Time;
+	time(&Time);
+	struct tm *pTM = localtime(&Time);
+	
+	pTime->wYear = pTM->tm_year + 1900;
+	pTime->wMonth = pTM->tm_mon + 1;
+	pTime->wDayOfWeek = pTM->tm_wday;
+	pTime->wDay = pTM->tm_mday;
+	pTime->wHour = pTM->tm_hour;
+	pTime->wMinute = pTM->tm_min;
+	pTime->wSecond = pTM->tm_sec;
+	pTime->wMilliseconds = 0;
+}

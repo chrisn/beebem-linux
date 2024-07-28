@@ -1,152 +1,194 @@
-/****************************************************************************/
-/*                               Beebem                                     */
-/*                               ------                                     */
-/* This program may be distributed freely within the following restrictions:*/
-/*                                                                          */
-/* 1) You may not charge for this program or for any part of it.            */
-/* 2) This copyright message must be distributed with all copies.           */
-/* 3) This program must be distributed complete with source code.  Binary   */
-/*    only distribution is not permitted.                                   */
-/* 4) The author offers no warrenties, or guarentees etc. - you use it at   */
-/*    your own risk.  If it messes something up or destroys your computer   */
-/*    thats YOUR problem.                                                   */
-/* 5) You may use small sections of code from this program in your own      */
-/*    applications - but you must acknowledge its use.  If you plan to use  */
-/*    large sections then please ask the author.                            */
-/*                                                                          */
-/* If you do not agree with any of the above then please do not use this    */
-/* program.                                                                 */
-/****************************************************************************/
+/****************************************************************
+BeebEm - BBC Micro and Master 128 Emulator
+Copyright (C) 1997  Mike Wyatt
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA  02110-1301, USA.
+****************************************************************/
+
 /* Analogue to digital converter support file for the beeb emulator -
    Mike Wyatt 7/6/97 */
-
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
 
 #include <stdio.h>
 
 #include "6502core.h"
 #include "AtoDConv.h"
 #include "SysVia.h"
-
-//--#ifdef WIN32
+#include "UefState.h"
 #include "Windows.h"
-//--#endif
 
-int JoystickEnabled = 0;
+bool JoystickEnabled = false;
 
-/* X and Y positions for joystick 1 */
+// X and Y positions for joystick 1
 int JoystickX;
 int JoystickY;
 
 /* A to D state */
-typedef struct AtoDStateT{
-	unsigned char datalatch;
-	unsigned char status;
-	unsigned char high;
-	unsigned char low;
-} AtoDStateT;
+struct AtoDState
+{
+	unsigned char DataLatch;
+	unsigned char Status;
+	unsigned char High;
+	unsigned char Low;
+};
 
-AtoDStateT AtoDState;
+static AtoDState AtoD;
 
-int AtoDTrigger;  /* For next A to D conversion completion */
+int AtoDTrigger; // For next A to D conversion completion
 
 /*--------------------------------------------------------------------------*/
-/* Address is in the range 0-f - with the fec0 stripped out */
-void AtoDWrite(int Address, int Value)
+
+// Address is in the range 0-f - with the fec0 stripped out
+
+void AtoDWrite(int Address, unsigned char Value)
 {
 	if (Address == 0)
 	{
-		int timetoconvert;
-		AtoDState.datalatch = Value & 0xff;
-		if (AtoDState.datalatch & 8)
-			timetoconvert = 20000; /* 10 bit conversion, 10 ms */
-		else
-			timetoconvert = 8000; /* 8 bit conversion, 4 ms */
-		SetTrigger(timetoconvert,AtoDTrigger);
+		AtoD.DataLatch = Value;
 
-		AtoDState.status = (AtoDState.datalatch & 0xf) | 0x80; /* busy, not complete */
+		const int TimeToConvert = (AtoD.DataLatch & 8) ?
+		                          20000 : // 10 bit conversion, 10 ms
+		                          8000;   // 8 bit conversion, 4 ms
+
+		SetTrigger(TimeToConvert, AtoDTrigger);
+
+		AtoD.Status = (AtoD.DataLatch & 0xf) | 0x80; // busy, not complete
 	}
 }
 
 /*--------------------------------------------------------------------------*/
-/* Address is in the range 0-f - with the fec0 stripped out */
-int AtoDRead(int Address)
+
+// Address is in the range 0-f - with the fec0 stripped out
+
+unsigned char AtoDRead(int Address)
 {
-	int Value = 0xff;
+	unsigned char Value = 0xff;
 
 	switch (Address)
 	{
 	case 0:
-		Value = AtoDState.status;
+		Value = AtoD.Status;
 		break;
 
 	case 1:
-		Value = AtoDState.high;
+		Value = AtoD.High;
 		break;
 
 	case 2:
-		Value = AtoDState.low;
+		Value = AtoD.Low;
 		break;
 	}
 
-	return(Value);
+	return Value;
 }
 
 /*--------------------------------------------------------------------------*/
-void AtoD_poll_real(void)
-{
-	int value;
 
+void AtoDPollReal()
+{
 	ClearTrigger(AtoDTrigger);
-	AtoDState.status &= 0xf;
-	AtoDState.status |= 0x40; /* not busy */
+
+	AtoD.Status &= 0xf;
+	AtoD.Status |= 0x40; // Not busy
+
 	PulseSysViaCB1();
 
-	switch (AtoDState.status & 3)
+	int Value;
+
+	switch (AtoD.Status & 3)
 	{
 	case 0:
-		value = JoystickX;
+		Value = JoystickX;
 		break;
 	case 1:
-		value = JoystickY;
+		Value = JoystickY;
 		break;
 	default:
-		value = 0;
+		Value = 0;
 		break;
 	}
 
-	AtoDState.status |= (value & 0xc000)>>10;
-	AtoDState.high = value>>8;
-	AtoDState.low = value & 0xf0;
+	AtoD.Status |= (Value & 0xc000) >> 10;
+	AtoD.High = (unsigned char)(Value >> 8);
+	AtoD.Low = Value & 0xf0;
 }
 
 /*--------------------------------------------------------------------------*/
-void AtoDInit(void)
+
+void AtoDInit()
 {
-	JoystickEnabled = 1;
-	AtoDState.datalatch = 0;
-	AtoDState.high = 0;
-	AtoDState.low = 0;
+	AtoD.DataLatch = 0;
+	AtoD.High = 0;
+	AtoD.Low = 0;
 	ClearTrigger(AtoDTrigger);
 
-	/* Not busy, conversion complete (OS1.2 will then request another conversion) */
-	AtoDState.status = 0x40;
+	// Move joystick to middle
+	JoystickX = 32767;
+	JoystickY = 32767;
+
+	// Not busy, conversion complete (OS1.2 will then request another conversion)
+	AtoD.Status = 0x40;
 	PulseSysViaCB1();
 }
 
 /*--------------------------------------------------------------------------*/
-void AtoDReset(void)
+
+void AtoDEnable()
 {
-	JoystickEnabled = 0;
-	AtoDState.datalatch = 0;
-	AtoDState.status = 0x80; /* busy, conversion not complete */
-	AtoDState.high = 0;
-	AtoDState.low = 0;
+	JoystickEnabled = true;
+	AtoDInit();
+}
+
+/*--------------------------------------------------------------------------*/
+
+void AtoDDisable()
+{
+	JoystickEnabled = false;
+	AtoD.DataLatch = 0;
+	AtoD.Status = 0x80; // Busy, conversion not complete
+	AtoD.High = 0;
+	AtoD.Low = 0;
 	ClearTrigger(AtoDTrigger);
 
-	/* Move joystick to middle (superpool looks at joystick even when not selected) */
+	// Move joystick to middle (Super Pool looks at joystick even when
+	// not selected)
 	JoystickX = 32767;
 	JoystickY = 32767;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void SaveAtoDUEF(FILE *SUEF)
+{
+	UEFWrite8(AtoD.DataLatch, SUEF);
+	UEFWrite8(AtoD.Status, SUEF);
+	UEFWrite8(AtoD.High, SUEF);
+	UEFWrite8(AtoD.Low, SUEF);
+	if (AtoDTrigger == CycleCountTMax)
+		UEFWrite32(AtoDTrigger, SUEF);
+	else
+		UEFWrite32(AtoDTrigger - TotalCycles, SUEF);
+}
+
+void LoadAtoDUEF(FILE *SUEF)
+{
+	AtoD.DataLatch = UEFRead8(SUEF);
+	AtoD.Status = UEFRead8(SUEF);
+	AtoD.High = UEFRead8(SUEF);
+	AtoD.Low = UEFRead8(SUEF);
+	AtoDTrigger = UEFRead32(SUEF);
+	if (AtoDTrigger != CycleCountTMax)
+		AtoDTrigger += TotalCycles;
 }

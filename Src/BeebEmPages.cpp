@@ -112,7 +112,8 @@ typedef struct{
 	EG_Widget *widget_machine_integra_b;
 	EG_Widget *widget_machine_bbc_b_plus;
 	EG_Widget *widget_machine_bbc_master_128;
-
+	EG_Widget *widget_machine_bbc_master_et;
+	
 	EG_Widget *widget_fdc_label;		//tmp
 
 	EG_Widget *widget_system_back;
@@ -334,15 +335,13 @@ int UpdateGUIOption(int windows_menu_id, int is_selected)
 	return(0);
 }
 
-
-static void ProcessGUIOption(EG_Widget *widget_ptr, void *user_ptr)
+static void ProcessGUIOption(EG_Widget * /* widget_ptr */, void *user_ptr)
 {
 	WindowsMenuItemBridge *ptr;
 
 	ptr = (WindowsMenuItemBridge*) user_ptr;
 	mainWin->HandleCommand(ptr->windows_menu_id);
 }
-
 
 // TEMP FILE SELECTOR ======================================================
 
@@ -408,7 +407,6 @@ int Save_GTK_File_Selector(char *filename_ptr)
 
 int Open_GTK_File_Selector(char *filename_ptr)
 {
-
 	if (filename_ptr == NULL){
 		qERROR("filename_ptr is NULL! Cannot open GTK File selector!");
 		return false;
@@ -446,11 +444,9 @@ int Open_GTK_File_Selector(char *filename_ptr)
 	return(got_file);
 }
 
-static void RunDisc(EG_Widget *widget_ptr, void *user_ptr)
+static void RunDisc(EG_Widget * /* widget_ptr */, void *user_ptr)
 {
 	EG_Window *window_ptr = (EG_Window*) user_ptr;
-	EG_Widget *tmp;
-	tmp = widget_ptr;
 
 	EG_Window_Hide(window_ptr);
 	NoMenuShown();
@@ -465,11 +461,9 @@ static void RunDisc(EG_Widget *widget_ptr, void *user_ptr)
 	mainWin->HandleCommand(IDM_RUNDISC);
 }
 
-static void SaveState(EG_Widget *widget_ptr, void *user_ptr)
+static void SaveState(EG_Widget * /* widget_ptr */, void *user_ptr)
 {
 	EG_Window *window_ptr = (EG_Window*) user_ptr;
-	EG_Widget *tmp;
-	tmp = widget_ptr;
 
 	EG_Window_Hide(window_ptr);
 	NoMenuShown();
@@ -487,11 +481,9 @@ static void SaveState(EG_Widget *widget_ptr, void *user_ptr)
 //	SDL_Delay(3000);
 }
 
-static void LoadState(EG_Widget *widget_ptr, void *user_ptr)
+static void LoadState(EG_Widget * /* widget_ptr */, void *user_ptr)
 {
 	EG_Window *window_ptr = (EG_Window*) user_ptr;
-	EG_Widget *tmp;
-	tmp = widget_ptr;
 
 	EG_Window_Hide(window_ptr);
 	NoMenuShown();
@@ -804,14 +796,8 @@ void SetFullScreenTickbox(int state)
  *	=	=	=	=	=	=	=	=	=
  */
 
-static void Main_Button_Reset(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Reset(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_menu_ptr);
 
 	// [TODO] If 'reset BBC' ticked do it!
@@ -827,19 +813,11 @@ static void Main_Button_Reset(EG_Widget *widget_ptr, void *user_ptr)
 	EG_RadioGroup_Select(gui.widget_no_reset_ptr);
 	EG_Button_GetFocus(gui.widget_okay_ptr);
 
-	mainWin->HandleCommand(ID_FILE_RESET);
+	mainWin->HandleCommand(IDM_FILE_RESET);
 }
 
-
-
-static void Main_Button_Okay(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Okay(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_menu_ptr);
 
 	// [TODO] If 'reset BBC' ticked do it!
@@ -862,14 +840,8 @@ static void Main_Button_Okay(EG_Widget *widget_ptr, void *user_ptr)
 	SetSound(UNMUTED); if (mainWin) mainWin->ResetTiming();
 }
 
-static void Main_Tick_FullScreen(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Tick_FullScreen(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	// [TODO] Flush sound.
 
 	(void) ToggleFullscreen();
@@ -881,26 +853,14 @@ static void Main_Tick_FullScreen(EG_Widget *widget_ptr, void *user_ptr)
 	SDL_Delay(200);
 }
 
-static void Main_Button_Quit(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Quit(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	Quit();
 	Main_Button_Okay(gui.widget_okay_ptr, &gui);
 }
 
-static void Main_Button_System(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_System(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_system_ptr);
@@ -908,167 +868,105 @@ static void Main_Button_System(EG_Widget *widget_ptr, void *user_ptr)
 	SetActiveWindow(gui.win_system_ptr);
 }
 
-static void Main_Button_Screen(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Screen(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_screen_ptr);
-        EG_Window_Show(gui.win_screen_ptr);
-        SetActiveWindow(gui.win_screen_ptr);
+	EG_Window_Show(gui.win_screen_ptr);
+	SetActiveWindow(gui.win_screen_ptr);
 }
 
-static void Main_Button_Sound(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Sound(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_sound_ptr);
-        EG_Window_Show(gui.win_sound_ptr);
-        SetActiveWindow(gui.win_sound_ptr);
+	EG_Window_Show(gui.win_sound_ptr);
+	SetActiveWindow(gui.win_sound_ptr);
 }
 
-static void Main_Button_ROMs(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_ROMs(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_roms_ptr);
-        EG_Window_Show(gui.win_roms_ptr);
-        SetActiveWindow(gui.win_roms_ptr);
+	EG_Window_Show(gui.win_roms_ptr);
+	SetActiveWindow(gui.win_roms_ptr);
 }
 
-static void Main_Button_Speed(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Speed(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_speed_ptr);
-        EG_Window_Show(gui.win_speed_ptr);
-        SetActiveWindow(gui.win_speed_ptr);
+	EG_Window_Show(gui.win_speed_ptr);
+	SetActiveWindow(gui.win_speed_ptr);
 }
 
-static void Main_Button_About(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_About(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
-//        EG_Window_Show(gui.win_about_ptr);
-//        SetActiveWindow(gui.win_about_ptr);
+	// EG_Window_Show(gui.win_about_ptr);
+	// SetActiveWindow(gui.win_about_ptr);
 
-//	EG_TextBox(screen_ptr,"BeebEm", ABOUT_MESSAGE, "Back", NULL, NULL, NULL, 1);
+	// EG_TextBox(screen_ptr,"BeebEm", ABOUT_MESSAGE, "Back", NULL, NULL, NULL, 1);
 
 	EG_Draw_FlushEventQueue();
-                //printf("MESSAGE BOX\n");
-                EG_MessageBox(screen_ptr, EG_MESSAGEBOX_INFORMATION
-                 , "BeebEm for UNIX!", ABOUT_MESSAGE, "OK", NULL, NULL, NULL
-                 , 0);
+	//printf("MESSAGE BOX\n");
+	EG_MessageBox(screen_ptr, EG_MESSAGEBOX_INFORMATION
+	, "BeebEm for UNIX!", ABOUT_MESSAGE, "OK", NULL, NULL, NULL
+	, 0);
 
 	EG_Window_Show(gui.win_menu_ptr);
 }
 
-static void Main_Button_Devices(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Devices(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_devices_ptr);
-        EG_Window_Show(gui.win_devices_ptr);
-        SetActiveWindow(gui.win_devices_ptr);
+	EG_Window_Show(gui.win_devices_ptr);
+	SetActiveWindow(gui.win_devices_ptr);
 }
 
-static void Main_Button_Disks(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Disks(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_disks_ptr);
-        EG_Window_Show(gui.win_disks_ptr);
-        SetActiveWindow(gui.win_disks_ptr);
+	EG_Window_Show(gui.win_disks_ptr);
+	SetActiveWindow(gui.win_disks_ptr);
 }
 
-static void Main_Button_Tapes(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Tapes(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_tapes_ptr);
-        EG_Window_Show(gui.win_tapes_ptr);
-        SetActiveWindow(gui.win_tapes_ptr);
+	EG_Window_Show(gui.win_tapes_ptr);
+	SetActiveWindow(gui.win_tapes_ptr);
 }
 
-static void Main_Button_Keyboard(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_Keyboard(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_keyboard_ptr);
-        EG_Window_Show(gui.win_keyboard_ptr);
-        SetActiveWindow(gui.win_keyboard_ptr);
+	EG_Window_Show(gui.win_keyboard_ptr);
+	SetActiveWindow(gui.win_keyboard_ptr);
 }
 
-static void Main_Button_AMX(EG_Widget *widget_ptr, void *user_ptr)
+static void Main_Button_AMX(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-        EG_Window_Hide(gui.win_menu_ptr);
+	EG_Window_Hide(gui.win_menu_ptr);
 	SDL_Delay(100);
 	ReCenterWindow(gui.win_amx_ptr);
-        EG_Window_Show(gui.win_amx_ptr);
-        SetActiveWindow(gui.win_amx_ptr);
+	EG_Window_Show(gui.win_amx_ptr);
+	SetActiveWindow(gui.win_amx_ptr);
 }
-
-
-
 
 static EG_BOOL Make_Main(SDL_Surface *dst_ptr)
 {
@@ -1078,9 +976,7 @@ static EG_BOOL Make_Main(SDL_Surface *dst_ptr)
 	SDL_Rect win, loc;
 	SDL_Color col;
 
-
 //	malloc(1024*10);
-
 
 	/* Window
 	 */
@@ -1089,13 +985,7 @@ static EG_BOOL Make_Main(SDL_Surface *dst_ptr)
 	window_ptr = EG_Window_Create("win_menu", dst_ptr, col, win);
 	win.x=0; win.y=0; win.w-=4; win.h-=4;
 
-
-
 //	widget_ptr =  EG_Button_Create("main_oka222222y", col, EG_BUTTON_ALIGN_CENTER, "Okay", loc);
-
-
-	
-
 
 	/* Okay button
 	 */
@@ -1104,16 +994,12 @@ static EG_BOOL Make_Main(SDL_Surface *dst_ptr)
 	(void) EG_Button_SetMyCallback_OnClick(gui.widget_okay_ptr, Main_Button_Okay, (void*) window_ptr);
 	EG_Window_AddWidget(window_ptr, gui.widget_okay_ptr);
 
-
-
 //        loc = CalcRect(win.w-110, win.h-10-17-17-17, 100, 14*3);
 //        widget_ptr = EG_Button_Create("main_okay", col, EG_BUTTON_ALIGN_CENTER, "Okay", loc);
 //        (void) EG_Button_SetMyCallback_OnClick(widget_ptr, Main_Button_Okay, (void*) window_ptr);
 //        (void) EG_Window_AddWidget(window_ptr, widget_ptr);
 //
 //	gui.widget_okay_ptr = widget_ptr;
-
-
 
 //	/* Reset BBC
 //	 */
@@ -1289,50 +1175,29 @@ static void Destroy_Main(void)
  */
 
 
-static void Disks_AcornDFS(EG_Widget *widget_ptr, void *user_ptr)
+static void Disks_AcornDFS(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	mainWin->LoadFDC("Acorn", true);
 //	EG_Label_SetCaption(gui.widget_fdc_label, "Acorn");
 }
 
-static void Disks_WatfordDFS(EG_Widget *widget_ptr, void *user_ptr)
+static void Disks_WatfordDFS(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
 	mainWin->LoadFDC("Watford", true);
 //	EG_Label_SetCaption(gui.widget_fdc_label, "Watford");
 }
 
-static void Disks_OpusDFS(EG_Widget *widget_ptr, void *user_ptr)
+static void Disks_OpusDFS(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
 	mainWin->LoadFDC("Opus", true);
 //	EG_Label_SetCaption(gui.widget_fdc_label, "Opus");
 }
 
-static void Disks_NativeDFS(EG_Widget *widget_ptr, void *user_ptr)
+static void Disks_NativeDFS(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-        EG_Widget *tmp;
-        void *tmp2;
-        tmp = widget_ptr;
-        tmp2 = user_ptr;
-
 //	EG_Label_SetCaption(gui.widget_fdc_label, "None");
-	mainWin->HandleCommand(ID_8271);
+	mainWin->HandleCommand(IDM_8271);
 }
-
 
 /*
         EG_Widget *widget_fdc_none;
@@ -1349,19 +1214,20 @@ void Update_FDC_Buttons(void)
 	char buffer[200]="";
 	int RegRes;
 
-	if (MachineType == 0)
+	if (MachineType == Model::B)
 		strcpy(CfgName, "FDCDLL");
 	else
-        	sprintf(CfgName, "FDCDLL%d", MachineType);
+		sprintf(CfgName, "FDCDLL%d", (int)MachineType);
 
 	RegRes = SysReg.GetStringValue(HKEY_CURRENT_USER,CFG_REG_KEY,CfgName,buffer);
         if (!RegRes) {
 		strcpy(buffer,"None");
-		if (MachineType == 2)
+		if (MachineType == Model::BPlus)
      			sprintf(buffer, "Acorn");
 	}
 
-	if (MachineType != 3) {
+	if (MachineType != Model::Master128 && MachineType != Model::MasterET)
+	{
 		EG_RadioButton_Enable(gui.widget_fdc_none);
 		EG_RadioButton_Enable(gui.widget_fdc_acorn_1770);
 		EG_RadioButton_Enable(gui.widget_fdc_watford);
@@ -1379,8 +1245,8 @@ void Update_FDC_Buttons(void)
 	if (strcasecmp(buffer, "opus") == 0)
 		EG_RadioGroup_Select(gui.widget_fdc_opus);
 
-
-	if (MachineType == 3) {
+	if (MachineType == Model::Master128 || MachineType == Model::MasterET)
+	{
 		EG_RadioButton_Disable(gui.widget_fdc_none);
 		EG_RadioButton_Disable(gui.widget_fdc_acorn_1770);
 		EG_RadioButton_Disable(gui.widget_fdc_watford);
@@ -1389,20 +1255,27 @@ void Update_FDC_Buttons(void)
 
 	/* Set focus back to correct widget
 	 */
-	switch (MachineType){
+	switch (MachineType)
+	{
+	case Model::B:
+		EG_Window_SetFocusToThisWidget(gui.widget_machine_bbc_b);
+		break;
 
-	case 0:
-		EG_Window_SetFocusToThisWidget(gui.widget_machine_bbc_b); break;
-
-	case 1: 
-		EG_Window_SetFocusToThisWidget(gui.widget_machine_integra_b); break;
+	case Model::IntegraB: 
+		EG_Window_SetFocusToThisWidget(gui.widget_machine_integra_b);
+		break;
 	
-	case 2:
-		EG_Window_SetFocusToThisWidget(gui.widget_machine_bbc_b_plus); break;
+	case Model::BPlus:
+		EG_Window_SetFocusToThisWidget(gui.widget_machine_bbc_b_plus);
+		break;
 
-	case 3:
-		EG_Window_SetFocusToThisWidget(gui.widget_machine_bbc_master_128); break;
+	case Model::Master128:
+		EG_Window_SetFocusToThisWidget(gui.widget_machine_bbc_master_128);
+		break;
 
+	case Model::MasterET:
+		EG_Window_SetFocusToThisWidget(gui.widget_machine_bbc_master_et);
+		break;
 	}
 }
 
@@ -1412,27 +1285,22 @@ static void System_Change_Model(EG_Widget *widget_ptr, void *user_ptr)
 	Update_FDC_Buttons();
 }
 
-
-static void System_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void System_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_system_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
 	SetActiveWindow(gui.win_menu_ptr);
 }
+
 static EG_BOOL Make_System(SDL_Surface *dst_ptr)
 {
-        EG_Window *window_ptr = NULL;
-        EG_Widget *widget_ptr;
-	EG_Widget *group1_ptr, *group2_ptr, *group3_ptr;
+	EG_Window *window_ptr = NULL;
+	EG_Widget *widget_ptr;
+	EG_Widget *group1_ptr, *group3_ptr;
 
-        SDL_Rect win, loc;
-        SDL_Color col;
+	SDL_Rect win, loc;
+	SDL_Color col;
 
         /* Window
          */
@@ -1466,36 +1334,38 @@ static EG_BOOL Make_System(SDL_Surface *dst_ptr)
 	widget_ptr = EG_RadioButton_Create("bbc_b", col, "BBC Model B", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, System_Change_Model
-	 , CreateWindowsMenuItem(ID_MODELB, widget_ptr));
-        gui.widget_machine_bbc_b = widget_ptr;
+	 , CreateWindowsMenuItem(IDM_MODELB, widget_ptr));
+	gui.widget_machine_bbc_b = widget_ptr;
 
 	SYSTEM_CALC_LOC(3, 0);
 	widget_ptr = EG_RadioButton_Create("integra_b", col, "BBC Model B + Integra-B", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, System_Change_Model
-	 , CreateWindowsMenuItem(ID_MODELBINT, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_MODELBINT, widget_ptr));
 	gui.widget_machine_integra_b = widget_ptr;
 
 	SYSTEM_CALC_LOC(4, 0);
 	widget_ptr = EG_RadioButton_Create("bbc_b_plus", col, "BBC Model B Plus", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, System_Change_Model
-	 , CreateWindowsMenuItem(ID_MODELBP, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_MODELBPLUS, widget_ptr));
 	gui.widget_machine_bbc_b_plus = widget_ptr;
 
 	SYSTEM_CALC_LOC(5, 0);
 	widget_ptr = EG_RadioButton_Create("bbc_master_128", col, "BBC Master 128", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, System_Change_Model
-	 , CreateWindowsMenuItem(ID_MASTER128, widget_ptr));
-        gui.widget_machine_bbc_master_128 = widget_ptr;
+	 , CreateWindowsMenuItem(IDM_MASTER128, widget_ptr));
+	gui.widget_machine_bbc_master_128 = widget_ptr;
 
-        (void) EG_Window_AddWidget(window_ptr, group1_ptr);
+	SYSTEM_CALC_LOC(6, 0);
+	widget_ptr = EG_RadioButton_Create("bbc_master_et", col, "BBC Master ET", loc);
+	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
+	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, System_Change_Model
+	 , CreateWindowsMenuItem(IDM_MASTER_ET, widget_ptr));
+	gui.widget_machine_bbc_master_et = widget_ptr;
 
-
-
-
-
+	(void) EG_Window_AddWidget(window_ptr, group1_ptr);
 
 
 
@@ -1547,10 +1417,6 @@ static EG_BOOL Make_System(SDL_Surface *dst_ptr)
     //    (void) EG_Window_AddWidget(window_ptr, widget_ptr);
 //	gui.widget_fdc_label = widget_ptr;
 
-
-
-
-
 	SYSTEM_CALC_LOC(12, 0);
 	widget_ptr = EG_Label_Create("system:6502:title", col, EG_LABEL_ALIGN_CENTER, "Instruction set:", loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
@@ -1559,6 +1425,7 @@ static EG_BOOL Make_System(SDL_Surface *dst_ptr)
 	widget_ptr = EG_Box_Create("system:6502:box", EG_BOX_BORDER_SUNK, col, loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
 
+	/*
 	group2_ptr = EG_RadioGroup_Create("system:6502:instructions");
 
 	SYSTEM_CALC_LOC(14, 0);
@@ -1567,28 +1434,27 @@ static EG_BOOL Make_System(SDL_Surface *dst_ptr)
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
 	 , CreateWindowsMenuItem(ID_DOCONLY, widget_ptr));
 
-        SYSTEM_CALC_LOC(15, 0);
-        widget_ptr = EG_RadioButton_Create("system:6502:extras", col, "Common extras", loc);
-        EG_RadioGroup_AddButton(group2_ptr, widget_ptr);
+	SYSTEM_CALC_LOC(15, 0);
+	widget_ptr = EG_RadioButton_Create("system:6502:extras", col, "Common extras", loc);
+	EG_RadioGroup_AddButton(group2_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
 	 , CreateWindowsMenuItem(ID_EXTRAS, widget_ptr));
 
-        SYSTEM_CALC_LOC(16, 0);
-        widget_ptr = EG_RadioButton_Create("system:6502:fullset", col, "Full set", loc);
-        EG_RadioGroup_AddButton(group2_ptr, widget_ptr);
+	SYSTEM_CALC_LOC(16, 0);
+	widget_ptr = EG_RadioButton_Create("system:6502:fullset", col, "Full set", loc);
+	EG_RadioGroup_AddButton(group2_ptr, widget_ptr);
 	EG_RadioGroup_Select(widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
 	 , CreateWindowsMenuItem(ID_FULLSET, widget_ptr));
 
-        SYSTEM_CALC_LOC(17, 1);
+	SYSTEM_CALC_LOC(17, 1);
 	widget_ptr = EG_TickBox_Create("system:6502:ignor_illegal", col, "Ignore Illegal Instructions", loc);
-        EG_Window_AddWidget(window_ptr, widget_ptr);
-        (void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-         , CreateWindowsMenuItem(IDM_IGNOREILLEGALOPS, widget_ptr));
-
-
+	EG_Window_AddWidget(window_ptr, widget_ptr);
+	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
+	 , CreateWindowsMenuItem(IDM_IGNOREILLEGALOPS, widget_ptr));
 
 	(void) EG_Window_AddWidget(window_ptr, group2_ptr);
+	*/
 
         /* Back button
          */
@@ -1615,20 +1481,15 @@ static void Destroy_System(void)
  */
 
 
-static void Screen_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void Screen_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_screen_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
 	SetActiveWindow(gui.win_menu_ptr);
 }
 
-static void Change_Windowed_Resolution(EG_Widget *widget_ptr, void *user_ptr)
+static void Change_Windowed_Resolution(EG_Widget * /* widget_ptr */, void * user_ptr)
 {
 	intptr_t value = (intptr_t) user_ptr;
 	cfg_Windowed_Resolution = value;
@@ -1650,14 +1511,14 @@ static void Change_Windowed_Resolution(EG_Widget *widget_ptr, void *user_ptr)
 	EG_Window_Show(gui.win_screen_ptr);
 }
 
-static void Change_Fullscreen_Resolution(EG_Widget *widget_ptr, void *user_ptr)
+static void Change_Fullscreen_Resolution(EG_Widget * /* widget_ptr */, void *user_ptr)
 {
 	intptr_t value = (intptr_t) user_ptr;
 	cfg_Fullscreen_Resolution = value;
 
 	EG_Window_Hide(gui.win_screen_ptr);
 
-        // Recalc display.
+	// Recalc display.
 	Destroy_Screen();
 	if (Create_Screen() != true){
 		qFATAL("Could not recreate screen! (Bailing out).");
@@ -1667,7 +1528,7 @@ static void Change_Fullscreen_Resolution(EG_Widget *widget_ptr, void *user_ptr)
 	// Update GUI windows as SDL_Surface has changed:
 	ClearWindowsBackgroundCacheAndResetSurface();
 
-        // Repaint screen.
+	// Repaint screen.
 	ReCenterWindow(gui.win_screen_ptr);
 	EG_Window_Show(gui.win_screen_ptr);
 }
@@ -1781,14 +1642,14 @@ static EG_BOOL Make_Video(SDL_Surface *dst_ptr)
 	widget_ptr = EG_TickBox_Create("screen:keyboard_leds",  col, "Show keyboard LEDs", loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_SHOW_KBLEDS, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_SHOW_KBLEDS, widget_ptr));
 	//EG_RadioButton_Disable(widget_ptr);
 
 	SCREEN_CALC_LOC(1, 2, 0);
 	widget_ptr = EG_TickBox_Create("screen:disc_leds", col, "Show disc LEDs", loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_SHOW_DISCLEDS, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_SHOW_DISCLEDS, widget_ptr));
 	//EG_RadioButton_Disable(widget_ptr);
 
 
@@ -1848,10 +1709,6 @@ static EG_BOOL Make_Video(SDL_Surface *dst_ptr)
 	// end of sleep type
 
 
-
-
-
-
 	/* LED colors
 	 */
 	group1_ptr = EG_RadioGroup_Create("screen:leds");
@@ -1864,14 +1721,14 @@ static EG_BOOL Make_Video(SDL_Surface *dst_ptr)
 	widget_ptr = EG_RadioButton_Create("screen:red", col, "Red", loc);	
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_RED_LEDS, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_RED_LEDS, widget_ptr));
 	//EG_RadioButton_Disable(widget_ptr);
 
 	loc.w = 75; loc.x = 185; loc.x +=20;
 	widget_ptr = EG_RadioButton_Create("screen:green", col, "Green", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_GREEN_LEDS, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_GREEN_LEDS, widget_ptr));
 	//EG_RadioButton_Disable(widget_ptr);
 
 	EG_Window_AddWidget(window_ptr, group1_ptr);
@@ -1888,28 +1745,28 @@ static EG_BOOL Make_Video(SDL_Surface *dst_ptr)
 	widget_ptr = EG_RadioButton_Create("screen:m_rgb", col, "RGB", loc);
 	EG_RadioGroup_AddButton(group2_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_MONITOR_RGB, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_MONITOR_RGB, widget_ptr));
 	//EG_RadioButton_Disable(widget_ptr);
 
 	loc.w = 65; loc.x = 185; loc.x +=20;
 	widget_ptr = EG_RadioButton_Create("screen:m_white", col, "Mono", loc);
 	EG_RadioGroup_AddButton(group2_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_MONITOR_BW, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_MONITOR_BW, widget_ptr));
 	//EG_RadioButton_Disable(widget_ptr);
 
 	loc.x = 265; loc.w = 75; loc.x +=10;
 	widget_ptr = EG_RadioButton_Create("screen:m_amber", col, "Amber", loc);
 	EG_RadioGroup_AddButton(group2_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_MONITOR_AMBER, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_MONITOR_AMBER, widget_ptr));
 	//EG_RadioButton_Disable(widget_ptr);
 
 	loc.x = 345; loc.x +=10;
 	widget_ptr = EG_RadioButton_Create("screen:m_green", col, "Green", loc);
 	EG_RadioGroup_AddButton(group2_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_MONITOR_GREEN, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_MONITOR_GREEN, widget_ptr));
 	//EG_RadioButton_Disable(widget_ptr);
 
 	EG_Window_AddWidget(window_ptr, group2_ptr);
@@ -2108,18 +1965,14 @@ static void Destroy_Video(void)
  */
 
 
-static void Sound_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void Sound_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_sound_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
 	SetActiveWindow(gui.win_menu_ptr);
 }
+
 static EG_BOOL Make_Sound(SDL_Surface *dst_ptr)
 {
         EG_Window *window_ptr = NULL;
@@ -2167,26 +2020,23 @@ static EG_BOOL Make_Sound(SDL_Surface *dst_ptr)
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
 	 , CreateWindowsMenuItem(OPT_WANTLOWLATENCYSOUND, widget_ptr));
 
-        SOUND_CALC_LOC(5, 0);
-        widget_ptr = EG_TickBox_Create("sound:speech:yes/no", col, "Speech support", loc);
-        EG_Window_AddWidget(window_ptr, widget_ptr);
+	SOUND_CALC_LOC(5, 0);
+	widget_ptr = EG_TickBox_Create("sound:speech:yes/no", col, "Speech support", loc);
+	EG_Window_AddWidget(window_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
 	 , CreateWindowsMenuItem(IDM_SPEECH, widget_ptr));
 
-        SOUND_CALC_LOC(6, 0);
-        widget_ptr = EG_TickBox_Create("sound:Relay:yes/no", col, "Cassette relay effects", loc);
-        EG_Window_AddWidget(window_ptr, widget_ptr);
+	SOUND_CALC_LOC(6, 0);
+	widget_ptr = EG_TickBox_Create("sound:Relay:yes/no", col, "Cassette relay effects", loc);
+	EG_Window_AddWidget(window_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_SFX_RELAY, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_SFX_RELAY, widget_ptr));
 
 	SOUND_CALC_LOC(7, 0);
 	widget_ptr = EG_TickBox_Create("sound:Input:yes/no", col, "Cassette input effects", loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_TAPESOUND, widget_ptr));
-
-        
-
+	 , CreateWindowsMenuItem(IDM_TAPESOUND, widget_ptr));
 
 	SOUND_CALC_LOC(9, 0);
 	widget_ptr = EG_Label_Create("sound:quality:title", col, EG_LABEL_ALIGN_CENTER, "Quality:", loc);
@@ -2195,8 +2045,8 @@ static EG_BOOL Make_Sound(SDL_Surface *dst_ptr)
 	group1_ptr = EG_RadioGroup_Create("quality");
 
 	SOUND_CALC_LOC(10,0); loc.x-=10; loc.y+=8; loc.h = 17*4; loc.w+=20;
-        widget_ptr = EG_Box_Create("sound:quality:box", EG_BOX_BORDER_SUNK, col, loc);
-        EG_Window_AddWidget(window_ptr, widget_ptr);
+	widget_ptr = EG_Box_Create("sound:quality:box", EG_BOX_BORDER_SUNK, col, loc);
+	EG_Window_AddWidget(window_ptr, widget_ptr);
 
 	SOUND_CALC_LOC(11, 0);
 	widget_ptr = EG_RadioButton_Create("sound:quality:11_025", col, "11.025 kHz", loc);
@@ -2279,27 +2129,19 @@ static void Destroy_Sound(void)
 	EG_Window_Destroy(gui.win_sound_ptr);
 }
 
-
-
-
 /*	=	=	=	=	=	=	=	=	=
  *	ROMs:
  *	=	=	=	=	=	=	=	=	=
  */
 
-
-static void ROMs_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void ROMs_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_roms_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
 	SetActiveWindow(gui.win_menu_ptr);
 }
+
 static EG_BOOL Make_ROMs(SDL_Surface *dst_ptr)
 {
         EG_Window *window_ptr = NULL;
@@ -2373,18 +2215,14 @@ static void Destroy_ROMs(void)
  */
 
 
-static void Speed_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void Speed_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_speed_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
 	SetActiveWindow(gui.win_menu_ptr);
 }
+
 static EG_BOOL Make_Speed(SDL_Surface *dst_ptr)
 {
         EG_Window *window_ptr = NULL;
@@ -2576,20 +2414,14 @@ static void Destroy_About(void)
  *	=	=	=	=	=	=	=	=	=
  */
 
-static void Devices_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void Devices_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
-//	int count = 0;
-
 	EG_Window_Hide(gui.win_devices_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
 	SetActiveWindow(gui.win_menu_ptr);
 }
+
 static EG_BOOL Make_Devices(SDL_Surface *dst_ptr)
 {
         EG_Window *window_ptr = NULL;
@@ -2646,27 +2478,27 @@ static EG_BOOL Make_Devices(SDL_Surface *dst_ptr)
 	widget_ptr = EG_ToggleButton_Create("system:tube:65C02", col, "65C02", loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);	
 	(void) EG_ToggleButton_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(IDM_TUBE, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_TUBE_ACORN65C02, widget_ptr));
 
 	//DEVICES_CALC_LOC(3, 0);
 	loc.x+=loc.w + 10;
 	widget_ptr = EG_ToggleButton_Create("system:tube:TorchZ80", col, "Torch Z80", loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
 	(void) EG_ToggleButton_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(IDM_TORCH, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_TUBE_TORCHZ80, widget_ptr));
 
  	DEVICES_CALC_LOC(3, 0); loc.w /= 2; loc.w -=5;
         widget_ptr = EG_ToggleButton_Create("system:tube:AcornZ80", col, "Acorn Z80", loc);
         EG_Window_AddWidget(window_ptr, widget_ptr);
         (void) EG_ToggleButton_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-         , CreateWindowsMenuItem(IDM_ACORNZ80, widget_ptr));
+         , CreateWindowsMenuItem(IDM_TUBE_ACORNZ80, widget_ptr));
 
 	//DEVICES_CALC_LOC(5, 0);
     	loc.x+=loc.w + 10;
 	widget_ptr = EG_ToggleButton_Create("system:tube:i86", col, "Master 512 80186", loc);
         EG_Window_AddWidget(window_ptr, widget_ptr);
         (void) EG_ToggleButton_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-         , CreateWindowsMenuItem(IDM_TUBE186, widget_ptr));
+         , CreateWindowsMenuItem(IDM_TUBE_MASTER512, widget_ptr));
 
 	if (peripherals_count>0) {
 
@@ -2685,7 +2517,7 @@ static EG_BOOL Make_Devices(SDL_Surface *dst_ptr)
 		widget_ptr = EG_TickBox_Create("per:econet", col, "Econet active", loc);
 		EG_Window_AddWidget(window_ptr, widget_ptr);
 		(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-		 , CreateWindowsMenuItem(ID_ECONET, widget_ptr));
+		 , CreateWindowsMenuItem(IDM_ECONET, widget_ptr));
 		y++;
 #		endif
 
@@ -2693,14 +2525,16 @@ static EG_BOOL Make_Devices(SDL_Surface *dst_ptr)
 		widget_ptr = EG_TickBox_Create("per:harddrive", col, "Hard drives active", loc);
 		EG_Window_AddWidget(window_ptr, widget_ptr);
 		(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-		 , CreateWindowsMenuItem(ID_HARDDRIVE, widget_ptr));
+		 , CreateWindowsMenuItem(IDM_SCSI_HARD_DRIVE, widget_ptr));
 		y++;
+		
+		// TODO: IDE hard drive
 
 		DEVICES_CALC_LOC(y, 0);
 		widget_ptr = EG_TickBox_Create("per:touchscreen", col, "Microvitec Touch Screen active", loc);
 		EG_Window_AddWidget(window_ptr, widget_ptr);
 		(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-		 , CreateWindowsMenuItem(ID_TOUCHSCREEN, widget_ptr));
+		 , CreateWindowsMenuItem(IDC_SERIAL_PORT_DESTINATION_TOUCH_SCREEN, widget_ptr));
 		y++;
 
 
@@ -2737,13 +2571,8 @@ static void Destroy_Devices(void)
  *	=	=	=	=	=	=	=	=	=
  */
 
-static void Tapes_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void Tapes_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_tapes_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
@@ -2785,11 +2614,11 @@ static EG_BOOL Make_Tapes(SDL_Surface *dst_ptr)
 
 
 	/* ID_UNLOCKTAPE */
-        TAPES_CALC_LOC(2, 0);
-        widget_ptr = EG_TickBox_Create("disks:Unlock", col, "Unlock tape", loc);
-        EG_Window_AddWidget(window_ptr, widget_ptr);
-        (void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-         , CreateWindowsMenuItem(ID_UNLOCKTAPE, widget_ptr));
+	TAPES_CALC_LOC(2, 0);
+	widget_ptr = EG_TickBox_Create("disks:Unlock", col, "Unlock tape", loc);
+	EG_Window_AddWidget(window_ptr, widget_ptr);
+	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
+	 , CreateWindowsMenuItem(IDM_UNLOCKTAPE, widget_ptr));
 
 
 
@@ -2801,25 +2630,25 @@ static EG_BOOL Make_Tapes(SDL_Surface *dst_ptr)
 	widget_ptr = EG_RadioButton_Create("tapespeed:fast", col, "Fastest", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_TAPE_FAST, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_TAPE_FAST, widget_ptr));
 
 	TAPES_CALC_LOC(4, 1);
 	widget_ptr = EG_RadioButton_Create("tapespeed:mfast", col, "Faster", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_TAPE_MFAST, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_TAPE_MFAST, widget_ptr));
 
 	TAPES_CALC_LOC(5, 1);
 	widget_ptr = EG_RadioButton_Create("tapespeed:mslow", col, "Fast", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_TAPE_MSLOW, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_TAPE_MSLOW, widget_ptr));
 
 	TAPES_CALC_LOC(6, 1);
 	widget_ptr = EG_RadioButton_Create("tapespeed:normal", col, "Normal", loc);
 	EG_RadioGroup_AddButton(group1_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_TAPE_NORMAL, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_TAPE_NORMAL, widget_ptr));
 
 
 
@@ -2831,15 +2660,15 @@ static EG_BOOL Make_Tapes(SDL_Surface *dst_ptr)
         widget_ptr = EG_Button_Create("disks:LoadTape", col, EG_BUTTON_ALIGN_CENTER, "Insert tape", loc);
         EG_Window_AddWidget(window_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_LOADTAPE, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_LOADTAPE, widget_ptr));
 
 	
-	/* Rewind tape ID_REWINDTAPE */
+	/* Rewind tape IDM_REWINDTAPE */
         TAPES_CALC_LOC(10, 0);
         widget_ptr = EG_Button_Create("disks:Rewind", col, EG_BUTTON_ALIGN_CENTER, "Rewind tape", loc);
         EG_Window_AddWidget(window_ptr, widget_ptr);
 	(void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-	 , CreateWindowsMenuItem(ID_REWINDTAPE, widget_ptr));
+	 , CreateWindowsMenuItem(IDM_REWINDTAPE, widget_ptr));
 
 
 
@@ -2847,12 +2676,6 @@ static EG_BOOL Make_Tapes(SDL_Surface *dst_ptr)
 //	EG_RadioGroup_Select(widget_ptr);
 
 	EG_Window_AddWidget(window_ptr, group1_ptr);
-
-
-
-
-
-
 
 
         /* Back button
@@ -2880,13 +2703,8 @@ static void Destroy_Tapes(void)
  *	=	=	=	=	=	=	=	=	=
  */
 
-static void Disks_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void Disks_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_disks_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
@@ -2943,29 +2761,17 @@ static void Destroy_Disks(void)
  *	=	=	=	=	=	=	=	=	=
  */
 
-static void Keyboard_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void Keyboard_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_keyboard_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
 	SetActiveWindow(gui.win_menu_ptr);
 }
 
-
-
-static void Disks_SaveRegistry(EG_Widget *widget_ptr, void *user_ptr)
+static void Disks_SaveRegistry(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
-	mainWin->SavePreferences();
+	mainWin->SavePreferences(true); // TODO: Save all?
 
 #ifdef WITH_DEBUG_OUTPUT
 	DumpFakeRegistry();
@@ -3081,7 +2887,7 @@ static EG_BOOL Make_Keyboard(SDL_Surface *dst_ptr)
         widget_ptr = EG_TickBox_Create("disks:WriteProtect0:yes/no", col, "Disk 0: Read only (click below to eject)", loc);
         EG_Window_AddWidget(window_ptr, widget_ptr);
         (void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-         , CreateWindowsMenuItem(IDM_WPDISC0, widget_ptr));
+         , CreateWindowsMenuItem(IDM_WRITE_PROTECT_DISC0, widget_ptr));
 	
         DISKS_CALC_LOC( (11+3), 0);
 	widget_ptr = EG_Button_Create("disks:Eject:Disc0", col, EG_BUTTON_ALIGN_CENTER, "", loc);
@@ -3096,7 +2902,7 @@ static EG_BOOL Make_Keyboard(SDL_Surface *dst_ptr)
         widget_ptr = EG_TickBox_Create("disks:WriteProtect1:yes/no", col, "Disk 1: Read only (click below to eject)", loc);
         EG_Window_AddWidget(window_ptr, widget_ptr);
         (void) EG_TickBox_SetMyCallback_OnClick(widget_ptr, ProcessGUIOption
-         , CreateWindowsMenuItem(IDM_WPDISC1, widget_ptr));
+         , CreateWindowsMenuItem(IDM_WRITE_PROTECT_DISC1, widget_ptr));
 
         DISKS_CALC_LOC( (14+3), 0);
 	widget_ptr = EG_Button_Create("disks:Eject:Disc1", col, EG_BUTTON_ALIGN_CENTER, "", loc);
@@ -3239,18 +3045,14 @@ static void Destroy_Keyboard(void)
  *	=	=	=	=	=	=	=	=	=
  */
 
-static void AMX_Button_Back(EG_Widget *widget_ptr, void *user_ptr)
+static void AMX_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
-	EG_Widget *tmp;
-	void *tmp2;
-	tmp = widget_ptr;
-	tmp2 = user_ptr;
-
 	EG_Window_Hide(gui.win_amx_ptr);
 	SDL_Delay(100);
 	EG_Window_Show(gui.win_menu_ptr);
 	SetActiveWindow(gui.win_menu_ptr);
 }
+
 static EG_BOOL Make_AMX(SDL_Surface *dst_ptr)
 {
         EG_Window *window_ptr = NULL;
@@ -3384,10 +3186,9 @@ static EG_BOOL Make_AMX(SDL_Surface *dst_ptr)
         gui.win_amx_ptr = window_ptr;
         return(EG_TRUE);
 }
+
 static void Destroy_AMX(void)
 {
 	EG_Window_DestroyAllChildWidgets(gui.win_amx_ptr);
 	EG_Window_Destroy(gui.win_amx_ptr);
 }
-
-

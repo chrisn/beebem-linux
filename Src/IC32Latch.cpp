@@ -1,7 +1,6 @@
 /****************************************************************
 BeebEm - BBC Micro and Master 128 Emulator
-Copyright (C) 2001  Richard Gellman
-Copyright (C) 2005  Greg Cook
+Copyright (C) 2023  Chris Needham
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,34 +18,14 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA  02110-1301, USA.
 ****************************************************************/
 
-/* 1770 FDC Support for Beebem */
-/* Written by Richard Gellman */
+#include "IC32Latch.h"
 
-#ifndef DISC1770_HEADER
-#define DISC1770_HEADER
+// State of the 8-bit latch IC32
+// bit 0 is WE for sound gen
+// bit 1 is read select on speech proc
+// bit 2 is write select on speech proc
+// bit 4 and bit 5 screen start address offset
+// bit 6 is caps lock LED
+// bit 7 is shift lock LED
 
-#include "DiscType.h"
-
-extern bool DWriteable[2]; // Write Protect
-extern bool Disc1770Enabled;
-extern bool InvertTR00;
-
-enum class Disc1770Result {
-	OpenedReadWrite,
-	OpenedReadOnly,
-	Failed
-};
-
-unsigned char Read1770Register(int Register);
-void Write1770Register(int Register, unsigned char Value);
-Disc1770Result Load1770DiscImage(const char *FileName, int Drive, DiscType Type);
-void WriteFDCControlReg(unsigned char Value);
-unsigned char ReadFDCControlReg();
-void Reset1770();
-void Poll1770(int NCycles);
-bool CreateADFSImage(const char *FileName, int Tracks);
-void Close1770Disc(int Drive);
-void Save1770UEF(FILE *SUEF);
-void Load1770UEF(FILE *SUEF,int Version);
-
-#endif
+unsigned char IC32State = 0;
