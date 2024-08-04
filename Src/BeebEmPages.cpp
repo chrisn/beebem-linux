@@ -1182,7 +1182,7 @@ void Update_FDC_Buttons(void)
 		sprintf(CfgName, "FDCDLL%d", (int)MachineType);
 
 	bool Found = mainWin->m_Preferences.GetStringValue(CfgName, buffer);
-	// RegRes = SysReg.GetStringValue(HKEY_CURRENT_USER,CFG_REG_KEY,CfgName,buffer);
+
 	if (!Found)
 	{
 		strcpy(buffer,"None");

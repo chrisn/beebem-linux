@@ -234,7 +234,6 @@ set(SRCS
     Src/gui/widget_shared.c
     Src/gui/widget.c
     Src/gui/window.c
-    Src/posix/CRegistry.cpp
     Src/posix/FakeRegistry.cpp
     Src/posix/Windows.cpp
 )

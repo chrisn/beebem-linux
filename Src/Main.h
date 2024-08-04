@@ -44,8 +44,6 @@ extern int Tmp_Command_Line_Fullscreen;
  */
 
 
-#include "CRegistry.h"
-extern cRegistry SysReg;
 extern char FDCDLL[256];
 
 //extern int fullscreen;
