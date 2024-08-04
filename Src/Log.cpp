@@ -26,6 +26,7 @@ Boston, MA  02110-1301, USA.
 #include <stdio.h>
 
 #include "Log.h"
+#include "FileUtils.h"
 #include "Main.h"
 
 static FILE *LogFile = nullptr;
@@ -39,11 +40,11 @@ void OpenLog()
 {
 	LogFile = nullptr;
 
-	char Path[256];
-	strcpy(Path, mainWin->GetUserDataPath());
-	strcat(Path, "BeebEm.log");
+	char PathName[MAX_PATH];
+	strcpy(PathName, mainWin->GetUserDataPath());
+	AppendPath(PathName, "BeebEm.log");
 
-	// LogFile = fopen(Path, "wt");
+	// LogFile = fopen(PathName, "wt");
 }
 
 void CloseLog()
@@ -175,9 +176,9 @@ void VLog_AlertDlg(const char *psFormat, va_list argptr)
 /* vfprintf wrapper, used internally instead of printf, fprintf.
  */
 #define EG_OUTPUT_STREAM_HARDWARED stdout
- 
+
 void EG_vprintf(const char *format, va_list argptr)
-{	
+{
 	vfprintf(EG_OUTPUT_STREAM_HARDWARED, format, argptr);
 	va_end(argptr);
 

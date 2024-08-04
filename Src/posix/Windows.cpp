@@ -1,3 +1,23 @@
+/****************************************************************
+BeebEm - BBC Micro and Master 128 Emulator
+Copyright (C) 2006  David Eggleston
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA  02110-1301, USA.
+****************************************************************/
+
 #include <errno.h>
 #include <time.h>
 #include <unistd.h>
@@ -12,34 +32,30 @@
 #include "gui/gui.h"
 #include "Sdl.h"
 
-/* Fake windows stuff:
- */
+// Fake windows stuff:
 
-int _vscprintf(const char * format, va_list pargs)
+int _vscprintf(const char *format, va_list pargs)
 {
-    int retval;
-    va_list argcopy;
-    va_copy(argcopy, pargs);
-    retval = vsnprintf(NULL, 0, format, argcopy);
-    va_end(argcopy);
-    return retval;
+	int retval;
+	va_list argcopy;
+	va_copy(argcopy, pargs);
+	retval = vsnprintf(NULL, 0, format, argcopy);
+	va_end(argcopy);
+	return retval;
 }
 
 /* Fake windows MessageBox
  */
 int MessageBox(HWND hwnd, const char *message_p, const char *title_p, int type)
 {
-	int ret = 1, selected, icon_type=0;
+	int ret = 1, icon_type=0;
 	HWND tmp_hwnd;
 
-	tmp_hwnd = hwnd;
-
 	// [TODO] Add support for default button, BeebEm doesn't use it anyway.
-	selected = 1;
+	int selected = 1;
 
-
-	switch (type & 0xf0){
-
+	switch (type & 0xf0)
+	{
 	case MB_ICONHAND:
 		icon_type = EG_MESSAGEBOX_STOP;
 		break;
@@ -60,9 +76,8 @@ int MessageBox(HWND hwnd, const char *message_p, const char *title_p, int type)
 		break;
 	}
 
-
-	switch (type & 0xf){
-
+	switch (type & 0xf)
+	{
 	case MB_OKCANCEL:
 		if (EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "OK", "CANCEL", NULL, NULL, selected) == 1)
 			ret = IDOK;
@@ -100,7 +115,7 @@ int MessageBox(HWND hwnd, const char *message_p, const char *title_p, int type)
 
 	case MB_OK:
 	default:
-		(void) EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "OK", NULL, NULL, NULL, 1);
+		EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "OK", NULL, NULL, NULL, 1);
 		ret = IDOK;
 		break;
 	}
@@ -108,9 +123,9 @@ int MessageBox(HWND hwnd, const char *message_p, const char *title_p, int type)
 	return ret;
 }
 
-void SetWindowText(HWND hwnd, const char *title_p)
+void SetWindowText(HWND hwnd, const char *pszTitle)
 {
-	SetWindowTitle( (char*) title_p);
+	SetWindowTitle(pszTitle);
 }
 
 void Sleep(DWORD ticks)

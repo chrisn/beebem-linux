@@ -1055,10 +1055,11 @@ void BeebWin::CreateArmCoPro()
 {
 	arm = new CArm;
 
-	char ArmROMPath[256];
+	char ArmROMPath[MAX_PATH];
 
 	strcpy(ArmROMPath, RomPath);
-	strcat(ArmROMPath, "BeebFile/ARMeval_100.rom");
+	AppendPath(ArmROMPath, "BeebFile");
+	AppendPath(ArmROMPath, "ARMeval_100.rom");
 
 	CArm::InitResult Result = arm->init(ArmROMPath);
 
@@ -1092,7 +1093,8 @@ void BeebWin::CreateSprowCoPro()
 	char SprowROMPath[MAX_PATH];
 
 	strcpy(SprowROMPath, RomPath);
-	strcat(SprowROMPath, "BeebFile/Sprow.rom");
+	AppendPath(SprowROMPath, "BeebFile");
+	AppendPath(SprowROMPath, "Sprow.rom");
 
 	sprow = new CSprowCoPro();
 	CSprowCoPro::InitResult Result = sprow->Init(SprowROMPath);

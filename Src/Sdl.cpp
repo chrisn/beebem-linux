@@ -1,6 +1,6 @@
 /****************************************************************
 BeebEm - BBC Micro and Master 128 Emulator
-Copyright (C) 1994  David Alan Gilbert
+Copyright (C) 2006  David Eggleston
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -1149,25 +1149,28 @@ void RenderFullscreenFPS(const char *str, int y)
 	EG_Draw_String(video_output, &col, EG_FALSE, &rect, 0, (char*) str);
 }
 
-void SetWindowTitle(char *title)
+void SetWindowTitle(const char *pszTitle)
 {
-	SDL_WM_SetCaption(title, NULL);
+	SDL_WM_SetCaption(pszTitle, NULL);
 }
 
 unsigned char* GetSDLScreenLinePtr(int line)
 {
 	static int low=1000, high=0;
 
-	if (video_output == NULL){
+	if (video_output == NULL)
+	{
 		printf("ASKED TO RENDER SCANLINE BEFORE BUFFER CREATED.\n");
 		exit(11);
 	}
 
-	if (line < low){
+	if (line < low)
+	{
 		low = line;
 	}
 
-	if (line > high){
+	if (line > high)
+	{
 		high = line;
 	}
 

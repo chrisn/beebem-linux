@@ -1396,7 +1396,7 @@ bool SpeechInit()
 	// This section rewritten for V.1.32 to take account of roms.cfg file.
 	char Path[MAX_PATH];
 	strcpy(Path, mainWin->GetUserDataPath());
-	strcat(Path, "Phroms.cfg");
+	AppendPath(Path, "Phroms.cfg");
 
 	FILE *RomCfg = fopen(Path, "rt");
 
@@ -1420,11 +1420,11 @@ bool SpeechInit()
 		char PhromPath[MAX_PATH];
 		strcpy(PhromPath, RomName);
 
-		if (RomName[0] != '\\' && RomName[1] != ':')
+		if (PathIsRelative(RomName))
 		{
 			strcpy(PhromPath, mainWin->GetUserDataPath());
-			strcat(PhromPath, "Phroms\\");
-			strcat(PhromPath, RomName);
+			AppendPath(PhromPath, "Phroms");
+			AppendPath(PhromPath, RomName);
 		}
 
 		if (strncmp(RomName, "EMPTY", 5) != 0)

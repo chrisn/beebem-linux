@@ -1471,4 +1471,3 @@ void Load1770UEF(FILE *SUEF, int Version)
 		}
 	}
 }
-

@@ -1185,7 +1185,8 @@ void BeebWin::QuickLoad()
 {
 	char FileName[MAX_PATH];
 	strcpy(FileName, m_UserDataPath);
-	strcat(FileName, "BeebState\\quicksave.uefstate");
+	AppendPath(FileName, "BeebState");
+	AppendPath(FileName, "quicksave.uefstate");
 
 	if (FileExists(FileName))
 	{
@@ -1195,7 +1196,8 @@ void BeebWin::QuickLoad()
 	{
 		// For backwards compatiblity with existing quicksave files:
 		strcpy(FileName, m_UserDataPath);
-		strcat(FileName, "BeebState\\quicksave.uef");
+		AppendPath(FileName, "BeebState");
+		AppendPath(FileName, "quicksave.uef");
 		LoadUEFState(FileName);
 	}
 }
@@ -1208,15 +1210,26 @@ void BeebWin::QuickSave()
 	// Bump old quicksave files down
 	for (int i = 1; i <= 9; ++i)
 	{
-		sprintf(FileName1, "%sBeebState\\quicksave%d.uefstate", m_UserDataPath, i);
+		char FileName[100];
+		sprintf(FileName, "quicksave%d.uefstate", i);
+
+		strcpy(FileName1, m_UserDataPath);
+		AppendPath(FileName1, "BeebState");
+		AppendPath(FileName1, FileName);
 
 		if (i == 9)
 		{
-			sprintf(FileName2, "%sBeebState\\quicksave.uefstate", m_UserDataPath);
+			strcpy(FileName2, m_UserDataPath);
+			AppendPath(FileName2, "BeebState");
+			AppendPath(FileName2, "quicksave.uefstate");
 		}
 		else
 		{
-			sprintf(FileName2, "%sBeebState\\quicksave%d.uefstate", m_UserDataPath, i + 1);
+			sprintf(FileName, "quicksave%d.uefstate", i);
+
+			strcpy(FileName2, m_UserDataPath);
+			AppendPath(FileName2, "BeebState");
+			AppendPath(FileName2, FileName);
 		}
 
 		MoveFileEx(FileName2, FileName1, MOVEFILE_REPLACE_EXISTING);
