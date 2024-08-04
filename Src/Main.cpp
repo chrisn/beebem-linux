@@ -40,6 +40,7 @@ Boston, MA  02110-1301, USA.
 #include "Windows.h"
 
 #include "6502core.h"
+#include "BeebEmPages.h"
 #include "BeebMem.h"
 #include "BeebWin.h"
 #include "SysVia.h"
@@ -50,9 +51,6 @@ Boston, MA  02110-1301, USA.
 #include "Sdl.h"
 
 #include "gui/gui.h"
-
-#include "BeebEmPages.h"
-#include "FakeRegistry.h"
 
 // Can remove this (only needed to calc string hash)
 // #include "gui/gui_functions.h"
@@ -181,9 +179,6 @@ int main(int argc, char *argv[])
 	{
 		return 1;
 	}
-
-	// Initialize fake windows registry:
-	InitializeFakeRegistry();
 
 	// Create instance of Emulator core:
 	mainWin = new(std::nothrow) BeebWin();
@@ -420,11 +415,6 @@ int main(int argc, char *argv[])
 	delete mainWin;
 
 	// Cleanly free SDL and logging.
-#ifdef WITH_DEBUG_OUTPUT
-	DumpFakeRegistry();
-#endif
-
-	DestroyFakeRegistry();
 	DestroyBeebEmGUI();
 	UninitialiseSDL();
 	Log_UnInit();

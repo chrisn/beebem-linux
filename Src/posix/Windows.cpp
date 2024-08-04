@@ -8,7 +8,6 @@
 #include "Windows.h"
 #include "BeebEmPages.h"
 #include "FileUtils.h"
-#include "FakeRegistry.h"
 
 #include "gui/gui.h"
 #include "Sdl.h"

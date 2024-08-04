@@ -123,7 +123,6 @@ add_definitions(-DDATA_DIR="/usr/local/share/beebem")
 add_definitions(-DVERSION="4.19")
 add_definitions(-DWITH_UNIX_EXTRAS) # Enable UNIX extras
 add_definitions(-DPACKAGE="beebem")
-add_definitions(-DREG_FILENAME="beebem.registry") # Fake Windows registry filename
 # add_definitions(-DWITH_DEBUG_OUTPUT) # Additional debugging
 # add_definitions(-DEG_DEBUG) # GUI debugging code
 add_definitions(-DWITH_ECONET) # Econet support
@@ -234,7 +233,6 @@ set(SRCS
     Src/gui/widget_shared.c
     Src/gui/widget.c
     Src/gui/window.c
-    Src/posix/FakeRegistry.cpp
     Src/posix/Windows.cpp
 )
 

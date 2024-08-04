@@ -25,7 +25,6 @@ Boston, MA  02110-1301, USA.
 #include "BeebEmPages.h"
 #include "BeebEm.h"
 #include "BeebWin.h"
-#include "FakeRegistry.h"
 #include "Main.h"
 #include "Resource.h"
 #include "Sdl.h"
