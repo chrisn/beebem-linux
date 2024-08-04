@@ -51,7 +51,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "Log.h"
 #include "Main.h"
 #include "Sound.h"
-#include "UserConfig.h"
 
 #if ENABLE_SPEECH
 

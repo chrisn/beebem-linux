@@ -56,7 +56,6 @@ Boston, MA  02110-1301, USA.
 #include "Teletext.h"
 #include "Tube.h"
 #include "UefState.h"
-#include "UserConfig.h"
 #include "UserVia.h"
 #include "Video.h"
 #include "Z80mem.h"

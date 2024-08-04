@@ -62,7 +62,6 @@ Boston, MA  02110-1301, USA.
 #include "Rtc.h"
 #include "Socket.h"
 #include "StringUtils.h"
-#include "UserConfig.h"
 #include "Windows.h"
 
 // Emulated 6854 ADLC control registers.
@@ -1738,7 +1737,7 @@ bool EconetPoll_real() // return NMI status
 						{
 							sockaddr_in RecvAddr;
 							// Read the packet
-							
+
 							#ifdef WIN32
 							int sizRcvAdr = sizeof(RecvAddr);
 							#else

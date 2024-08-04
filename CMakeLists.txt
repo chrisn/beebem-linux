@@ -200,7 +200,6 @@ set(SRCS
     Src/Tube.cpp
     Src/Uef.cpp
     Src/UefState.cpp
-    Src/UserConfig.cpp
     Src/UserKeyboardDialog.cpp
     Src/UserPortBreakoutBox.cpp
     Src/UserPortRTC.cpp

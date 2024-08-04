@@ -49,10 +49,7 @@ Boston, MA  02110-1301, USA.
 #endif
 #endif
 
-//++
 #include "Sdl.h"
-#include "UserConfig.h"
-//<+
 
 /* Bit assignments in control reg:
    0 - Flash colour (0=first colour, 1=second)
@@ -686,8 +683,8 @@ static void VideoStartOfFrame(void) {
 //--
 //--  double frametime;
 //--  static CycleCountT OldCycles=0;
-//--  
-//--  int CurStart; 
+//--
+//--  int CurStart;
 //--
 //--
 //--  if (!Have_GotTime) {
@@ -705,7 +702,7 @@ static void VideoStartOfFrame(void) {
 //--#else
 //--                frametime/=(double)sysconf(_SC_CLK_TCK);
 //--#endif
-//--#else 
+//--#else
 //--                frametime/=(double)HZ;
 //--#endif
 //--    frametime/=(double)BEEB_DOTIME_SAMPLESIZE;
