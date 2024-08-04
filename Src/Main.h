@@ -37,16 +37,8 @@ Boston, MA  02110-1301, USA.
 #include "gui/sdl.h"
 #include "gui/gui.h"
 
-/* Fudge for command line --------
- */
-extern int Tmp_Command_Line_Fullscreen;
-/* -------------------------------
- */
-
-
 extern char FDCDLL[256];
 
-//extern int fullscreen;
 extern int done;
 
 extern Model MachineType;
@@ -54,8 +46,6 @@ extern BeebWin *mainWin;
 extern HINSTANCE hInst;
 extern HWND hCurrentDialog;
 extern HACCEL hCurrentAccelTable;
-
-void WriteLog(char *fmt, ...);
 
 void Quit();
 void SetActiveWindow(EG_Window *window_ptr);

@@ -1125,6 +1125,10 @@ void BeebWin::DisplayClientAreaText(HDC hDC)
 		TextOut(hDC, TeletextEnabled ? 490 : 580, TextStart, fps, (int)strlen(fps));
 	}
 
+	#else
+
+	UNREFERENCED_PARAMETER(hDC);
+
 	#endif
 }
 
@@ -1142,6 +1146,12 @@ void BeebWin::DisplayFDCBoardInfo(HDC hDC, int x, int y)
 		SetTextColor(hDC, 0x808080);
 		TextOut(hDC, x, y, BoardName, (int)strlen(BoardName));
 	}
+
+	#else
+
+	UNREFERENCED_PARAMETER(hDC);
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
 
 	#endif
 }

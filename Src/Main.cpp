@@ -65,9 +65,6 @@ Boston, MA  02110-1301, USA.
 int __argc = 0;
 char **__argv = NULL;
 
-// This needs to be fixed.. ----
-int Tmp_Command_Line_Fullscreen=0;
-
 // Load/Save path.
 extern char *cfg_LoadAndSavePath_ptr;
 
@@ -109,15 +106,8 @@ bool GetFullscreenState()
 
 bool ToggleFullscreen()
 {
-//	if (fullscreen != 0)
-//		fullscreen = 0;
-//	else
-//		fullscreen = 1;
+	mainWin->SetFullScreenToggle(!mainWin->IsFullScreen());
 
-	if (mainWin->IsFullScreen())
-		mainWin->SetFullScreenToggle(false);
-	else
-		mainWin->SetFullScreenToggle(true);
 	SetFullScreenTickbox(mainWin->IsFullScreen());
 
 	Destroy_Screen();
@@ -128,27 +118,25 @@ bool ToggleFullscreen()
 		exit(10);
 	}
 
-	/* Update GUI here so it's not missed anywhere - this is
-	 * turning into such a bloody MESS...
-	 */
+	// Update GUI here so it's not missed anywhere - this is
+	// turning into such a bloody MESS...
 	ClearWindowsBackgroundCacheAndResetSurface();
 	ClearVideoWindow();
 
 //	if (SDL_WM_ToggleFullScreen(screen_ptr) != 1)
 //		EG_Log(EG_LOG_WARNING, dL"Could not toggle full-screen mode.", dR);
 
-//	return(fullscreen);
 	return mainWin->IsFullScreen();
 }
 
 void UnfullscreenBeforeExit(void)
 {
-	/* Hopefully this will fix that annoying bug where the mouse pointer
-	 * vanishes on exit.  Is that me, or is it SDL?
-	 */
-//	if (fullscreen)
+	// Hopefully this will fix that annoying bug where the mouse pointer
+	// vanishes on exit.  Is that me, or is it SDL?
 	if (mainWin->IsFullScreen())
+	{
 		ToggleFullscreen();
+	}
 }
 
 void ShowingMenu(void)
@@ -163,15 +151,13 @@ void NoMenuShown(void)
 
 void Quit(void)
 {
-	done=1;
+	done = 1;
 }
 
 int main(int argc, char *argv[])
 {
 	int X11_CapsLock_Down;
 	Uint32 ticks = SDL_GetTicks();
-
-//--	hInst = hInstance;
 
 	// Create global reference to command line args (like windows does)
 	__argc = argc;
@@ -206,7 +192,7 @@ int main(int argc, char *argv[])
 	InitializeFakeRegistry();
 
 	// Create instance of Emulator core:
-	mainWin = new BeebWin();
+	mainWin = new (std::nothrow)BeebWin();
 	mainWin->Initialise();
 
 	// Clear SDL event queue
@@ -214,7 +200,6 @@ int main(int argc, char *argv[])
 
 	// Main loop converted to SDL:
 	X11_CapsLock_Down = 0;	// =0 not down, used to emulate a key release in X11 (caps has no release event).
-
 
 /* THIS WILL EVENTUALLY MOVE INTO beebwin.cpp when the MFC event loop is faked
  * (until then the rest of this file will be a mess):

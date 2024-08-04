@@ -410,8 +410,8 @@ int Open_GTK_File_Selector(char *filename_ptr)
 		return false;
 	}
 
-//	if (fullscreen == 1){
-	if (mainWin->IsFullScreen()){
+	if (mainWin->IsFullScreen())
+	{
 		ToggleFullscreen();
 		EG_TickBox_Untick(gui.fullscreen_widget_ptr);
 		was_full_screen = true;

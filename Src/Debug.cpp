@@ -2042,7 +2042,7 @@ static void DebugExecuteCommand()
 
 void DebugInitMemoryMaps()
 {
-	for(int i = 0; i < _countof(MemoryMaps); i++)
+	for (size_t i = 0; i < _countof(MemoryMaps); i++)
 	{
 		MemoryMaps[i].clear();
 	}
