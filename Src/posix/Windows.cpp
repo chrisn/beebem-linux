@@ -1,11 +1,13 @@
+#include <errno.h>
 #include <time.h>
-
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 
 #include "log.h"
 #include "Windows.h"
 #include "BeebEmPages.h"
+#include "FileUtils.h"
 #include "FakeRegistry.h"
 
 #include "gui/gui.h"
@@ -222,64 +224,6 @@ BOOL EnableMenuItem(HMENU hMenu,UINT uIDEnableItem,UINT uEnable)
 	return(TRUE);
 }
 
-
-/* In true cum$oft fashion this function seems to return an unsigned int32
- * but default from a signed int32 if it cannot be found...
- */
-UINT GetPrivateProfileInt(LPCTSTR lpAppName, LPCTSTR lpKeyName,
- INT nDefault, LPCTSTR lpFileName)
-{
-	long val;
-
-	if (GetFakeRegistryItem_Long(lpKeyName, &val) == TRUE)
-		return (UINT) val;
-	else
-		return (UINT) nDefault;
-}
-
-
-
-//GetPrivateProfileString(CFG_VIEW_SECTION, CFG_VIEW_SHOW_FPS, "1",
-//--                    CfgValue, sizeof(CfgValue), CFG_FILE_NAME);
-
-
-DWORD GetPrivateProfileString(LPCTSTR lpAppName, LPCTSTR lpKeyName, LPCTSTR lpDefault,
- LPTSTR lpReturnedString, DWORD nSize, LPCTSTR lpFileName)
-{
-	// lpKeyName = key
-	// lpReturnedString = return value
-	// lpDefault = default value
-/*
-http://msdn.microsoft.com/library/default.asp?url=/library/en-us/sysinfo/base/getprivateprofilestring.asp
-
-lpDefault
-    [in] A default string. If the lpKeyName key cannot be found in the initialization file, GetPrivateProfileString copies the default string to the lpReturnedString buffer. If this parameter is NULL, the default is an empty string, "".
-
-    Avoid specifying a default string with trailing blank characters. The function inserts a null character in the lpReturnedString buffer to strip any trailing blanks.
-
-        Windows Me/98/95:  Although lpDefault is declared as a constant parameter, the system strips any trailing blanks by inserting a null character into the lpDefault string before copying it to the lpReturnedString buffer.
-*/
-
-	char *fake_reg_string_ptr;
-	char *callers_string_ptr = (char*) lpReturnedString;
-	BOOL ret;
-
-	ret = GetFakeRegistryItem_String( (char*) lpKeyName, (char**) &fake_reg_string_ptr);
-	if (ret == TRUE){
-		strcpy(callers_string_ptr, fake_reg_string_ptr);
-	}else{
-		if (lpDefault == NULL){
-			*callers_string_ptr='\0';
-		}else{
-			strcpy(callers_string_ptr, lpDefault);
-		}
-	}
-
-	//printf("[%s]\n", callers_string_ptr);
-
-	return(strlen(callers_string_ptr));
-}
-
 void GetLocalTime(SYSTEMTIME* pTime)
 {
 	time_t Time;
@@ -329,10 +273,11 @@ BOOL PathCanonicalize(LPSTR pszBuf, LPCSTR pszPath)
 	strcpy(pszBuf, pszPath);
 }
 
-int SHCreateDirectoryEx(HWND hWnd, LPCSTR pszPath, const void *psa)
+int SHCreateDirectoryEx(HWND /* hWnd */, LPCSTR pszPath, const void * /* psa */)
 {
-	// TODO
-	return 0;
+	int Result = mkdir(pszPath, S_IRWXU | S_IRWXG | S_IRWXO);
+
+	return Result == 0 ? 0 : errno;
 }
 
 DWORD GetFullPathName(LPCSTR pszFileName, DWORD BufferLength, LPSTR pszBuffer, LPSTR *pszFilePart)
@@ -385,5 +330,8 @@ void _makepath(char *path,
                const char *fname,
                const char *ext)
 {
-	// TODO
+	AppendPath(path, drive);
+	AppendPath(path, dir);
+	AppendPath(path, fname);
+	strcat(path, ext);
 }

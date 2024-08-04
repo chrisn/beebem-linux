@@ -26,6 +26,8 @@ Boston, MA  02110-1301, USA.
 
 #include "StringUtils.h"
 
+/****************************************************************************/
+
 static void trimLeft(std::string& str)
 {
 	auto pos = std::find_if(str.begin(), str.end(), [](int ch) {
@@ -34,6 +36,8 @@ static void trimLeft(std::string& str)
 
 	str.erase(str.begin(), pos);
 }
+
+/****************************************************************************/
 
 static void trimRight(std::string& str)
 {
@@ -44,11 +48,15 @@ static void trimRight(std::string& str)
 	str.erase(pos.base(), str.end());
 }
 
+/****************************************************************************/
+
 void trim(std::string& str)
 {
 	trimLeft(str);
 	trimRight(str);
 }
+
+/****************************************************************************/
 
 bool ParseNumber(const std::string& str, int* pValue)
 {
@@ -64,6 +72,8 @@ bool ParseNumber(const std::string& str, int* pValue)
 	return true;
 }
 
+/****************************************************************************/
+
 char ToHexDigit(int Value)
 {
 	static const char HexDigit[16] =
@@ -74,11 +84,15 @@ char ToHexDigit(int Value)
 	return HexDigit[Value];
 }
 
+/****************************************************************************/
+
 bool StringEndsWith(const std::string& str, const std::string& suffix)
 {
 	return str.size() >= suffix.size() &&
 		str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
+
+/****************************************************************************/
 
 std::string WStr2Str(const std::wstring& str)
 {
@@ -87,6 +101,8 @@ std::string WStr2Str(const std::wstring& str)
 	return Converter.to_bytes(str);
 }
 
+/****************************************************************************/
+
 std::wstring Str2WStr(const std::string& str)
 {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> Converter;
@@ -94,11 +110,19 @@ std::wstring Str2WStr(const std::string& str)
 	return Converter.from_bytes(str);
 }
 
+/****************************************************************************/
+
 int StrCaseCmp(const char *str1, const char *str2)
 {
 	#ifdef WIN32
+
 	return _stricmp(str1, str2);
+
 	#else
+
 	return strcasecmp(str1, str2);
+
 	#endif
 }
+
+/****************************************************************************/

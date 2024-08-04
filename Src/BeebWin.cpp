@@ -33,10 +33,12 @@ Boston, MA  02110-1301, USA.
 #include "Sdl.h"
 
 #include <algorithm>
+#include <functional>
 #include <stdio.h>
 
 #ifndef WIN32
 #include <pwd.h>
+#include <ftw.h>
 #endif
 
 #include "BeebWin.h"
@@ -280,6 +282,8 @@ BeebWin::BeebWin()
 
 	#else
 
+	strcpy(m_AppPath, "/usr/local/share/beebem");
+
 	const char *HomePath = getenv("HOME");
 
 	if (HomePath == nullptr)
@@ -287,8 +291,8 @@ BeebWin::BeebWin()
 		HomePath = getpwuid(getuid())->pw_dir;
 	}
 
-	strcpy(m_UserDataPath, HomePath);
-	strcat(m_UserDataPath, ".BeebEm/");
+	AppendPath(m_UserDataPath, HomePath);
+	AppendPath(m_UserDataPath, "BeebEm");
 
 	#endif
 
@@ -400,7 +404,9 @@ bool BeebWin::Initialise()
 
 	// Check that user data directory exists
 	if (!CheckUserDataPath(!m_CustomData))
+	{
 		return false;
+	}
 
 	LoadPreferences();
 
@@ -524,15 +530,15 @@ bool BeebWin::Initialise()
 		}
 	}
 
-	char fontFilename[MAX_PATH];
-	strcpy(fontFilename, GetAppPath());
-	strcat(fontFilename, "teletext.fnt");
+	char FontFilename[MAX_PATH];
+	strcpy(FontFilename, GetAppPath());
+	AppendPath(FontFilename, "Teletext.fnt");
 
-	if (!BuildMode7Font(fontFilename))
+	if (!BuildMode7Font(FontFilename))
 	{
 		Report(MessageType::Error,
 		       "Cannot open Teletext font file:\n  %s",
-		       fontFilename);
+		       FontFilename);
 
 		return false;
 	}
@@ -594,12 +600,12 @@ void BeebWin::ApplyPrefs()
 
 	// Load key maps
 	char KeyMapPath[MAX_PATH];
-	strcpy(KeyMapPath, "Logical.kmap");
-	GetDataPath(m_UserDataPath, KeyMapPath);
+	strcpy(KeyMapPath, m_UserDataPath);
+	AppendPath(KeyMapPath, "Logical.kmap");
 	ReadKeyMap(KeyMapPath, &LogicalKeyMap);
 
-	strcpy(KeyMapPath, "Default.kmap");
-	GetDataPath(m_UserDataPath, KeyMapPath);
+	strcpy(KeyMapPath, m_UserDataPath);
+	AppendPath(KeyMapPath, "Default.kmap");
 	ReadKeyMap(KeyMapPath, &DefaultKeyMap);
 
 	InitMenu();
@@ -1218,6 +1224,7 @@ void BeebWin::CreateBitmap()
 
 	#else
 
+	m_screen = (char*)video_output->pixels;
 	SetBeebEmEmulatorCoresPalette(cols, m_MonitorType);
 
 	#endif
@@ -5801,10 +5808,10 @@ bool BeebWin::RebootSystem()
 
 bool BeebWin::CheckUserDataPath(bool Persist)
 {
-	bool success = true;
-	bool copy_user_files = false;
-	bool store_user_data_path = false;
-	char path[MAX_PATH];
+	bool bSuccess = true;
+	bool bCopyUserFiles = false;
+	bool bStoreUserDataPath = false;
+	char Path[MAX_PATH];
 
 	// Change all '/' to '\'
 	MakePreferredPath(m_UserDataPath);
@@ -5818,9 +5825,9 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 		{
 			// Use data dir installed with BeebEm
 			strcpy(m_UserDataPath, m_AppPath);
-			strcat(m_UserDataPath, "UserData\\");
+			AppendPath(m_UserDataPath, "UserData");
 
-			store_user_data_path = true;
+			bStoreUserDataPath = true;
 		}
 		else
 		{
@@ -5829,103 +5836,122 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 
 			if (result == ERROR_SUCCESS)
 			{
-				copy_user_files = true;
+				bCopyUserFiles = true;
 			}
 			else
 			{
 				Report(MessageType::Error, "Failed to create BeebEm data folder:\n  %s",
 				       m_UserDataPath);
-				success = false;
+				bSuccess = false;
 			}
 		}
 	}
 	else
 	{
 		// Check that essential files are in the user data folder
-		sprintf(path, "%sBeebFile", m_UserDataPath);
+		strcpy(Path, m_UserDataPath);
+		AppendPath(Path, "BeebFile");
 
-		if (!FolderExists(path))
-			copy_user_files = true;
-
-		if (!copy_user_files)
+		if (!FolderExists(Path))
 		{
-			sprintf(path, "%sBeebState", m_UserDataPath);
-
-			if (!FolderExists(path))
-				copy_user_files = true;
+			bCopyUserFiles = true;
 		}
 
-		if (!copy_user_files)
+		if (!bCopyUserFiles)
 		{
-			sprintf(path, "%sEconet.cfg", m_UserDataPath);
+			strcpy(Path, m_UserDataPath);
+			AppendPath(Path, "BeebState");
 
-			if (!FileExists(path))
-				copy_user_files = true;
-		}
-
-		if (!copy_user_files)
-		{
-			sprintf(path, "%sAUNMap", m_UserDataPath);
-
-			if (!FileExists(path))
-				copy_user_files = true;
-		}
-
-		if (!copy_user_files)
-		{
-			sprintf(path, "%sPhroms.cfg", m_UserDataPath);
-
-			if (!FileExists(path))
-				copy_user_files = true;
-		}
-
-		if (!copy_user_files)
-		{
-			if (strcmp(RomFile, "Roms.cfg") == 0)
+			if (!FolderExists(Path))
 			{
-				sprintf(path, "%sRoms.cfg", m_UserDataPath);
-
-				if (!FileExists(path))
-					copy_user_files = true;
+				bCopyUserFiles = true;
 			}
 		}
 
-		if (copy_user_files)
+		if (!bCopyUserFiles)
+		{
+			strcpy(Path, m_UserDataPath);
+			AppendPath(Path, "Econet.cfg");
+
+			if (!FileExists(Path))
+			{
+				bCopyUserFiles = true;
+			}
+		}
+
+		if (!bCopyUserFiles)
+		{
+			strcpy(Path, m_UserDataPath);
+			AppendPath(Path, "AUNMap");
+
+			if (!FileExists(Path))
+			{
+				bCopyUserFiles = true;
+			}
+		}
+
+		if (!bCopyUserFiles)
+		{
+			strcpy(Path, m_UserDataPath);
+			AppendPath(Path, "Phroms.cfg");
+
+			if (!FileExists(Path))
+			{
+				bCopyUserFiles = true;
+			}
+		}
+
+		if (!bCopyUserFiles)
+		{
+			if (strcmp(RomFile, "Roms.cfg") == 0)
+			{
+				strcpy(Path, m_UserDataPath);
+				AppendPath(Path, "Roms.cfg");
+
+				if (!FileExists(Path))
+				{
+					bCopyUserFiles = true;
+				}
+			}
+		}
+
+		if (bCopyUserFiles)
 		{
 			if (Report(MessageType::Question,
 			           "Essential or new files missing from BeebEm data folder:\n  %s"
 			           "\n\nCopy essential or new files into folder?",
 			           m_UserDataPath) != MessageResult::Yes)
 			{
-				success = false;
+				bSuccess = false;
 			}
 		}
 	}
 
-	if (success)
+	if (bSuccess)
 	{
 		// Get fully qualified user data path
 		char *f;
-		if (GetFullPathName(m_UserDataPath, MAX_PATH, path, &f) != 0)
-			strcpy(m_UserDataPath, path);
+		if (GetFullPathName(m_UserDataPath, MAX_PATH, Path, &f) != 0)
+			strcpy(m_UserDataPath, Path);
 	}
 
-	if (success && copy_user_files)
+	if (bSuccess && bCopyUserFiles)
 	{
-		strcpy(path, m_AppPath);
-		strcat(path, "UserData\\*.*");
-		path[strlen(path)+1] = 0; // need double 0
+		strcpy(Path, m_AppPath);
+		AppendPath(Path, "UserData");
+		AppendPath(Path, "*.*");
+		Path[strlen(Path) + 1] = 0; // need double 0
 
 		char UserDataPath[MAX_PATH];
 		strcpy(UserDataPath, m_UserDataPath);
 		UserDataPath[strlen(UserDataPath) + 1] = 0; // need double 0
 
-		if (!CopyFiles(path, UserDataPath))
+		if (!CopyFiles(Path, UserDataPath))
 		{
 			Report(MessageType::Error, "Copy failed.  Manually copy files from:\n  %s"
 			                           "\n\nTo BeebEm data folder:\n  %s",
-			       path, m_UserDataPath);
-			success = false;
+			       Path, m_UserDataPath);
+			bSuccess = false;
 		}
 		else
 		{
@@ -5934,41 +5960,80 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 		}
 	}
 
-	if (success)
+	if (bSuccess)
 	{
 		// Check that roms file exists and create its full path
 		if (PathIsRelative(RomFile))
 		{
-			sprintf(path, "%s%s", m_UserDataPath, RomFile);
-			strcpy(RomFile, path);
+			strcpy(Path, m_UserDataPath);
+			AppendPath(Path, RomFile);
+			strcpy(RomFile, Path);
 		}
 
 		if (!FileExists(RomFile))
 		{
 			Report(MessageType::Error, "Cannot open ROMs file:\n  %s", RomFile);
-			success = false;
+			bSuccess = false;
 		}
 	}
 
-	if (success)
+	if (bSuccess)
 	{
 		// Fill out full path of prefs file
 		if (PathIsRelative(m_PrefsFileName.c_str()))
 		{
-			sprintf(path, "%s%s", m_UserDataPath, m_PrefsFileName.c_str());
-			m_PrefsFileName = path;
+			strcpy(Path, m_UserDataPath);
+			AppendPath(Path, m_PrefsFileName.c_str());
+
+			m_PrefsFileName = Path;
 		}
 	}
 
-	if (success && Persist && (copy_user_files || store_user_data_path))
+	if (bSuccess && Persist && (bCopyUserFiles || bStoreUserDataPath))
 	{
 		StoreUserDataPath();
 	}
 
-	return success;
+	return bSuccess;
 }
 
 /****************************************************************************/
+
+static int NftwCallback(const char* FileName, const struct stat* pStat, int Flags, struct FTW* pFtw)
+{
+	return mainWin->NftwCallback(FileName, pStat, Flags, pFtw);
+}
+
+int BeebWin::NftwCallback(const char* FileName, const struct stat* pStat, int Flags, struct FTW* pFtw)
+{
+	char DestPath[MAX_PATH];
+
+	const char* psz = FileName + strlen(m_CopySourcePath);
+
+	strcpy(DestPath, m_CopyDestPath);
+
+	if (*psz != '\0')
+	{
+		AppendPath(DestPath, psz);
+
+		if (S_ISDIR(pStat->st_mode))
+		{
+			if (SHCreateDirectoryEx(m_hWnd, DestPath, nullptr) != ERROR_SUCCESS)
+			{
+				return 1;
+			}
+		}
+		else if (S_ISREG(pStat->st_mode))
+		{
+			if (!CopyFile(FileName, DestPath))
+			{
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
 
 bool BeebWin::CopyFiles(const char* SourceFileSpec, const char* DestPath)
 {
@@ -5992,8 +6057,19 @@ bool BeebWin::CopyFiles(const char* SourceFileSpec, const char* DestPath)
 
 	#else
 
-	UNREFERENCED_PARAMETER(SourceFileSpec);
-	UNREFERENCED_PARAMETER(DestPath);
+	strcpy(m_CopyDestPath, DestPath);
+
+	strcpy(m_CopySourcePath, SourceFileSpec);
+
+	// Remove '*.*'
+	char* psz = strrchr(m_CopySourcePath, '/');
+
+	if (psz != nullptr)
+	{
+		*++psz = '\0';
+	}
+
+	int Result = nftw(m_CopySourcePath, ::NftwCallback, 5 /* fd_limit */, 0);
 
 	return false; // TODO
 

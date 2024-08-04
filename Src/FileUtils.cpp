@@ -31,7 +31,11 @@ Boston, MA  02110-1301, USA.
 
 /****************************************************************************/
 
+#ifdef WIN32
 const char DIR_SEPARATOR = '\\';
+#else
+const char DIR_SEPARATOR = '/';
+#endif
 
 /****************************************************************************/
 
@@ -47,7 +51,7 @@ bool FileExists(const char* PathName)
 	#else
 
 	struct stat st;
-	
+
 	if (stat(PathName, &st) == -1)
 	{
 		return false;
@@ -72,7 +76,7 @@ bool FolderExists(const char* PathName)
 	#else
 
 	struct stat st;
-	
+
 	if (stat(PathName, &st) == -1)
 	{
 		return false;
@@ -180,7 +184,7 @@ void MakePreferredPath(char* PathName)
 {
 	for (size_t i = 0; i < strlen(PathName); ++i)
 	{
-		if (PathName[i] == '/')
+		if (PathName[i] == '\\' || PathName[i] == '/')
 		{
 			PathName[i] = DIR_SEPARATOR;
 		}
@@ -188,3 +192,77 @@ void MakePreferredPath(char* PathName)
 }
 
 /****************************************************************************/
+
+void AppendPath(char* pszPath, const char* pszPathToAppend)
+{
+	size_t Len = strlen(pszPath);
+
+	if (Len > 0)
+	{
+		if (pszPath[Len - 1] != DIR_SEPARATOR)
+		{
+			pszPath[Len] = DIR_SEPARATOR;
+			pszPath[++Len] = '\0';
+		}
+	}
+
+	if (Len > 0 && pszPathToAppend[0] == DIR_SEPARATOR)
+	{
+		strcpy(&pszPath[Len], pszPathToAppend + 1);
+	}
+	else
+	{
+		strcpy(&pszPath[Len], pszPathToAppend);
+	}
+
+	MakePreferredPath(pszPath);
+}
+
+/****************************************************************************/
+
+bool CopyFile(const char *pszSourcePath, const char *pszDestPath)
+{
+	FILE *src_f, *dst_f;
+	int c, failed=0;
+
+	if (pszSourcePath == NULL)
+	{
+		return false;
+	}
+
+	if (pszDestPath == NULL)
+	{
+		return false;
+	}
+
+	// Open the source file for reading, quit on fail.
+	if ((src_f = fopen(pszSourcePath, "r")) == NULL)
+	{
+		return false;
+	}
+
+	// Open and truncate the dest file for writing,
+	// close source file and quit on fail.
+	if ((dst_f = fopen(pszDestPath, "w")) == NULL)
+	{
+		fclose(src_f);
+		return FALSE;
+	}
+
+	// Copy data from the source file to the dest file.
+	// (this is not fast!)
+	while ((c = fgetc(src_f)) != EOF)
+	{
+		if (fputc(c, dst_f) == EOF)
+		{
+			failed = 1;
+			break;
+		}
+	}
+
+	// Close files
+	fclose(dst_f);
+	fclose(src_f);
+
+	return !failed;
+}

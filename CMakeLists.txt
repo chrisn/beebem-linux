@@ -266,23 +266,30 @@ install(TARGETS beebem DESTINATION bin)
 
 # Install docs
 set(DOCS
-    doc/CHANGES.txt
-    doc/Econet.zip
-    doc/Integra-B.zip
-    doc/README.txt
-    doc/COPYRIGHT.txt
-    doc/Ibos.txt
-    doc/README_Z80.TXT
+    Documents/CHANGES.txt
+    Documents/Econet.zip
+    Documents/Ibos.txt
+    Documents/Integra-B.zip
+    Documents/README.txt
+    Documents/COPYRIGHT.txt
+    Documents/README_Z80.txt
 )
 
 install(FILES ${DOCS} DESTINATION share/doc/beebem)
 
 # Install data files
-install(DIRECTORY data/config DESTINATION share/beebem)
-install(DIRECTORY data/media DESTINATION share/beebem)
-install(DIRECTORY data/phroms DESTINATION share/beebem)
-install(DIRECTORY data/resources DESTINATION share/beebem)
-install(DIRECTORY data/roms DESTINATION share/beebem)
-install(DIRECTORY data/state DESTINATION share/beebem)
+set(RESOURCES
+    DriveMotor.snd
+    HeadLoad.snd
+    HeadSeek.snd
+    HeadStep.snd
+    HeadUnload.snd
+    RelayOff.snd
+    RelayOn.snd
+    Teletext.fnt
+)
+
+install(DIRECTORY UserData DESTINATION share/beebem)
+install(FILES ${RESOURCES} DESTINATION share/beebem)
 
 #-------------------------------------------------------------------------------

@@ -344,7 +344,7 @@ public:
 	void HandleCommand(UINT MenuID);
 	void SetAMXPosition(unsigned int x, unsigned int y);
 	void ChangeAMXPosition(int deltaX, int deltaY);
-	
+
 	#ifdef WIN32
 	void CaptureMouse();
 	void ReleaseMouse();
@@ -375,6 +375,9 @@ public:
 	void HandleCommandLineFile(int Drive, const char *FileName);
 	bool CheckUserDataPath(bool Persist);
 	bool CopyFiles(const char* SourceFileSpec, const char* DestPath);
+	#ifndef WIN32
+	int NftwCallback(const char* FileName, const struct stat* pStat, int Flags, struct FTW* pFtw);
+	#endif
 	void SelectUserDataPath(void);
 	void StoreUserDataPath(void);
 	bool NewTapeImage(char *FileName, int Size);
@@ -415,9 +418,9 @@ public:
 	bool InitClass();
 	bool CreateBeebWindow();
 	#endif
-	
+
 	void UpdateOptionsMenu();
-	
+
 	#ifdef WIN32
 	void DisableRoundedCorners(HWND hWnd);
 	#endif
@@ -442,7 +445,7 @@ public:
 	void DisableWindowsKeys();
 	bool RebootSystem();
 	#endif
-	
+
 	void UpdateDisableKeysMenu();
 
 	void SetDisplayRenderer(DisplayRendererType DisplayRenderer);
@@ -764,6 +767,8 @@ public:
 	char m_DiscPath[MAX_PATH]; // JGH
 	bool m_WriteProtectDisc[2];
 	bool m_WriteProtectOnLoad;
+	char m_CopySourcePath[MAX_PATH];
+	char m_CopyDestPath[MAX_PATH];
 
 	// AMX mouse
 	AMXSizeType m_AMXSize;

@@ -78,17 +78,9 @@ HACCEL hCurrentAccelTable = nullptr;
 
 /****************************************************************************/
 
-int done = 0;
-/////////////////////////////////int fullscreen = 0;
-int showing_menu = 0;
+bool done = false;
+bool showing_menu = false;
 EG_Window *displayed_window_ptr = NULL;
-
-//void CLEAN_EXIT(void)
-//{
-//  /* Quit SDL
-//   */
-//  SDL_Quit();
-//}
 
 void SetActiveWindow(EG_Window *window_ptr)
 {
@@ -132,7 +124,7 @@ bool ToggleFullscreen()
 void UnfullscreenBeforeExit(void)
 {
 	// Hopefully this will fix that annoying bug where the mouse pointer
-	// vanishes on exit.  Is that me, or is it SDL?
+	// vanishes on exit. Is that me, or is it SDL?
 	if (mainWin->IsFullScreen())
 	{
 		ToggleFullscreen();
@@ -141,17 +133,17 @@ void UnfullscreenBeforeExit(void)
 
 void ShowingMenu(void)
 {
-	showing_menu = 1;
+	showing_menu = true;
 }
 
 void NoMenuShown(void)
 {
-	showing_menu = 0;
+	showing_menu = false;
 }
 
 void Quit(void)
 {
-	done = 1;
+	done = true;
 }
 
 int main(int argc, char *argv[])
@@ -170,30 +162,36 @@ int main(int argc, char *argv[])
 	if (!InitialiseSDL())
 	{
 		qFATAL("Unable to initialise SDL library!");
-		exit(1);
+		return 1;
 	}
 
 	// Initialize GUI API
-	if (EG_Initialize() == EG_TRUE)
+	if (EG_Initialize())
 	{
 		qINFO("EG initialized.");
 	}
 	else
 	{
 		qFATAL("EG failed to initialize! Quiting.");
-		exit(1);
+		return 1;
 	}
 
 	// Build menus:
 	if (!InitializeBeebEmGUI(screen_ptr))
-		exit(1);
+	{
+		return 1;
+	}
 
 	// Initialize fake windows registry:
 	InitializeFakeRegistry();
 
 	// Create instance of Emulator core:
-	mainWin = new (std::nothrow)BeebWin();
-	mainWin->Initialise();
+	mainWin = new(std::nothrow) BeebWin();
+
+	if (!mainWin->Initialise())
+	{
+		return 1;
+	}
 
 	// Clear SDL event queue
 	EG_Draw_FlushEventQueue();
@@ -224,149 +222,151 @@ int main(int argc, char *argv[])
 		// Toggle processing of either events to the emulator core, or events to the menu.
 		SDL_Event event;
 
-		if (showing_menu != 1)
+		if (!showing_menu)
 		{
-		// Execute emulator:
-		if (!mainWin->IsFrozen())
-			Exec6502Instruction();
+			// Execute emulator:
+			if (!mainWin->IsFrozen())
+				Exec6502Instruction();
 
-		// If the mouse cursor should be hidden (set on GUI),
-		// then make sure it is hidden after a suitable delay.
-		// (Delay is set in the menu event code below)
-		if (mainWin->CursorShouldBeHidden() &&
-		    SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE &&
-		    EG_Draw_CalcTimePassed(ticks, SDL_GetTicks()) >= 2500)
-		{
-			SDL_ShowCursor(SDL_DISABLE);
-		}
-
-		while (SDL_PollEvent(&event))
-			switch (event.type)
+			// If the mouse cursor should be hidden (set on GUI),
+			// then make sure it is hidden after a suitable delay.
+			// (Delay is set in the menu event code below)
+			if (mainWin->CursorShouldBeHidden() &&
+			    SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE &&
+			    EG_Draw_CalcTimePassed(ticks, SDL_GetTicks()) >= 2500)
 			{
-			case SDL_QUIT:
-				done=1;
-				break;
+				SDL_ShowCursor(SDL_DISABLE);
+			}
 
-			case SDL_MOUSEMOTION:
-				if (mainWin)
+			while (SDL_PollEvent(&event))
+			{
+				switch (event.type)
 				{
-					mainWin->ScaleMousestick(event.motion.x,
-					                         event.motion.y);
+					case SDL_QUIT:
+						done = true;
+						break;
 
-					mainWin->SetAMXPosition(event.motion.x,
-					                        event.motion.y);
-
-					// Experiment: show menu in full screen when cursor moved to top of window
-					//-- if (HideMenuEnabled)
-					//-- {
-					//-- 	if (HIWORD(lParam) <= 2)
-					//-- 		mainWin->ShowMenu(true);
-					//-- 	else
-					//-- 		mainWin->ShowMenu(false);
-					//-- }
-				}
-//			}
-			break;
-
-			case SDL_MOUSEBUTTONDOWN:
-				if (event.button.button == SDL_BUTTON_LEFT)
-				{
-					// printf("left button down\n");
-					//-- if (mainWin) mainWin->SetMousestickButton(TRUE);
-					AMXButtons |= AMX_LEFT_BUTTON;
-				}
-				else if (event.button.button == SDL_BUTTON_MIDDLE)
-				{
-					// printf("middle button down\n");
-					AMXButtons |= AMX_MIDDLE_BUTTON;
-				}
-				else if (event.button.button == SDL_BUTTON_RIGHT)
-				{
-					// printf("right button down\n");
-					AMXButtons |= AMX_RIGHT_BUTTON;
-				}
-				break;
-
-			case SDL_MOUSEBUTTONUP:
-				if (event.button.button == SDL_BUTTON_LEFT)
-				{
-					// printf("left button up\n");
-					//-- if (mainWin) mainWin->SetMousestickButton(FALSE);
-					AMXButtons &= ~AMX_LEFT_BUTTON;
-				}
-				else if (event.button.button == SDL_BUTTON_MIDDLE)
-				{
-					// printf("middle button up\n");
-					AMXButtons &= ~AMX_MIDDLE_BUTTON;
-				}
-				else if (event.button.button == SDL_BUTTON_RIGHT)
-				{
-					// printf("right button up\n");
-					AMXButtons &= ~AMX_RIGHT_BUTTON;
-				}
-				break;
-
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-				{
-					int col = 0, row = 0;
-
-					if (event.key.keysym.sym == SDLK_F12 ||
-					    event.key.keysym.sym == SDLK_F11 ||
-					    event.key.keysym.sym == SDLK_MENU)
-					{
-						Show_Main();
-					}
-
-					// Handle shift booting:
-					if (mainWin->m_ShiftBooted)
-					{
-						mainWin->m_ShiftBooted = false;
-						BeebKeyUp(0, 0);
-					}
-
-					// Convert SDL key press into BBC key press:
-					if (ConvertSDLKeyToBBCKey(event.key.keysym /*, &pressed */, &col, &row))
-					{
-						/* If X11 and Caps Lock then release automatically after 20
-						 * passes to the emulator core (doesn't X11 suck)..
-						 *
-						 * We'll only ever receive a pressed event for Caps Lock, so
-						 * emulate a release after x amount of time passes within the
-						 * emulator core.
-						 *
-						 * (For games we can use another key, defaults to Windows Left
-						 *  key for the moment).
-						 */
-						if (event.key.keysym.sym == SDLK_CAPSLOCK && cfg_HaveX11)
+					case SDL_MOUSEMOTION:
+						if (mainWin)
 						{
-							 BeebKeyDown(4, 0);
-							 X11_CapsLock_Down = 20;
+							mainWin->ScaleMousestick(event.motion.x,
+													event.motion.y);
+
+							mainWin->SetAMXPosition(event.motion.x,
+													event.motion.y);
+
+							// Experiment: show menu in full screen when cursor moved to top of window
+							//-- if (HideMenuEnabled)
+							//-- {
+							//-- 	if (HIWORD(lParam) <= 2)
+							//-- 		mainWin->ShowMenu(true);
+							//-- 	else
+							//-- 		mainWin->ShowMenu(false);
+							//-- }
 						}
-						else
-						{
+						break;
 
-							// Process key in emulator core:
-							if (event.type == SDL_KEYDOWN)
-								BeebKeyDown(row, col);
+					case SDL_MOUSEBUTTONDOWN:
+						if (event.button.button == SDL_BUTTON_LEFT)
+						{
+							// printf("left button down\n");
+							//-- if (mainWin) mainWin->SetMousestickButton(TRUE);
+							AMXButtons |= AMX_LEFT_BUTTON;
+						}
+						else if (event.button.button == SDL_BUTTON_MIDDLE)
+						{
+							// printf("middle button down\n");
+							AMXButtons |= AMX_MIDDLE_BUTTON;
+						}
+						else if (event.button.button == SDL_BUTTON_RIGHT)
+						{
+							// printf("right button down\n");
+							AMXButtons |= AMX_RIGHT_BUTTON;
+						}
+						break;
+
+					case SDL_MOUSEBUTTONUP:
+						if (event.button.button == SDL_BUTTON_LEFT)
+						{
+							// printf("left button up\n");
+							//-- if (mainWin) mainWin->SetMousestickButton(FALSE);
+							AMXButtons &= ~AMX_LEFT_BUTTON;
+						}
+						else if (event.button.button == SDL_BUTTON_MIDDLE)
+						{
+							// printf("middle button up\n");
+							AMXButtons &= ~AMX_MIDDLE_BUTTON;
+						}
+						else if (event.button.button == SDL_BUTTON_RIGHT)
+						{
+							// printf("right button up\n");
+							AMXButtons &= ~AMX_RIGHT_BUTTON;
+						}
+						break;
+
+					case SDL_KEYDOWN:
+					case SDL_KEYUP: {
+						if (event.key.keysym.sym == SDLK_F12 ||
+							event.key.keysym.sym == SDLK_F11 ||
+							event.key.keysym.sym == SDLK_MENU)
+						{
+							Show_Main();
+						}
+
+						// Handle shift booting:
+						if (mainWin->m_ShiftBooted)
+						{
+							mainWin->m_ShiftBooted = false;
+							BeebKeyUp(0, 0);
+						}
+
+						// Convert SDL key press into BBC key press:
+						int col = 0, row = 0;
+
+						if (ConvertSDLKeyToBBCKey(event.key.keysym /*, &pressed */, &col, &row))
+						{
+							/* If X11 and Caps Lock then release automatically after 20
+							* passes to the emulator core (doesn't X11 suck)..
+							*
+							* We'll only ever receive a pressed event for Caps Lock, so
+							* emulate a release after x amount of time passes within the
+							* emulator core.
+							*
+							* (For games we can use another key, defaults to Windows Left
+							*  key for the moment).
+							*/
+							if (event.key.keysym.sym == SDLK_CAPSLOCK && cfg_HaveX11)
+							{
+								BeebKeyDown(4, 0);
+								X11_CapsLock_Down = 20;
+							}
 							else
-								BeebKeyUp(row, col);
-						}
+							{
+								// Process key in emulator core:
+								if (event.type == SDL_KEYDOWN)
+								{
+									BeebKeyDown(row, col);
+								}
+								else
+								{
+									BeebKeyUp(row, col);
+								}
+							}
 
-//						/* Release Caps lock for X11 after a short delay.
-//						 */
-//						if (event.key.keysym.sym == SDLK_CAPSLOCK && cfg_HaveX11){
-//							printf("Need to release Caps\n");
-//							//SDL_Delay(1000);
-//							X11_CapsLock_Down = 10;
-//						}
+//							// Release Caps lock for X11 after a short delay.
+//							if (event.key.keysym.sym == SDLK_CAPSLOCK && cfg_HaveX11){
+//								printf("Need to release Caps\n");
+//								//SDL_Delay(1000);
+//								X11_CapsLock_Down = 10;
+//							}
 
-						/* Handle reset:
-						 */
-						if (row==-2)
-						{
-							mainWin->Break();
+							// Handle reset:
+							if (row == -2)
+							{
+								mainWin->Break();
+							}
 						}
+						break;
 					}
 				}
 			}
@@ -383,7 +383,7 @@ int main(int argc, char *argv[])
 				switch (event.type)
 				{
 					case SDL_QUIT:
-						done = 1;
+						done = true;
 						break;
 
 					#ifdef WITH_DEBUG_OUTPUT
@@ -410,12 +410,11 @@ int main(int argc, char *argv[])
 		}
 
 		// printf("%d\n", AMXButtons);
-	} while (done == 0);
+	} while (!done);
 
-	/* Sometimes the mouse pointer vanishes on exit.
-	 * It seems to only happen when fullscreened, so make sure
-	 * we unfullscreen before destroying everything.
-	 */
+	// Sometimes the mouse pointer vanishes on exit.
+	// It seems to only happen when fullscreened, so make sure
+	// we unfullscreen before destroying everything.
 	UnfullscreenBeforeExit();
 
 	delete mainWin;

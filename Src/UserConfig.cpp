@@ -391,11 +391,7 @@ static BOOL CopyFile(char *source_file, char *dest_file)
 	fclose(dst_f);
 	fclose(src_f);
 
-	if (failed==1){
-		// qERROR("File copy failed during copy.");
-		return FALSE;
-	}else
-		return TRUE;
+	return failed ? FALSE : TRUE;
 
 #endif
 }

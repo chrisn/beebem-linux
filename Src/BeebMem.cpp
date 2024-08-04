@@ -44,9 +44,9 @@ Boston, MA  02110-1301, USA.
 #include "Econet.h" // Rob
 #include "FileUtils.h"
 #include "IC32Latch.h"
-// #include "Ide.h"
+#include "Ide.h"
 #include "Main.h"
-// #include "Music5000.h"
+#include "Music5000.h"
 #include "PALRom.h"
 #include "Sasi.h"
 #include "Scsi.h"
@@ -613,17 +613,17 @@ unsigned char BeebReadMem(int Address) {
 		if (SCSIDriveEnabled) return(SCSIRead(Address & 0x3));
 	}
 
-	// if ((Address & ~0x7)==0xfc40) {
-	// 	if (IDEDriveEnabled) return IDERead(Address & 0x7);
-	// }
+	if ((Address & ~0x7)==0xfc40) {
+		if (IDEDriveEnabled) return IDERead(Address & 0x7);
+	}
 
 	// DB: M5000 will only return its fcff select register or
 	// Jim mapped registers if it has been selected by writing
 	// it's id value to fcff - other Jim devices should similarly
 	// only return fcff..fcfc/fdxx when they have been selected
-	// unsigned char ret;
-	// if (Music5000Read(Address, &ret))
-	// 	return ret;
+	unsigned char ret;
+	if (Music5000Read(Address, &ret))
+		return ret;
 
 	if ((Address & ~0x3)==0xfdf0) {
 		return(SASIRead(Address & 0x3));
@@ -1060,14 +1060,14 @@ void BeebWriteMem(int Address, unsigned char Value)
 		}
 	}
 
-	// if ((Address & ~0x7)==0xfc40) {
-	// 	if (IDEDriveEnabled) {
-	// 		IDEWrite((Address & 0x7),Value);
-	// 		return;
-	// 	}
-	// }
+	if ((Address & ~0x7)==0xfc40) {
+		if (IDEDriveEnabled) {
+			IDEWrite((Address & 0x7),Value);
+			return;
+		}
+	}
 
-	// Music5000Write(Address, Value);
+	Music5000Write(Address, Value);
 
 	if ((Address & ~0x3)==0xfdf0) {
 		SASIWrite((Address & 0x3),Value);
@@ -1191,13 +1191,15 @@ char *ReadRomTitle(int bank, char *Title, int BufSize)
 
 static std::string GetRomFileName(const std::string& RomName)
 {
-	if (RomName[0] != '\\' && RomName[1] != ':')
+	if (PathIsRelative(RomName.c_str()))
 	{
-		std::string RomFileName = RomPath;
-		RomFileName += "BeebFile\\";
-		RomFileName += RomName;
+		char PathName[MAX_PATH];
+		strcpy(PathName, mainWin->GetUserDataPath());
+		AppendPath(PathName, "BeebFile");
+		AppendPath(PathName, RomName.c_str());
+		MakePreferredPath(PathName);
 
-		return RomFileName;
+		return PathName;
 	}
 	else
 	{

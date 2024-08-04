@@ -744,42 +744,36 @@ static void SleepAndBusyWait(Uint32 u32TimeShouldWait, Uint16 u16MinTime)
  */
 void SaferSleep(unsigned int uiTicks)
 {
-	/* Do nothing if BeebEm asked to wait 0 ms.
-	 */
-	if (uiTicks<1){
-		pERROR(dL"Asked to wait for 0 milliseconds.. Assuming this is"
-		 " bogus!", dR);
+	// Do nothing if BeebEm asked to wait 0 ms.
+	if (uiTicks < 1)
+	{
+		pERROR(dL"Asked to wait for 0 milliseconds.. Assuming this is bogus!", dR);
 		return;
 	}
 
-	switch (cfg_WaitType){
-
-	/* Just pass all waits period to OS:
-	 */
+	switch (cfg_WaitType)
+	{
+	// Just pass all waits period to OS:
 	case OPT_SLEEP_OS:
 		SDL_Delay(uiTicks);
 		break;
 
-	/* Only pass wait to OS if period is greater or equal to 2 ms:
-	 */
+	// Only pass wait to OS if period is greater or equal to 2 ms:
 	case OPT_SLEEP_F1:
 		SleepAndBusyWait(uiTicks, 2);
 		break;
 
-	/* Only pass wait to OS if period is greater or equal to 4 ms:
-	 */
+	// Only pass wait to OS if period is greater or equal to 4 ms:
 	case OPT_SLEEP_F2:
 		SleepAndBusyWait(uiTicks, 4);
 		break;
 
-	/* Only pass wait to OS if period is greater or equal to 6 ms:
-	 */
+	// Only pass wait to OS if period is greater or equal to 6 ms:
 	case OPT_SLEEP_F3:
 		SleepAndBusyWait(uiTicks, 6);
 		break;
 
-	/* Never pass waits to OS, use nasty Busy-wait for everything:
-	 */
+	// Never pass waits to OS, use nasty Busy-wait for everything:
 	case OPT_SLEEP_BW:
 		BusyWait(uiTicks, SDL_GetTicks());
 		break;

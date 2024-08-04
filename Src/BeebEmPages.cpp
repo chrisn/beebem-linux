@@ -2743,17 +2743,6 @@ static void Keyboard_Button_Back(EG_Widget * /* widget_ptr */, void * /* user_pt
 static void Disks_SaveRegistry(EG_Widget * /* widget_ptr */, void * /* user_ptr */)
 {
 	mainWin->SavePreferences(true); // TODO: Save all?
-
-#ifdef WITH_DEBUG_OUTPUT
-	DumpFakeRegistry();
-#endif
-	if (SaveFakeRegistry() == FALSE){
-		qERROR("Could not save registry.");
-
-		EG_MessageBox(screen_ptr, EG_MESSAGEBOX_STOP
-		 , "Failed save", "Could not save registry! Save failed!"
-		 , "OK", NULL, NULL, NULL, 0);
-	}
 }
 
 void SetNameForDisc(int drive, char *name_ptr)

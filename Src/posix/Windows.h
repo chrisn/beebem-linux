@@ -227,10 +227,6 @@ BOOL MoveFileEx(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, DWORD dwFlags
 BOOL EnableMenuItem(HMENU hMenu,UINT uIDEnableItem,UINT uEnable);
 UINT GetMenuState(HMENU hMenu, UINT uId, UINT uFlags);
 
-UINT GetPrivateProfileInt(LPCTSTR lpAppName, LPCTSTR lpKeyName, INT nDefault, LPCTSTR lpFileName);
-
-DWORD GetPrivateProfileString(LPCTSTR lpAppName, LPCTSTR lpKeyName, LPCTSTR lpDefault, LPTSTR lpReturnedString, DWORD nSize, LPCTSTR lpFileName);
-
 UINT_PTR SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc);
 BOOL KillTimer(HWND hWnd, UINT_PTR nIDEvent);
 
