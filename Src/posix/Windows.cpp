@@ -234,7 +234,6 @@ BOOL MoveFileEx(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, DWORD dwFlags
 
 BOOL EnableMenuItem(HMENU hMenu,UINT uIDEnableItem,UINT uEnable)
 {
-	printf("EnableMenuItem\n");
 	return(TRUE);
 }
 

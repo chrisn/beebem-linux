@@ -745,9 +745,8 @@ static void SleepAndBusyWait(Uint32 u32TimeShouldWait, Uint16 u16MinTime)
 void SaferSleep(unsigned int uiTicks)
 {
 	// Do nothing if BeebEm asked to wait 0 ms.
-	if (uiTicks < 1)
+	if (uiTicks == 0)
 	{
-		pERROR(dL"Asked to wait for 0 milliseconds.. Assuming this is bogus!", dR);
 		return;
 	}
 
