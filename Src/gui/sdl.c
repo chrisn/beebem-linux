@@ -20,7 +20,7 @@ static EG_BOOL no_update = EG_FALSE;
 /* Initialize GUI. Must be called before any other EG function call.
  */
 EG_BOOL EG_Initialize(void)
-{	
+{
 //	/* Initialize event handler:
 //	 */
 //	if (EG_Event_InitializeQueue() == EG_FALSE)
@@ -123,77 +123,83 @@ void EG_Draw_Enable_Update(void)
 /* Text functions */
 static SDL_Surface *label_low = NULL, *label_high = NULL;
 
-static EG_BOOL EG_DrawString_Initialise(void)
-{	//int i;
+static EG_BOOL EG_DrawString_Initialise()
+{
 	char largefont[1024];
-        char smallfont[1024];
+	char smallfont[1024];
 
-        char cpath[]={DATA_DIR};
+	char cpath[]={DATA_DIR};
 
-        strcpy(largefont, cpath);
-        if (cpath[strlen(cpath)] != '/')
-                        strcat(largefont, "/");
+	strcpy(largefont, cpath);
+	if (cpath[strlen(cpath)] != '/')
+		strcat(largefont, "/");
 
-        strcpy(smallfont, largefont);
+	strcpy(smallfont, largefont);
 
-        strcat(largefont, "resources/font10x16.bmp");
-        strcat(smallfont, "resources/font5x8.bmp");
+	strcat(largefont, "resources/font10x16.bmp");
+	strcat(smallfont, "resources/font5x8.bmp");
 
-        label_low = SDL_LoadBMP(smallfont);
-        label_high = SDL_LoadBMP(largefont);
+	label_low = SDL_LoadBMP(smallfont);
+	label_high = SDL_LoadBMP(largefont);
 
-        if (label_low == NULL || label_high == NULL){
-                pFATAL(dL"Failed to load fonts.. (paths are: [%s] and [%s])\n"
+	if (label_low == NULL || label_high == NULL)
+	{
+		pFATAL(dL"Failed to load fonts.. (paths are: [%s] and [%s])\n"
 		 , dR , largefont, smallfont);
-                return(EG_FALSE);
-        }
+		return EG_FALSE;
+	}
 
-        // Set color key
-	SDL_SetColorKey(label_low, SDL_SRCCOLORKEY
-	 , SDL_MapRGB(label_low->format, 255,255,255));
-	SDL_SetColorKey(label_high, SDL_SRCCOLORKEY
-	 , SDL_MapRGB(label_high->format, 255,255,255));
+	// Set color key
+	SDL_SetColorKey(label_low,
+	                SDL_SRCCOLORKEY,
+	                SDL_MapRGB(label_low->format, 255,255,255));
 
-	return(EG_TRUE);
+	SDL_SetColorKey(label_high,
+	                SDL_SRCCOLORKEY,
+	                SDL_MapRGB(label_high->format, 255,255,255));
+
+	return EG_TRUE;
 }
 
 static void EG_DrawString_Free(void)
 {
-        SDL_FreeSurface(label_low);
-        SDL_FreeSurface(label_high);
+	SDL_FreeSurface(label_low);
+	SDL_FreeSurface(label_high);
 }
 
 // 0 = center, -1 = left. 1 = right
-void EG_Draw_String(SDL_Surface *surface, SDL_Color *color, EG_BOOL bold, SDL_Rect *area_ptr
- , int justify, char *string)
+void EG_Draw_String(SDL_Surface *surface,
+                    SDL_Color *color,
+                    EG_BOOL bold,
+                    SDL_Rect *area_ptr,
+                    int justify,
+                    char *string)
 {
-	SDL_Rect drawing_area; // SDL_DW_Draw_CalcDrawingArea(surface, &area);
+	int i, x, y, len;
 
-        int i, w, h, x, y, len;
+	SDL_Rect drawing_area = EG_Draw_CalcDrawingArea(surface, area_ptr);
 
-	drawing_area = EG_Draw_CalcDrawingArea(surface, area_ptr);
+	int w = (int)(10 * EG_Draw_GetScale());
+	int h = (int)(16 * EG_Draw_GetScale());
 
-	w = (int) (10 * EG_Draw_GetScale() );
-	h = (int) (16 * EG_Draw_GetScale() );
+	drawing_area.x = (int)(drawing_area.x * EG_Draw_GetScale());
+	drawing_area.y = (int)(drawing_area.y * EG_Draw_GetScale());
+	drawing_area.w = (int)(drawing_area.w * EG_Draw_GetScale());
+	drawing_area.h = (int)(drawing_area.h * EG_Draw_GetScale());
 
-	drawing_area.x = (int) (drawing_area.x * EG_Draw_GetScale() );
-	drawing_area.y = (int) (drawing_area.y * EG_Draw_GetScale() );
-	drawing_area.w = (int) (drawing_area.w * EG_Draw_GetScale() );
-	drawing_area.h = (int) (drawing_area.h * EG_Draw_GetScale() );
+	// Calc. number of letters we can actually draw.
+	len = strlen(string);
 
-        // Calc. number of letters we can actually draw.
-        len = strlen(string);
+	//SDL_FillRect(surface, &drawing_area, SDL_MapRGB(surface->format, 255
+	// , 255, 255));
 
-        //SDL_FillRect(surface, &drawing_area, SDL_MapRGB(surface->format, 255
-        // , 255, 255));
+	x = drawing_area.x;
+	y = drawing_area.y + ((drawing_area.h - h)/2);
 
-        x = drawing_area.x;
-        y = drawing_area.y + ((drawing_area.h - h)/2);
-
-        // Don't bother rendering anything if area width is less than one
+	// Don't bother rendering anything if area width is less than one
 	// character
-        if ( w > drawing_area.w)
-                return;
+	if ( w > drawing_area.w)
+		return;
 
         // We will need to clip it:
         if ( (len * w) > drawing_area.w){
@@ -205,8 +211,9 @@ void EG_Draw_String(SDL_Surface *surface, SDL_Color *color, EG_BOOL bold, SDL_Re
                                 x += w;
                 }
                 EG_Draw_Char(surface, color, bold, x, y, (char) 8);
-
-        }else{
+        }
+		else
+		{
         // We don't need to clip it. But may need to center it:
                 if (justify == 0)
                         x += (drawing_area.w - len * w) /2;
@@ -218,36 +225,45 @@ void EG_Draw_String(SDL_Surface *surface, SDL_Color *color, EG_BOOL bold, SDL_Re
                                 x += w;
                 }
         }
-        EG_Draw_UpdateSurfaceAbsolute(surface, drawing_area.x, drawing_area.y
-	 , drawing_area.w, drawing_area.h);
+
+	EG_Draw_UpdateSurfaceAbsolute(surface,
+	                              drawing_area.x,
+	                              drawing_area.y,
+	                              drawing_area.w,
+	                              drawing_area.h);
 }
 
-void EG_Draw_Char(SDL_Surface *surface, SDL_Color *color, EG_BOOL bold, Uint16 x, Uint16 y
- , char c)
+void EG_Draw_Char(SDL_Surface *surface, SDL_Color *color, EG_BOOL bold, Uint16 x, Uint16 y, char c)
 {
-        SDL_Rect src, dst;
-        SDL_Surface *source_surface;
-
-	SDL_Color *tmp;		// Dump compiler warning
-	tmp = color;
+	SDL_Rect src, dst;
+	SDL_Surface *source_surface;
 
 	src.x = c & 15;
-	src.y = ((unsigned char) c) >> 4;
+	src.y = ((unsigned char)c) >> 4;
 
-        if (EG_Draw_GetScale() >= 1){
-                source_surface = label_high;
-                src.w = 10; src.h = 16;
-        }else{
-                source_surface = label_low;
-                src.w = 5; src.h = 8;
-        }
-        src.x *= src.w; src.y *= src.h;
+	if (EG_Draw_GetScale() >= 1)
+	{
+		source_surface = label_high;
+		src.w = 10;
+		src.h = 16;
+	}
+	else
+	{
+		source_surface = label_low;
+		src.w = 5;
+		src.h = 8;
+	}
 
+	src.x *= src.w;
+	src.y *= src.h;
 
-        dst.x = x; dst.y = y;
+	dst.x = x;
+	dst.y = y;
 
-        SDL_BlitSurface(source_surface, &src, surface, &dst);
-	if (bold == EG_TRUE){
+	SDL_BlitSurface(source_surface, &src, surface, &dst);
+
+	if (bold == EG_TRUE)
+	{
 		dst.x++;
 		SDL_BlitSurface(source_surface, &src, surface, &dst);
 	}
@@ -276,27 +292,24 @@ SDL_Rect EG_Draw_CalcDrawingArea(SDL_Surface *surface, SDL_Rect *update)
 }
 
 void EG_Draw_Box(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color)
-{       
+{
 	SDL_Rect drawing_area = EG_Draw_CalcDrawingArea(surface, area);
-      
-        if (surface == NULL)
-                return;
-        
+
+	if (surface == NULL)
+		return;
+
 	drawing_area.x = (int) (drawing_area.x * EG_Draw_GetScale() );
 	drawing_area.y = (int) (drawing_area.y * EG_Draw_GetScale() );
 	drawing_area.w = (int) (drawing_area.w * EG_Draw_GetScale() );
 	drawing_area.h = (int) (drawing_area.h * EG_Draw_GetScale() );
 
-        SDL_FillRect(surface, &drawing_area, SDL_MapRGB(surface->format
-	 , color->r, color->g, color->b));
+	SDL_FillRect(surface, &drawing_area, SDL_MapRGB(surface->format, color->r, color->g, color->b));
 
-	EG_Draw_UpdateSurfaceAbsolute(surface, drawing_area.x, drawing_area.y
-	 , drawing_area.w, drawing_area.h);
+	EG_Draw_UpdateSurfaceAbsolute(surface, drawing_area.x, drawing_area.y, drawing_area.w, drawing_area.h);
 }
 
 
-void EG_Draw_TabBorder(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
- , int type)
+void EG_Draw_TabBorder(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color, int type)
 {
 	SDL_Rect drawing_area = EG_Draw_CalcDrawingArea(surface, area);
         SDL_Rect line = {0,0,0,0};
@@ -313,91 +326,85 @@ void EG_Draw_TabBorder(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 	if (drawing_area.w <2) return;
 	if (drawing_area.h <2) return;
 
-	switch (type){
-
+	switch (type)
+	{
 		case EG_Draw_Border_Normal:
-			bright_col = SDL_MapRGB(surface->format
-			 , (Uint8) color->r
-			 , (Uint8) color->g
-			 , (Uint8) color->b );
-			
-			dull_col = bright_col;	
-		break;
+			bright_col = SDL_MapRGB(surface->format,
+			                        (Uint8)color->r,
+			                        (Uint8)color->g,
+			                        (Uint8)color->b);
+
+			dull_col = bright_col;
+			break;
 
 		case EG_Draw_Border_BoxHigh:
-			bright_col = SDL_MapRGB(surface->format
-			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
-			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
-			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-	
-			dull_col = SDL_MapRGB(surface->format
-			 , (int) (color->r * 0.6666)
-			 , (int) (color->g * 0.6666)
-			 , (int) (color->b * 0.6666) );
-		break;
+			bright_col = SDL_MapRGB(surface->format,
+			                        (int)(1.3333 * color->r >255.0 ? 255.0 : 1.3333 * color->r),
+			                        (int)(1.3333 * color->g >255.0 ? 255.0 : 1.3333 * color->g),
+			                        (int)(1.3333 * color->b >255.0 ? 255.0 : 1.3333 * color->b));
+
+			dull_col = SDL_MapRGB(surface->format,
+			                      (int)(color->r * 0.6666),
+			                      (int)(color->g * 0.6666),
+			                      (int)(color->b * 0.6666));
+			break;
 
 		case EG_Draw_Border_BoxLow:
 //			dull_col = SDL_MapRGB(surface->format
 //			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 //			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 //			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-//	
-			bright_col = SDL_MapRGB(surface->format
-			 , (int) (color->r * 0.6666)
-			 , (int) (color->g * 0.6666)
-			 , (int) (color->b * 0.6666) );
+//
+			bright_col = SDL_MapRGB(surface->format,
+			                        (int)(color->r * 0.6666),
+			                        (int)(color->g * 0.6666),
+			                        (int)(color->b * 0.6666));
 
 			dull_col = bright_col;
-		break;
+			break;
 
 		case EG_Draw_Border_Focused:
-
-                        dull_col = SDL_MapRGB(surface->format
-                         , (int) (color->r * 0.4)
-                         , (int) (color->g * 0.4)
-                         , (int) (color->b * 0.4) );
+			dull_col = SDL_MapRGB(surface->format,
+			                      (int)(color->r * 0.4),
+			                      (int)(color->g * 0.4),
+			                      (int)(color->b * 0.4));
 
 			bright_col = dull_col;
-		break;
-
+			break;
 	}
 
-        // Top line:
-        line.x = drawing_area.x  +1  ; line.y = drawing_area.y; 
+	// Top line:
+	line.x = drawing_area.x  +1  ; line.y = drawing_area.y;
 	line.w = drawing_area.w  -2  ; line.h = 1;
-        SDL_FillRect(surface, &line, bright_col);
+	SDL_FillRect(surface, &line, bright_col);
 
-        // Bottom line:
-        line.x = drawing_area.x  +1  ; line.y = drawing_area.y + drawing_area.h-1;
-	line.w = drawing_area.w  -2  ; 
+	// Bottom line:
+	line.x = drawing_area.x  +1  ; line.y = drawing_area.y + drawing_area.h-1;
+	line.w = drawing_area.w  -2  ;
 	line.h = 1;
- //       SDL_FillRect(surface, &line, dull_col);
+	// SDL_FillRect(surface, &line, dull_col);
 
-        // Left line:
-        line.x=drawing_area.x; line.y=drawing_area.y  +1  ; line.h=drawing_area.h  -2;
+	// Left line:
+	line.x=drawing_area.x; line.y=drawing_area.y  +1  ; line.h=drawing_area.h  -2;
 	line.w = 1;
-  	line.h+=1;
-        SDL_FillRect(surface, &line, bright_col);
+	line.h+=1;
+	SDL_FillRect(surface, &line, bright_col);
 	line.h-=1;
 
-        // Right line:
-        line.x=drawing_area.x+drawing_area.w-1; line.y=drawing_area.y  +1  ;
-	line.w=1; line.h=drawing_area.h  -2  ;
+	// Right line:
+	line.x=drawing_area.x+drawing_area.w-1; line.y=drawing_area.y  +1  ;
+	line.w=1; line.h=drawing_area.h - 2;
 
-//	line.h++;
-        SDL_FillRect(surface, &line, dull_col);
-//	line.h--;
+	//	line.h++;
+	SDL_FillRect(surface, &line, dull_col);
+	//	line.h--;
 
 	// Update: (if I was smart, I'd only draw the actual lines..)
-        EG_Draw_UpdateSurfaceAbsolute(surface, drawing_area.x, drawing_area.y
-         , drawing_area.w, drawing_area.h+2);
+	EG_Draw_UpdateSurfaceAbsolute(surface, drawing_area.x, drawing_area.y
+	, drawing_area.w, drawing_area.h+2);
 }
 
-
-
-
-void EG_Draw_Border(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
- , int type)
+void EG_Draw_Border(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color, int type)
 {
 	SDL_Rect drawing_area = EG_Draw_CalcDrawingArea(surface, area);
         SDL_Rect line = {0,0,0,0};
@@ -421,8 +428,8 @@ void EG_Draw_Border(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 			 , (Uint8) color->r
 			 , (Uint8) color->g
 			 , (Uint8) color->b );
-			
-			dull_col = bright_col;	
+
+			dull_col = bright_col;
 		break;
 
 		case EG_Draw_Border_BoxHigh:
@@ -430,7 +437,7 @@ void EG_Draw_Border(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-	
+
 			dull_col = SDL_MapRGB(surface->format
 			 , (int) (color->r * 0.6666)
 			 , (int) (color->g * 0.6666)
@@ -442,7 +449,7 @@ void EG_Draw_Border(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-	
+
 			bright_col = SDL_MapRGB(surface->format
 			 , (int) (color->r * 0.6666)
 			 , (int) (color->g * 0.6666)
@@ -461,13 +468,13 @@ void EG_Draw_Border(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 	}
 
         // Top line:
-        line.x = drawing_area.x  +1  ; line.y = drawing_area.y; 
+        line.x = drawing_area.x  +1  ; line.y = drawing_area.y;
 	line.w = drawing_area.w  -2  ; line.h = 1;
         SDL_FillRect(surface, &line, bright_col);
 
         // Bottom line:
         line.x = drawing_area.x  +1  ; line.y = drawing_area.y + drawing_area.h-1;
-	line.w = drawing_area.w  -2  ; 
+	line.w = drawing_area.w  -2  ;
 	line.h = 1;
         SDL_FillRect(surface, &line, dull_col);
 
@@ -514,8 +521,8 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 			 , (Uint8) color->r
 			 , (Uint8) color->g
 			 , (Uint8) color->b );
-			
-			dull_col = bright_col;	
+
+			dull_col = bright_col;
 		break;
 
 		case EG_Draw_Border_BoxHigh:
@@ -523,7 +530,7 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-	
+
 			dull_col = SDL_MapRGB(surface->format
 			 , (int) (color->r * 0.6666)
 			 , (int) (color->g * 0.6666)
@@ -535,7 +542,7 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-	
+
 			bright_col = SDL_MapRGB(surface->format
 			 , (int) (color->r * 0.6666)
 			 , (int) (color->g * 0.6666)
@@ -583,13 +590,13 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 
 
         // Top line:
-        line.x = drawing_area.x  +1  ; line.y = drawing_area.y; 
+        line.x = drawing_area.x  +1  ; line.y = drawing_area.y;
 	line.w = drawing_area.w  -2  ; line.h = 1;
         SDL_FillRect(surface, &line, bright_col);
 
         // Bottom line:
         line.x = drawing_area.x  +1+corner  ; line.y = drawing_area.y + drawing_area.h-1;
-	line.w = drawing_area.w  -2-(corner*2)  ; 
+	line.w = drawing_area.w  -2-(corner*2)  ;
 	line.h = 1;
         SDL_FillRect(surface, &line, dull_col);
 
@@ -617,7 +624,7 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 	PutPixel(surface,x+4*s, y, bright_col);
 
 	x = drawing_area.x + drawing_area.w-1;
-	
+
         PutPixel(surface,x,   y-4*s, dull_col);
         PutPixel(surface,x-1*s, y-3*s, dull_col);
         PutPixel(surface,x-2*s, y-2*s, dull_col);

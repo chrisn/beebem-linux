@@ -35,12 +35,9 @@ Written by Richard Gellman - Feb 2001
 #include "FileUtils.h"
 #include "Log.h"
 #include "Main.h"
-// #include "Sound.h"
+#include "Sound.h"
 #include "SysVia.h"
 #include "UefState.h"
-#include "Windows.h"
-#include "Z80mem.h"
-#include "Z80.h"
 
 // Control/Status Register, Track, Sector, and Data Registers
 static unsigned char FormatBuffer[2048];
@@ -885,13 +882,15 @@ void Poll1770(int NCycles) {
 		NMIStatus |= 1 << nmi_floppy;
 	}
 
-	if (FDCommand == 10) {
+	if (FDCommand == 10)
+	{
 		Status &= ~(WD1770_STATUS_WRITE_PROTECT |
 		            WD1770_STATUS_SPIN_UP_COMPLETE |
 		            WD1770_STATUS_RECORD_NOT_FOUND |
 		            WD1770_STATUS_BUSY);
 
-		if (NextFDCommand == 255) {
+		if (NextFDCommand == 255)
+		{
 			// Error during access
 			UpdateTR00Status();
 
@@ -899,6 +898,7 @@ void Poll1770(int NCycles) {
 			Status &= ~WD1770_STATUS_CRC_ERROR;
 
 		}
+
 		NMIStatus |= 1 << nmi_floppy;
 		FDCommand = 12;
 		LoadingCycles = SPIN_DOWN_TIME; // Spin-down delay
@@ -940,7 +940,13 @@ void Poll1770(int NCycles) {
 			Status |= WD1770_STATUS_SPIN_UP_COMPLETE;
 		}
 
-		if (LoadingCycles <= 0) FDCommand = 10; NextFDCommand = 255; // Go to spin down, but report error.
+		if (LoadingCycles <= 0)
+		{
+			// Go to spin down, but report error.
+			FDCommand = 10;
+			NextFDCommand = 255;
+		}
+
 		SpinDown[CurrentDrive] = SPIN_DOWN_TIME;
 		LightsOn[CurrentDrive] = true;
 		return;
@@ -1360,7 +1366,7 @@ void Load1770UEF(FILE *SUEF, int Version)
 	DiscInfo[1].Type = static_cast<DiscType>(UEFRead8(SUEF));
 
 	char FileName[256];
-	memset(FileName, 0, sizeof(FileName));
+	ZeroMemory(FileName, sizeof(FileName));
 
 	if (Version >= 14)
 	{
@@ -1380,7 +1386,7 @@ void Load1770UEF(FILE *SUEF, int Version)
 			LoadFailed = true;
 	}
 
-	memset(FileName, 0, sizeof(FileName));
+	ZeroMemory(FileName, sizeof(FileName));
 
 	if (Version >= 14)
 	{
@@ -1448,7 +1454,7 @@ void Load1770UEF(FILE *SUEF, int Version)
 		SelectedDensity = UEFReadBool(SUEF);
 		RotSect = UEFRead8(SUEF);
 
-		memset(FDCDLL, 0, sizeof(FDCDLL));
+		ZeroMemory(FDCDLL, sizeof(FDCDLL));
 
 		if (Version >= 14)
 		{

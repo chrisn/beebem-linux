@@ -31,7 +31,8 @@ Boston, MA  02110-1301, USA.
 #include <string.h>
 
 #include "PALRom.h"
-#include "zlib/zlib.h"
+
+#include <zlib.h>
 
 PALRomState PALRom[MAX_PAL_ROMS];
 
@@ -223,7 +224,7 @@ PALRomType GuessRomType(uint8_t *Rom, uint32_t Size)
     char RomName[11];
     memcpy(RomName, &Rom[9], 10);
     RomName[10] = '\0';
-    int Crc = (int)crc32(0, Rom, Size);
+    unsigned int Crc = crc32(0, Rom, Size);
 
     if (strstr(RomName, "ViewSpell") && Size == PALROM_64K && Crc == 0xE56B0E01)
     {

@@ -1,48 +1,39 @@
-/****************************************************************************/
-/*              Beebem - (c) David Alan Gilbert 1994                        */
-/*              ------------------------------------                        */
-/* This program may be distributed freely within the following restrictions:*/
-/*                                                                          */
-/* 1) You may not charge for this program or for any part of it.            */
-/* 2) This copyright message must be distributed with all copies.           */
-/* 3) This program must be distributed complete with source code.  Binary   */
-/*    only distribution is not permitted.                                   */
-/* 4) The author offers no warrenties, or guarentees etc. - you use it at   */
-/*    your own risk.  If it messes something up or destroys your computer   */
-/*    thats YOUR problem.                                                   */
-/* 5) You may use small sections of code from this program in your own      */
-/*    applications - but you must acknowledge its use.  If you plan to use  */
-/*    large sections then please ask the author.                            */
-/*                                                                          */
-/* If you do not agree with any of the above then please do not use this    */
-/* program.                                                                 */
-/* Please report any problems to the author at beebem@treblig.org           */
-/****************************************************************************/
+/****************************************************************
+BeebEm - BBC Micro and Master 128 Emulator
+Copyright (C) 1994  David Alan Gilbert
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-#include "sdl.h"
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-#include "line.h"
-#include "log.h"
-#include "types.h"
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA  02110-1301, USA.
+****************************************************************/
+
+#include "Windows.h"
+
+#include <string.h>
+
+#include "Sdl.h"
+
+#include "Line.h"
+#include "Log.h"
+#include "Types.h"
 
 // Remove this once command line stuff fixed
 #include "Main.h"
 
-// For PaletteType
-#include "BeebWin.h"
-
-#include <string.h>
-
-
 #include "BeebEmPages.h"
 
-
-
-// The SDL sound support code is nasty :-( 
+// The SDL sound support code is nasty :-(
 //
 // In order to handle sound without studying the BeebEm sound code in too much
 // detail, I'll (for now) just let it dump it's samples into this bloody huge
@@ -76,43 +67,89 @@ unsigned int ScalingTable[1024];
 // we submit our request for a sound stream):
 int samples;
 
+// Globals:
+
+SDL_Surface *icon = nullptr;
+SDL_Surface *video_output = nullptr;
+SDL_Surface *screen_ptr = nullptr;
+
+// If we're using X11, we need to release the Caps Lock key ourselves.
+int	cfg_HaveX11 = 0;
+
+// Emulate a CRT display (odd scanlines are always dark. Will become an
+// option later on).
+
+//#define EMULATE_CRT
+int cfg_EmulateCrtGraphics = 1;
+int cfg_EmulateCrtTeletext = 0;
+
+int cfg_Fullscreen_Resolution = RESOLUTION_640X480_S; // -1;
+int cfg_Windowed_Resolution = RESOLUTION_640X480_S;  // -1;
+int cfg_VerticalOffset = ((512-480)/2);
+
+/* If this is defined then the sound code will dump samples (causing distortion)
+ * whenever the buffer becomes too large (i.e.: over 5 lots of samples or some
+ * such).  If I don't do this then the sound effects in games will happen
+ * longer and longer after the event.
+ *
+ * This is coursed by other processes slowing down BeebEm and the timing of the
+ * emulator becoming wrong.  BeebEm will try to compensate, by creating new
+ * sound data for the missing time that's then dumped into my sound buffer.
+ *
+ * It should all work nicely, the emulator core will catchup to the current time
+ * and I'll get lots of new sound to play, but the timings off somewhere
+ * so this missing sound is converted from a catchup into a latency problem.
+ * Unfortunely the more and more interruptions BeebEm has to handle the greater
+ * the sound latency problem becomes..  So for I'm going to dump samples when
+ * the latency is too great..  If you'd rather have nicer sound (with the
+ * latency problem) then remove the definition below.
+ */
+//#define WANT_LOW_LATENCY_SOUND
+int	cfg_WantLowLatencySound = 1;
+
+// Wait type for 'sleep'.
+int	cfg_WaitType = OPT_SLEEP_OS;
+
+SDL_AudioSpec wanted;
+
 // Sigh, look what I've reduced myself to..  The sound support here is truly
 // shocking.. Please feel free to rewrite it for me..
-void InitializeSoundBuffer(void)
+void InitializeSoundBuffer()
 {
-	SDLSoundBufferOffset_IN =0;
+	SDLSoundBufferOffset_IN = 0;
 	SDLSoundBufferOffset_OUT = 0;
 	SDLSoundBufferBytesHave = 0;
 
-	int i;
-	for(i=0; i< SOUND_BUFFER_SIZE; i++)
-		SDLSoundBuffer[i] = (Uint8) 0;	
+	for (int i = 0; i< SOUND_BUFFER_SIZE; i++)
+	{
+		SDLSoundBuffer[i] = (Uint8)0;
+	}
 }
 
 // When the user switches to the menu, use it as an excuse to flush the buffer.
-void FlushSoundBuffer(void)
+void FlushSoundBuffer()
 {
 	InitializeSoundBuffer();
 }
 
 // The BeebEm emulator core (the Windows code) calls this when it wants to
-// play some samples.  We place those samples in our bloody huge buffer 
+// play some samples.  We place those samples in our bloody huge buffer
 // instead.
 void AddBytesToSDLSoundBuffer(void *p, int len)
 {
-	int i;
-	Uint8 *pp;
-	pp = (Uint8*) p;
+	Uint8 *pp = (Uint8*)p;
 
 	//printf("ADDED %d BYTES\n %d %d %d", len, (int) pp[0], (int) pp[1], (int) pp[2]);
 
-	for(i=0; i<len; i++){
+	for (int i = 0; i < len; i++)
+	{
 		SDLSoundBuffer[SDLSoundBufferOffset_IN] = *(pp++);
 
 		SDLSoundBufferOffset_IN++;
 		if (SDLSoundBufferOffset_IN >= SOUND_BUFFER_SIZE)
 			SDLSoundBufferOffset_IN = (unsigned long) 0;
 	}
+
 	SDLSoundBufferBytesHave+=len;
 }
 
@@ -150,7 +187,7 @@ int GetBytesFromSDLSoundBuffer(int len)
 
 	for(i=0; i<len; i++){
 		*(p++) = SDLSoundBuffer[SDLSoundBufferOffset_OUT];
-		
+
 		SDLSoundBufferOffset_OUT++;
 		if (SDLSoundBufferOffset_OUT >= SOUND_BUFFER_SIZE)
                         SDLSoundBufferOffset_OUT = (unsigned long) 0;
@@ -158,8 +195,8 @@ int GetBytesFromSDLSoundBuffer(int len)
 
 	SDLSoundBufferBytesHave-=len;
 
-//#ifdef WANT_LOW_LATENCY_SOUND
-	if (cfg_WantLowLatencySound){
+	if (cfg_WantLowLatencySound)
+	{
 		// I really need to catchup if SDLSoundBufferBytesHave becomes too large
 		// otherwise the sound will lag more and more behind the action..
 		//
@@ -180,39 +217,29 @@ int GetBytesFromSDLSoundBuffer(int len)
 		if (SDLSoundBufferBytesHave > ( (unsigned long) samples * 5)){
 			pDEBUG(dL"Dumping some sound samples, catched up %u times so far..", dR
 			 , ++uiCatchedUpTimes);
-	
-//			// we dump everything apart from two blocks overwise we're
-//			// always living on a knife edge.. (i.e.: we're max'ed out
-//			// all the time and have no spare resources to fall back on.
-//			while (SDLSoundBufferBytesHave > ( (unsigned long)samples * 2)){
-//				SDLSoundBufferOffset_OUT++;
-//				if (SDLSoundBufferOffset_OUT >= SOUND_BUFFER_SIZE)
-//					SDLSoundBufferOffset_OUT = (unsigned long) 0;
-//				SDLSoundBufferBytesHave--;
-//			}
-			CatchupSound();
 
+			CatchupSound();
 		}
 	}
-//#endif
 
 	return len;
 }
 
 void CatchupSound(void)
 {
-                        // we dump everything apart from two blocks overwise we're
-                        // always living on a knife edge.. (i.e.: we're max'ed out
-                        // all the time and have no spare resources to fall back on.
-                        while (SDLSoundBufferBytesHave > ( (unsigned long)samples * 2)){
-                                SDLSoundBufferOffset_OUT++;
-                                if (SDLSoundBufferOffset_OUT >= SOUND_BUFFER_SIZE)
-                                        SDLSoundBufferOffset_OUT = (unsigned long) 0;
-                                SDLSoundBufferBytesHave--;
-                        }
+	// we dump everything apart from two blocks overwise we're
+	// always living on a knife edge.. (i.e.: we're max'ed out
+	// all the time and have no spare resources to fall back on.
+	while (SDLSoundBufferBytesHave > ((unsigned long)samples * 2))
+	{
+		SDLSoundBufferOffset_OUT++;
+		if (SDLSoundBufferOffset_OUT >= SOUND_BUFFER_SIZE)
+			SDLSoundBufferOffset_OUT = (unsigned long) 0;
+		SDLSoundBufferBytesHave--;
+	}
 }
 
-// Guess what this does. 
+// Guess what this does.
 unsigned long HowManyBytesLeftInSDLSoundBuffer(void)
 {
 	return SDLSoundBufferBytesHave;
@@ -239,73 +266,11 @@ void loadsound(void)
 //Uint8 *audio_chunk;
 //Uint32 audio_len;
 //Uint8 *audio_pos;
-
-
-
 */
 
 
-
-/* Globals:
- *	-	-	-	-	-	-	-
- */
-
-SDL_Surface *icon = NULL;
-
-SDL_Surface *video_output = NULL;
-SDL_Surface *screen_ptr = NULL;
-
-/* If we're using X11, we need to release the Caps Lock key ourselves.
- */
-int	cfg_HaveX11 = 0;
-
-/* Emulate a CRT display (odd scanlines are always dark. Will become an
- * option later on).
- */
-//#define EMULATE_CRT
-int	cfg_EmulateCrtGraphics = 1;
-int	cfg_EmulateCrtTeletext = 0;
-
-int 	cfg_Fullscreen_Resolution = RESOLUTION_640X480_S; // -1;
-int	cfg_Windowed_Resolution = RESOLUTION_640X480_S;  // -1;
-int	cfg_VerticalOffset = ((512-480)/2);
-
-/* If this is defined then the sound code will dump samples (causing distortion)
- * whenever the buffer becomes too large (i.e.: over 5 lots of samples or some
- * such).  If I don't do this then the sound effects in games will happen
- * longer and longer after the event.
- *
- * This is coursed by other processes slowing down BeebEm and the timing of the
- * emulator becoming wrong.  BeebEm will try to compensate, by creating new
- * sound data for the missing time that's then dumped into my sound buffer.
- *
- * It should all work nicely, the emulator core will catchup to the current time
- * and I'll get lots of new sound to play, but the timings off somewhere
- * so this missing sound is converted from a catchup into a latency problem.
- * Unfortunely the more and more interruptions BeebEm has to handle the greater
- * the sound latency problem becomes..  So for I'm going to dump samples when
- * the latency is too great..  If you'd rather have nicer sound (with the
- * latency problem) then remove the definition below.
- */
-//#define WANT_LOW_LATENCY_SOUND
-int	cfg_WantLowLatencySound = 1;
-
-/* Wait type for 'sleep'.
- */
-int	cfg_WaitType = OPT_SLEEP_OS;
-
-/*	-	-	-	-	-	-	-
- */
-
-SDL_AudioSpec wanted;
-
-void fill_audio(void *udata, Uint8 *stream, int len)
+void fill_audio(void * /* udata */, Uint8 *stream, int len)
 {
-	Uint8 *p;
-
-	void *tmp_udata;
-	tmp_udata = udata;
-
 	/* Only play if we have data left */
 	if (HowManyBytesLeftInSDLSoundBuffer() == 0)
 		return;
@@ -320,13 +285,10 @@ void fill_audio(void *udata, Uint8 *stream, int len)
 //	audio_pos += len;
 //	audio_len -= len;
 
-
-
-	
 	if (len > (int) HowManyBytesLeftInSDLSoundBuffer() )
 		len = HowManyBytesLeftInSDLSoundBuffer();
 
-	p = GetSoundBufferPtr();
+	Uint8* p = GetSoundBufferPtr();
 	len = GetBytesFromSDLSoundBuffer(len);
 	SDL_MixAudio(stream, p, len, SDL_MIX_MAXVOLUME);
 }
@@ -371,66 +333,70 @@ void FreeSDLSound(void)
 	SDL_CloseAudio();
 }
 
-/* Setup palette.
- */
-void SetBeebEmEmulatorCoresPalette(unsigned char *cols, int palette_type)
+// Setup palette.
+
+void SetBeebEmEmulatorCoresPalette(unsigned char *cols, MonitorType Monitor)
 {
 	SDL_Color colors[8];
 
-	/* BeebEm video.cpp needs to use colors 0 to 7.
-	 */
-	for(int i=0;i<8;i++)
-		*(cols++) = (unsigned char) i;
+	// BeebEm Video.cpp needs to use colors 0 to 7.
+	for (int i = 0; i < 8; i++)
+	{
+		*(cols++) = (unsigned char)i;
+	}
 
-	if (screen_ptr == NULL){
+	if (screen_ptr == NULL)
+	{
 		fprintf(stderr, "Trying to read palette before window is"
 		 " opened!\nYou will need to fix this..");
 		exit(1);
 	}
 
-	/* Set the palette:
-	 */
-	for (int i = 0; i < 8; ++i){
-		float r,g,b;
+	// Set the palette:
+	for (int i = 0; i < 8; ++i)
+	{
+		float r = (float)(i & 1) * 255;
+		float g = (float)((i & 2) >> 1) * 255;
+		float b = (float)((i & 4) >> 2) * 255;
 
-		r = (float) (i & 1) *255;
-		g = (float) ((i & 2) >> 1) *255;
-		b = (float) ((i & 4) >> 2) *255;
+		if (Monitor != MonitorType::RGB)
+		{
+			switch (Monitor)
+			{
+				case MonitorType::Amber:
+					r *= 1.0f;
+					g *= 0.8f;
+					b *= 0.1f;
+					break;
 
-		if (palette_type != BeebWin::RGB){
-			r = g = b = (float) (0.299 * r + 0.587 * g + 0.114 * b);
+				case MonitorType::Green:
+					r *= 0.2f;
+					g *= 0.9f;
+					b *= 0.1f;
+					break;
 
-		switch (palette_type){
-			case BeebWin::AMBER:
-				r *= (float) 1.0;
-				g *= (float) 0.8;
-				b *= (float) 0.1;
-				break;
-			case BeebWin::GREEN:
-				r *= (float) 0.2;
-				g *= (float) 0.9;
-				b *= (float) 0.1;
-				break;
+				case MonitorType::BW:
+				default:
+					r = g = b = (float) (0.299 * r + 0.587 * g + 0.114 * b);
+					break;
 			}
 		}
 
-		colors[i].r = (int) r;
-		colors[i].g = (int) g;
-		colors[i].b = (int) b;
+		colors[i].r = (int)r;
+		colors[i].g = (int)g;
+		colors[i].b = (int)b;
 	}
-	
-	/* Set bitmaps palette.
-	 */
+
+	// Set bitmaps palette.
 	SDL_SetColors(video_output, colors, 0, 8);
 
-	/* Force X Servers palette to change to our colors.
-	 */
+	// Force X Servers palette to change to our colors.
+
 //#ifdef WITH_FORCED_CM
 	SDL_SetColors(screen_ptr, colors, 0, 8);
 //#endif
 
-	/* Set LED colors.
-	 */
+	// Set LED colors.
 	colors[0].r = 127; colors[0].g = 0; colors[0].b = 0;
 	colors[1].r = 255; colors[1].g = 0; colors[1].b = 0;
 	colors[2].r = 0; colors[2].g = 127; colors[2].b = 0;
@@ -441,22 +407,20 @@ void SetBeebEmEmulatorCoresPalette(unsigned char *cols, int palette_type)
 	SDL_SetColors(screen_ptr, colors, 64, 4);
 //#endif
 
-	/* Menu colors.
-	 */
+	// Menu colors.
 	colors[0].r = 127+64; colors[0].g = 127+64; colors[0].b = 127+64;
 
 	colors[1].r = (int) (colors[0].r * 0.6666);
 	colors[1].g = (int) (colors[0].g * 0.6666);
 	colors[1].b = (int) (colors[0].b * 0.6666);
 
-        colors[2].r = (int) (colors[0].r * 1.3333);
-        colors[2].g = (int) (colors[0].g * 1.3333);
-        colors[2].b = (int) (colors[0].b * 1.3333);
+	colors[2].r = (int) (colors[0].r * 1.3333);
+	colors[2].g = (int) (colors[0].g * 1.3333);
+	colors[2].b = (int) (colors[0].b * 1.3333);
 
-        colors[3].r = (int) (colors[0].r * 0.9);
-        colors[3].g = (int) (colors[0].g * 0.9);
-        colors[3].b = (int) (colors[0].b * 0.9);
-
+	colors[3].r = (int) (colors[0].r * 0.9);
+	colors[3].g = (int) (colors[0].g * 0.9);
+	colors[3].b = (int) (colors[0].b * 0.9);
 
 	SDL_SetColors(video_output, colors, 68, 4);
 
@@ -472,6 +436,7 @@ void CreateScalingTable(void)
 		ScalingTable[i] = (int) (i * 0.94);
 	}
 }
+
 int GetScaledScanline(int y)
 {
 	if (y<0 || y>=1024)
@@ -480,65 +445,53 @@ int GetScaledScanline(int y)
 	return ScalingTable[y];
 }
 
-int Create_Screen(void)
+int Create_Screen()
 {
-        /* Initialize SDL applications window.
-         * NOTE: Both window and video_output surfaces are fixed to 8bit
-	 * depth at the moment.  I'll work on fixing it later.. 
-	 */
-	Uint32 flags, width, height;
-
-//#define RESOLUTION_640X512	0
-//#define RESOLUTION_640X480_S	1
-//#define RESOLUTION_640X480_V	2
-//#define RESOLUTION_320X240_S	3
-//#define RESOLUTION_320X240_V	4
-//#define RESOLUTION_320X256	5
+	// Initialize SDL applications window.
+	// NOTE: Both window and video_output surfaces are fixed to 8bit
+	// depth at the moment.  I'll work on fixing it later..
 
 //int     cfg_Resolution_Windowed = RESOLUTION_640X512;
 //int	  cfg_Resolution_Fullscreened;
 
-	width = 640; height = 512;
-
-
-//printf("1: start\n");
+	Uint32 width = 640;
+	Uint32 height = 512;
 
 	// When running in fullscreen mode remember you can exit BeebEm by
-	flags = SDL_SWSURFACE /* | SDL_FULLSCREEN */ ;
+	Uint32 flags = SDL_SWSURFACE /* | SDL_FULLSCREEN */ ;
 
+	// Fullscreened:
+	if (mainWin != nullptr && mainWin->IsFullScreen())
+	{
+		flags |= SDL_FULLSCREEN;
 
-	/* Fullscreened:
-	 */
-//	if ( fullscreen==1) {
-	if ( mainWin!=NULL && mainWin->IsFullScreen() ) {
-		flags|=SDL_FULLSCREEN;
-
-		switch (cfg_Fullscreen_Resolution){
+		switch (cfg_Fullscreen_Resolution)
+		{
 		case RESOLUTION_640X480_S:
 		case RESOLUTION_640X480_V:
-			width = 640; height = 480;
-			EG_Draw_SetToHighResolution();
-			break;
-		case RESOLUTION_320X240_S:
-		case RESOLUTION_320X240_V:
-			width = 320; height = 240;
-			EG_Draw_SetToLowResolution();
-			break;
-		case RESOLUTION_320X256:
-			width = 320; height = 256;
-			EG_Draw_SetToLowResolution();
-			break;
-		case RESOLUTION_640X512:
-			width = 640; height = 512;
-			EG_Draw_SetToHighResolution();
-			break;
 		default:
 			width = 640; height = 480;
 			EG_Draw_SetToHighResolution();
 			break;
+		case RESOLUTION_320X240_S:
+		case RESOLUTION_320X240_V:
+			width = 320; height = 240;
+			EG_Draw_SetToLowResolution();
+			break;
+		case RESOLUTION_320X256:
+			width = 320; height = 256;
+			EG_Draw_SetToLowResolution();
+			break;
+		case RESOLUTION_640X512:
+			width = 640; height = 512;
+			EG_Draw_SetToHighResolution();
+			break;
 		}
-	} else {
-		switch (cfg_Windowed_Resolution){
+	}
+	else
+	{
+		switch (cfg_Windowed_Resolution)
+		{
 		case RESOLUTION_640X480_S:
 		case RESOLUTION_640X480_V:
 			width = 640; height = 480;
@@ -554,10 +507,6 @@ int Create_Screen(void)
 			EG_Draw_SetToLowResolution();
 			break;
 		case RESOLUTION_640X512:
-			width = 640; height = 512;
-			EG_Draw_SetToHighResolution();
-			break;
-
 		default:
 			width = 640; height = 512;
 			EG_Draw_SetToHighResolution();
@@ -571,21 +520,19 @@ int Create_Screen(void)
 
 //printf("2: flags set\n");
 
-	/* Make sure screen surface was free'd.
-	 */
-	if (screen_ptr != NULL) Destroy_Screen();
+	// Make sure screen surface was free'd.
+	Destroy_Screen();
 
- //      if ( (screen_ptr=SDL_SetVideoMode(SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT
-        if ( (screen_ptr=SDL_SetVideoMode(width, height
-	 , 8, flags ) ) == NULL){
-                fprintf(stderr, "Unable to set video mode: %s\n"
-		 , SDL_GetError());
+	screen_ptr = SDL_SetVideoMode(width, height, 8, flags);
 
-                return false;
-        }
+	if (screen_ptr == NULL)
+	{
+		fprintf(stderr, "Unable to set video mode: %s\n", SDL_GetError());
 
-	/* Update GUI pointers to screen surface.
-	 */
+		return false;
+	}
+
+	// Update GUI pointers to screen surface.
 	ClearWindowsBackgroundCacheAndResetSurface();
 
 //printf("3: SDL_SetVideoMode called\n");
@@ -598,84 +545,78 @@ int Create_Screen(void)
 //		fprintf(stderr, "Trying to set 8bit bitmaps palette but have too many colors!\n");
 //		return false;
 //	}
-//	SDL_SetColors(video_output, screen_ptr->format->palette->colors, 0
-//	 , screen_ptr->format->palette->ncolors);
 
-
-//DL_SetColors(SDL_Surface *surface, SDL_Color *colors, int firstcolor, int ncolors);
-
-	SDL_SetColors(screen_ptr, video_output->format->palette->colors, 0
-	 , video_output->format->palette->ncolors-1);
+	SDL_SetColors(screen_ptr,
+	              video_output->format->palette->colors,
+	              0,
+	              video_output->format->palette->ncolors - 1);
 
 //printf("4: SDL_SetColors called\n");
 
-
-	ClearVideoWindow();	
+	ClearVideoWindow();
 
 //printf("5: ClearVideoWindow called - now returning with true\n");
 
 	return true;
 }
 
-void Destroy_Screen(void)
+void Destroy_Screen()
 {
-	if (screen_ptr != NULL) SDL_FreeSurface(screen_ptr);
+	if (screen_ptr != NULL)
+	{
+		SDL_FreeSurface(screen_ptr);
+		screen_ptr = NULL;
+	}
 }
 
-
-
-int InitialiseSDL(int argc, char *argv[])
+int InitialiseSDL()
 {
 	char video_hardware[1024];
-	Uint32 flags;
-	int tmp_argc;
-	char **tmp_argv;
 
-	tmp_argv=argv;
-	tmp_argc = argc;
+	// Initialize SDL and handle failures.
+	if (SDL_Init(SDL_INIT_VIDEO /* | SDL_INIT_AUDIO */ | SDL_INIT_TIMER) < 0)
+	{
+		fprintf(stderr, "Unable to initialise SDL: %s\n", SDL_GetError());
+		return false;
+	}
 
+	// Cleanup SDL when exiting.
+	atexit(SDL_Quit);
 
-        /* Initialize SDL and handle failures.
-         */     
-        if (SDL_Init(SDL_INIT_VIDEO /* | SDL_INIT_AUDIO */) <0) {
-                        fprintf(stderr, "Unable to initialise SDL: %s\n"
-                         , SDL_GetError());
-                        return false;
-                }       
-           
-         /* Cleanup SDL when exiting.
-         */
-         atexit(SDL_Quit);
-
-
-	/* If we are using X11 set Caps lock so it's immediately released.
-	 */
-	if (SDL_VideoDriverName(video_hardware, 1024) != NULL){
+	// If we are using X11 set Caps lock so it's immediately released.
+	if (SDL_VideoDriverName(video_hardware, 1024) != NULL)
+	{
 		if (strncasecmp(video_hardware, "x11", 1024) == 0)
 			cfg_HaveX11 = 1;
 	}
 
 	icon = SDL_LoadBMP(DATA_DIR"/resources/icon.bmp");
-	if (icon != NULL){
-		SDL_SetColorKey(icon, SDL_SRCCOLORKEY, SDL_MapRGB(icon->format
-		 , 0xff, 0x0, 0xff));
+
+	if (icon != NULL)
+	{
+		SDL_SetColorKey(icon, SDL_SRCCOLORKEY, SDL_MapRGB(icon->format, 0xff, 0x0, 0xff));
 		SDL_WM_SetIcon(icon, NULL);
 	}
 
 	// [HERE] Create Screen.
 
-//	SDL_ShowCursor(SDL_DISABLE);		// SDL_ENABLE
+	// SDL_ShowCursor(SDL_DISABLE); // SDL_ENABLE
 
-	/* Create an area the BeebEm emulator core (the Windows code)
-	 * can draw on.  It's hardwired to an 800x600 8bit byte per pixel
-	 * bitmap.
-	 */
-	flags = SDL_SWSURFACE; 
-	if ( (video_output = SDL_CreateRGBSurface(flags
-	 , BEEBEM_VIDEO_CORE_SCREEN_WIDTH, BEEBEM_VIDEO_CORE_SCREEN_HEIGHT
-	 , 8, 0, 0, 0, 0) ) == NULL){
-		fprintf(stderr, "Unable to create a bitmap buffer: %s\n"
-		 , SDL_GetError());
+	// Create an area the BeebEm emulator core (the Windows code)
+	// can draw on. It's hardwired to an 800x600 8-bit byte per pixel
+	// bitmap.
+	video_output = SDL_CreateRGBSurface(SDL_SWSURFACE, // flags
+	                                    BEEBEM_VIDEO_CORE_SCREEN_WIDTH, // width
+	                                    BEEBEM_VIDEO_CORE_SCREEN_HEIGHT, // height
+	                                    8,  // depth (bits)
+	                                    0,  // Rmask
+	                                    0,  // Gmask
+	                                    0,  // Bmask
+	                                    0); // Amask
+
+	if (video_output == nullptr)
+	{
+		fprintf(stderr, "Unable to create a bitmap buffer: %s\n", SDL_GetError());
 		return false;
 	}
 
@@ -683,14 +624,14 @@ int InitialiseSDL(int argc, char *argv[])
 	CreateScalingTable();
 
 	// Create the default screen.
-	int r=Create_Screen();
+	int r = Create_Screen();
 
-	// Setup colors so we at least have something. The emulator core will
+	// Setup colors so we at least have something. The emulator core
 	// changes these later when the fake registry is read, but we want
 	// enough colors set so the GUI (the message box) will be rendered
  	// correctly.
 	unsigned char cols[8];
-	SetBeebEmEmulatorCoresPalette(cols, BeebWin::RGB);
+	SetBeebEmEmulatorCoresPalette(cols, MonitorType::RGB);
 
 	return r;
 
@@ -699,19 +640,16 @@ int InitialiseSDL(int argc, char *argv[])
 //	return true;
 }
 
-void UninitialiseSDL(void)
+void UninitialiseSDL()
 {
-
-	/* If mouse is not visible, make visible.
-	 */
+	// If mouse is not visible, make visible.
 	if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE)
 		SDL_ShowCursor(SDL_ENABLE);
 
-	SDL_CloseAudio();	
+	SDL_CloseAudio();
 	SDL_ShowCursor(SDL_ENABLE);
 	SDL_FreeSurface(video_output);
 }
-
 
 /* Timing:
  *
@@ -789,9 +727,7 @@ static void BusyWait(Uint32 u32TimeShouldWait, Uint32 u32StartTickCount)
  */
 static void SleepAndBusyWait(Uint32 u32TimeShouldWait, Uint16 u16MinTime)
 {
-	Uint32 u32StartTickCount;
-
-        u32StartTickCount = SDL_GetTicks();
+	Uint32 u32StartTickCount = SDL_GetTicks();
 
         // Only sleep if we are sure the OS can honnor it:
         if(u32TimeShouldWait >= u16MinTime){
@@ -835,7 +771,7 @@ void SaferSleep(unsigned int uiTicks)
 	case OPT_SLEEP_F2:
 		SleepAndBusyWait(uiTicks, 4);
 		break;
-	
+
 	/* Only pass wait to OS if period is greater or equal to 6 ms:
 	 */
 	case OPT_SLEEP_F3:
@@ -851,7 +787,7 @@ void SaferSleep(unsigned int uiTicks)
 }
 
 /* A delay function. BeebEm will 'sleep' for uiTicks milliseconds.
- 
+
 #define MINIMUM_DELAYTIME_INMILLISECONDS 4
 #define MINIMUM_BREATHINGROOM_INMILLISECONDS 0
 //#define MINIMUM_WAIT_TIME 20
@@ -877,7 +813,7 @@ void SaferSleep2(unsigned int uiTicks)
 //		}else
 //			return;
 //	}
-	
+
 
 //	if (cfg_WantBusyWait == 0){
 //		SDL_Delay(uiTicks);
@@ -913,14 +849,13 @@ void SaferSleep2(unsigned int uiTicks)
 
 
 // Clear video window
-void ClearVideoWindow(void)
+void ClearVideoWindow()
 {
-	Uint32 col = SDL_MapRGB(screen_ptr->format, 0x00, 0x00, 0x00);
+	Uint32 Colour = SDL_MapRGB(screen_ptr->format, 0x00, 0x00, 0x00);
 
-	SDL_FillRect(screen_ptr, NULL, col);
-	SDL_UpdateRect(screen_ptr,0,0,screen_ptr->w,screen_ptr->h);
+	SDL_FillRect(screen_ptr, NULL, Colour);
+	SDL_UpdateRect(screen_ptr, 0, 0, screen_ptr->w, screen_ptr->h);
 }
-
 
 void RenderLine(int line, int isTeletext, int xoffset)
 {
@@ -934,13 +869,15 @@ void RenderLine(int line, int isTeletext, int xoffset)
 	if (mainWin!=NULL) fullscreen_val = mainWin->IsFullScreen();
 
 	// If graphics rendering mode has changed, clear whole screen.
-	if (cfg_EmulateCrtGraphics != last_mode_graphics){
+	if (cfg_EmulateCrtGraphics != last_mode_graphics)
+	{
 		ClearVideoWindow();
 		last_mode_graphics = cfg_EmulateCrtGraphics;
 	}
 
 	// if text rendering mode has changed, clear whole screen.
-	if (cfg_EmulateCrtTeletext != last_mode_text){
+	if (cfg_EmulateCrtTeletext != last_mode_text)
+	{
 		ClearVideoWindow();
 		last_mode_text = cfg_EmulateCrtTeletext;
 	}
@@ -953,8 +890,8 @@ void RenderLine(int line, int isTeletext, int xoffset)
 
 	// If mode changes between teletext and graphics clear the screen.
 	// *** this could really be nasty with split gfx res stuff.  Fuck it..
-	if (last_isTeletext != isTeletext || last_xoffset != xoffset){
-
+	if (last_isTeletext != isTeletext || last_xoffset != xoffset)
+	{
 
 //		Uint32 col = SDL_MapRGB(screen_ptr->format, 0x00, 0x00, 0x00);
 //
@@ -969,19 +906,21 @@ void RenderLine(int line, int isTeletext, int xoffset)
 	}
 
 	// Make sure we're trying to draw within a sane part of the bitmap
-	if (video_output != NULL && screen_ptr != NULL){
+	if (video_output != NULL && screen_ptr != NULL)
+	{
 		SDL_Rect src, dst;
 
 		// Render a teletext line
-		if (isTeletext){
-			
+		if (isTeletext)
+		{
 			if (line <0 || line > 511)
 				return;
 
 			int window_y = line;
 			// Fix height for some resolutions:
 //			switch ( fullscreen?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution) {
-			switch ( fullscreen_val?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution) {
+			switch (fullscreen_val ? cfg_Fullscreen_Resolution : cfg_Windowed_Resolution)
+			{
 			case RESOLUTION_640X512:
 				break;
 			case RESOLUTION_640X480_S:
@@ -1011,42 +950,41 @@ void RenderLine(int line, int isTeletext, int xoffset)
 
 
 //#ifdef EMULATE_CRT
-			if ( cfg_EmulateCrtTeletext == 0 || (line & 1) == 1 || disable_grille_for_teletext ==1){
+			if (cfg_EmulateCrtTeletext == 0 || (line & 1) == 1 || disable_grille_for_teletext == 1)
+			{
 //#endif
 //				src.x=36; src.y=line; src.w=SDL_WINDOW_WIDTH - (36 + 124); src.h=1;
 //				dst.x= (36+124) / 2; dst.y=line +6; dst.w=SDL_WINDOW_WIDTH - (36 + 124); dst.h=1;
 
 //				src.x=0; src.y=line; src.w=SDL_WINDOW_WIDTH; src.h=1;
 //				dst.x=0; dst.y=line; dst.w=SDL_WINDOW_WIDTH; dst.h=1;
-			src.x=0; src.y=line; src.w=screen_ptr->w; src.h=1;
-			dst.x=0; dst.y=window_y; dst.w=screen_ptr->w; dst.h=1;
+				src.x=0; src.y=line; src.w=screen_ptr->w; src.h=1;
+				dst.x=0; dst.y=window_y; dst.w=screen_ptr->w; dst.h=1;
 
 				//dst.x +=40; dst.w -=40; dst.y+=8;
 
-				if (dst.y < screen_ptr->h){
-					SDL_BlitSurface(video_output, &src
-					 , screen_ptr, &dst);
-					SDL_UpdateRect(screen_ptr, dst.x, dst.y
-					 , dst.w, dst.h);
+				if (dst.y < screen_ptr->h)
+				{
+					SDL_BlitSurface(video_output, &src, screen_ptr, &dst);
+					SDL_UpdateRect(screen_ptr, dst.x, dst.y, dst.w, dst.h);
 				}
 //#ifdef EMULATE_CRT
 			}
 //#endif
 
 		// render a graphics mode line.
-		}else{
-			int window_y;
-			window_y = (line -32);
-
-
+		}
+		else
+		{
+			int window_y = line - 32;
 
 			// Line may have moved off the top, so check here.
 			if (window_y < 0 || window_y > 255)
 				return;
-	
-		
-//			switch ( fullscreen?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution) {
-			switch ( fullscreen_val?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution) {
+
+//			switch ( fullscreen?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution)
+			switch (fullscreen_val ? cfg_Fullscreen_Resolution : cfg_Windowed_Resolution)
+			{
 			case RESOLUTION_640X512:
 				window_y = window_y * 2;
 				scan_double = 1;
@@ -1084,30 +1022,23 @@ void RenderLine(int line, int isTeletext, int xoffset)
 			if (window_y <0)
 				return;
 
+			src.x=0; src.y=line;
 
-			src.x=0; src.y=line; 
+			// src.w = SDL_WINDOW_WIDTH;
+			src.w = screen_ptr->w;
+			src.h = 1;
 
-//			src.w=SDL_WINDOW_WIDTH;
-			src.w=screen_ptr->w;
+			dst.x = 0;
+			dst.y = window_y;
 
-//			printf("kjlfkjdflfjd\n");
+			// dst.w = SDL_WINDOW_WIDTH;
+			dst.w = screen_ptr->w;
+			dst.h = 1;
 
-			src.h=1;
-
-			dst.x=0;			
-
-			dst.y=window_y;
-
-//			dst.w=SDL_WINDOW_WIDTH;
-			dst.w=screen_ptr->w;
-
-			dst.h=1;
-
-			if (dst.h<screen_ptr->h){
-				SDL_BlitSurface(video_output, &src, screen_ptr
-				 , &dst);
-				SDL_UpdateRect(screen_ptr, 0, window_y
-				 , screen_ptr->w, 1);
+			if (dst.h < screen_ptr->h)
+			{
+				SDL_BlitSurface(video_output, &src, screen_ptr, &dst);
+				SDL_UpdateRect(screen_ptr, 0, window_y, screen_ptr->w, 1);
 			}
 
 //			printf("Line: %d %d\n", (int) dst.y, (int) dst.h);
@@ -1118,20 +1049,17 @@ void RenderLine(int line, int isTeletext, int xoffset)
 			dst.y +=1;
 
 //#ifndef EMULATE_CRT
-			if ( scan_double && (! cfg_EmulateCrtGraphics) ){
+			if (scan_double && !cfg_EmulateCrtGraphics)
+			{
 //				printf("Doing scan double\n");
-				SDL_BlitSurface(screen_ptr, &src, screen_ptr
-				 , &dst);
-				SDL_UpdateRect(screen_ptr, 0, window_y+1
-				 , screen_ptr->w, 1);
+				SDL_BlitSurface(screen_ptr, &src, screen_ptr, &dst);
+				SDL_UpdateRect(screen_ptr, 0, window_y + 1, screen_ptr->w, 1);
 			}
 //#endif
-//			SDL_UpdateRect(screen_ptr, 0, window_y , SDL_WINDOW_WIDTH
-//			 , 2);
+//			SDL_UpdateRect(screen_ptr, 0, window_y , SDL_WINDOW_WIDTH, 2);
 		}
 	}
 }
-
 
 /*
 void RenderLine(int line, int isTeletext, int xoffset)
@@ -1211,7 +1139,6 @@ void RenderLine(int line, int isTeletext, int xoffset)
 }
 */
 
-
 void RenderFullscreenFPS(const char *str, int y)
 {
 	SDL_Color col = {127+64, 127+64, 127+64, 0};
@@ -1227,7 +1154,6 @@ void RenderFullscreenFPS(const char *str, int y)
 	SDL_FillRect(video_output, &rect, SDL_MapRGB(video_output->format, col.r, col.g, col.b) );
 	EG_Draw_String(video_output, &col, EG_FALSE, &rect, 0, (char*) str);
 }
-
 
 void SetWindowTitle(char *title)
 {
@@ -1253,140 +1179,137 @@ unsigned char* GetSDLScreenLinePtr(int line)
 
 	//printf("%d %d\n", low, high);
 
-	if(line<0){
+	if (line < 0)
+	{
 		//printf("*** ASKED TO RENDER TO LINE %d [low=%d, high=%d\n", line, low, high);
 		//SDL_Delay(500);
-		return (unsigned char *) video_output->pixels;
+		return (unsigned char *)video_output->pixels;
 	}
-
-	if(line>800-1){
+	else if (line >= 800)
+	{
 		//printf("*** ASKED TO RENDER TO LINE %d [low=%d, high=%d\n", line, low, high);
-		return (unsigned char *) video_output->pixels + 799 * video_output->pitch;
+		return (unsigned char *)video_output->pixels + 799 * video_output->pitch;
 	}
 
-	return  (unsigned char *) video_output->pixels + line * video_output->pitch;
+	return (unsigned char *)video_output->pixels + line * video_output->pitch;
 }
 
+// Converts an SDL key into a BBC key.
 
-/* Converts an SDL key into a BBC key.
- *
- */
-
-struct BeebKeyTrans {
-//  KeySym sym;
-  int sym;
-  int row;
-  int col;
+struct BeebKeyTrans
+{
+	// KeySym sym;
+	int sym;
+	int row;
+	int col;
 };
 
-static struct BeebKeyTrans SDLtoBeebEmKeymap[]={
-// SDL          BBC     BBC KEY NAME (see doc/keyboard.jpg)
+static BeebKeyTrans SDLtoBeebEmKeymap[] =
+{
+	// SDL            BBC     BBC KEY NAME (see doc/keyboard.jpg)
+	{ SDLK_TAB,       6, 0 }, // TAB
+	{ SDLK_RETURN,    4, 9 }, // RETURN
 
+	{ SDLK_LCTRL,     0, 1 }, // CONTROL
+	{ SDLK_RCTRL,     0, 1 }, // CONTROL
 
-{SDLK_TAB,		6,0},    // TAB  
-{SDLK_RETURN,		4,9},    // RETURN
+	{ SDLK_LSHIFT,    0, 0 }, // SHIFT
+	{ SDLK_RSHIFT,    0, 0 }, // SHIFT
 
-{SDLK_LCTRL,		0,1},    // CONTROL
-{SDLK_RCTRL,		0,1},    // CONTROL
+	{ SDLK_CAPSLOCK,  4, 0 }, // CAPS LOCK (Totally fucked up in SDL..)
+	{ SDLK_LSUPER,    4, 0 }, // CAPS LOCK (so Alt Gr is also CAPS-LOCK..)
 
-{SDLK_LSHIFT,		0,0},	// SHIFT
-{SDLK_RSHIFT,		0,0},	// SHIFT
+	{ SDLK_ESCAPE,    7, 0 }, // ESCAPE
+	{ SDLK_SPACE,     6, 2 }, // SPACE
 
-{SDLK_CAPSLOCK,		4,0},    // CAPS LOCK (Totally fucked up in SDL..)
-{SDLK_LSUPER,		4,0},	// CAPS LOCK (so Alt Gr is also CAPS-LOCK..)
+	{ SDLK_LEFT,      1, 9 }, // LEFT
+	{ SDLK_UP,        3, 9 }, // UP
+	{ SDLK_RIGHT,     7, 9 }, // RIGHT
+	{ SDLK_DOWN,      2, 9 }, // DOWN
 
-{SDLK_ESCAPE,		7,0},    // ESCAPE
-{SDLK_SPACE,		6,2},    // SPACE
+	{ SDLK_DELETE,    5, 9 }, // DELETE
+	{ SDLK_BACKSPACE, 5, 9 }, // DELETE
 
-{SDLK_LEFT,		1,9},    // LEFT
-{SDLK_UP,		3,9},    // UP
-{SDLK_RIGHT,		7,9},    // RIGHT
-{SDLK_DOWN,		2,9},    // DOWN
+	{ SDLK_INSERT,    6, 9 }, // COPY
 
-{SDLK_DELETE,		5,9},    // DELETE
-{SDLK_BACKSPACE,	5,9},    // DELETE
+	{ SDLK_0, 2,7 },    // 0
+	{ SDLK_1, 3,0 },    // 1
+	{ SDLK_2, 3,1 },    // 2
+	{ SDLK_3, 1,1 },    // 3
+	{ SDLK_4, 1,2 },    // 4
+	{ SDLK_5, 1,3 },    // 5
+	{ SDLK_6, 3,4 },    // 6
+	{ SDLK_7, 2,4 },    // 7
+	{ SDLK_8, 1,5 },    // 8
+	{ SDLK_9, 2,6 },    // 9
+	{ SDLK_a, 4,1 },    // A
+	{ SDLK_b, 6,4 },    // B
+	{ SDLK_c, 5,2 },    // C
+	{ SDLK_d, 3,2 },    // D
+	{ SDLK_e, 2,2 },    // E
+	{ SDLK_f, 4,3 },    // F
+	{ SDLK_g, 5,3 },    // G
+	{ SDLK_h, 5,4 },    // H
+	{ SDLK_i, 2,5 },    // I
+	{ SDLK_j, 4,5 },    // J
+	{ SDLK_k, 4,6 },    // K
+	{ SDLK_l, 5,6 },    // L
+	{ SDLK_m, 6,5 },    // M
+	{ SDLK_n, 5,5 },    // N
+	{ SDLK_o, 3,6 },    // O
+	{ SDLK_p, 3,7 },    // P
+	{ SDLK_q, 1,0 },    // Q
+	{ SDLK_r, 3,3 },    // R
+	{ SDLK_s, 5,1 },    // S
+	{ SDLK_t, 2,3 },    // T
+	{ SDLK_u, 3,5 },    // U
+	{ SDLK_v, 6,3 },    // V
+	{ SDLK_w, 2,1 },    // W
+	{ SDLK_x, 4,2 },    // X
+	{ SDLK_y, 4,4 },    // Y
+	{ SDLK_z, 6,1 },    // Z
+	{ SDLK_F10, 2,0 },    // f0
+	{ SDLK_F1, 7,1 },    // f1
+	{ SDLK_F2, 7,2 },    // f2
+	{ SDLK_F3, 7,3 },    // f3
+	{ SDLK_F4, 1,4 },    // f4
+	{ SDLK_F5, 7,4 },    // f5
+	{ SDLK_F6, 7,5 },    // f6
+	{ SDLK_F7, 1,6 },    // f7
+	{ SDLK_F8, 7,6 },    // f8
+	{ SDLK_F9, 7,7 },    // f9
 
-{SDLK_INSERT,		6,9},	// COPY
+	{ SDLK_MINUS,     5, 7 }, // "+" / ";"
+	{ SDLK_COMMA,     6, 6 }, // "<" / ","
+	{ SDLK_EQUALS,    1, 7 }, // "=" / "-"
+	{ SDLK_PERIOD,    6, 7 }, // ">" / "."
+	{ SDLK_BACKQUOTE, 2, 8 }, // "-" / "ï¿½"
 
-{SDLK_0,		2,7},    // 0
-{SDLK_1,		3,0},    // 1
-{SDLK_2,		3,1},    // 2
-{SDLK_3,		1,1},    // 3
-{SDLK_4,		1,2},    // 4
-{SDLK_5,		1,3},    // 5
-{SDLK_6,		3,4},    // 6
-{SDLK_7,		2,4},    // 7
-{SDLK_8,		1,5},    // 8
-{SDLK_9,		2,6},    // 9
-{SDLK_a,		4,1},    // A
-{SDLK_b,		6,4},    // B
-{SDLK_c,		5,2},    // C
-{SDLK_d,		3,2},    // D
-{SDLK_e,		2,2},    // E
-{SDLK_f,		4,3},    // F
-{SDLK_g,		5,3},    // G
-{SDLK_h,		5,4},    // H
-{SDLK_i,		2,5},    // I
-{SDLK_j,		4,5},    // J
-{SDLK_k,		4,6},    // K
-{SDLK_l,		5,6},    // L
-{SDLK_m,		6,5},    // M
-{SDLK_n,		5,5},    // N
-{SDLK_o,		3,6},    // O
-{SDLK_p,		3,7},    // P
-{SDLK_q,		1,0},    // Q
-{SDLK_r,		3,3},    // R
-{SDLK_s,		5,1},    // S
-{SDLK_t,		2,3},    // T
-{SDLK_u,		3,5},    // U
-{SDLK_v,		6,3},    // V
-{SDLK_w,		2,1},    // W
-{SDLK_x,		4,2},    // X
-{SDLK_y,		4,4},    // Y
-{SDLK_z,		6,1},    // Z
-{SDLK_F10,		2,0},    // f0
-{SDLK_F1,		7,1},    // f1
-{SDLK_F2,		7,2},    // f2
-{SDLK_F3,		7,3},    // f3
-{SDLK_F4,		1,4},    // f4
-{SDLK_F5,		7,4},    // f5
-{SDLK_F6,		7,5},    // f6
-{SDLK_F7,		1,6},    // f7
-{SDLK_F8,		7,6},    // f8
-{SDLK_F9,		7,7},    // f9
+	{ SDLK_SEMICOLON, 4, 7 }, // "@"
+	{ SDLK_QUOTE,     4, 8 }, // "*" / ":"
 
-{SDLK_MINUS,		5,7},	// "+" / ";"
-{SDLK_COMMA,		6,6},	// "<" / ","
-{SDLK_EQUALS,		1,7},	// "=" / "-"
-{SDLK_PERIOD,		6,7},	// ">" / "."
-{SDLK_BACKQUOTE,	2,8},	// "-" / "£"
+	{ SDLK_SLASH, 6,8 }, // "/" / "?"
 
+	{ SDLK_HASH, 1,8 }, // circumflex / tilde
 
-{SDLK_SEMICOLON,	4,7},	// "@"
-{SDLK_QUOTE,		4,8},	// "*" / ":"
+	{ SDLK_PAUSE,           2, -2 }, // BREAK
 
-{SDLK_SLASH,		6,8},	// "/" / "?"
+	{ SDLK_LEFTBRACKET,     3, 8 }, // "[" / "{" or left arrow and 1/4 (mode 7)
+	{ SDLK_RIGHTBRACKET,    5, 8 }, // "]" / "}" or right arrow and 3/4 (mode 7)
 
-{SDLK_HASH,		1,8}, 	// circumflex / tilde
+	{ SDLK_BACKSLASH,       7, 8 }, // "\" / "|" or 1/4 and || (mode 7)
 
-{SDLK_PAUSE,		-2,-2},	// BREAK
+	//,   -3,-3,  // ******** PAGE UP
+	//,   -3,-4,  // ******** PAGE DOWN
+	//,   -4,0,   // ******** KEYPAD PLUS
+	//,   -4,1,   // ******** KEYPAD MINUS
+	//              // The following key codes have different symbols in mode 7
+	//,	1,8,	// *** an up arrow and a maths divison symbol or
+	//,	3,8,	// *** a left facing arrow and a 1/4 percentage symbol or [/{
+	//,	7,8,	// *** a 1/2 percentage symbol and two vertical lines or \/|
+	//,	5,8,	// *** a right facing arrow and a 3/4 percentage symbol or ]/}
 
-{SDLK_LEFTBRACKET,      3,8},   // "[" / "{" or left arrow and 1/4 (mode 7)
-{SDLK_RIGHTBRACKET,     5,8},   // "]" / "}" or right arrow and 3/4 (mode 7)
-
-{SDLK_BACKSLASH,        7,8},   // "\" / "|" or 1/4 and || (mode 7)
-
-//,   -3,-3,  // ******** PAGE UP
-//,   -3,-4,  // ******** PAGE DOWN
-//,   -4,0,   // ******** KEYPAD PLUS
-//,   -4,1,   // ******** KEYPAD MINUS
-//              // The following key codes have different symbols in mode 7
-//,	1,8,	// *** an up arrow and a maths divison symbol or
-//,	3,8,	// *** a left facing arrow and a 1/4 percentage symbol or [/{
-//,	7,8,	// *** a 1/2 percentage symbol and two vertical lines or \/|
-//,	5,8,	// *** a right facing arrow and a 3/4 percentage symbol or ]/}
-
-{-1, -1, -1}              // ** END OF LIST **
+	{ -1, -1, -1 } // ** END OF LIST **
 };
 
 /* Converts 'SDL_keysym' into BeebEm's 'int col, row' format.
@@ -1395,17 +1318,16 @@ static struct BeebKeyTrans SDLtoBeebEmKeymap[]={
  * have been set)
  */
 
-int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
- , int *row)
+int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col, int *row)
 {
-//	int bsymwaspressed;
-//	Uint8 *keystate;
+	//	int bsymwaspressed;
+	//	Uint8 *keystate;
 	struct BeebKeyTrans *p = SDLtoBeebEmKeymap;
 
 	// Calc the key's state.  We could probably pass this, but I'd rather
 	// have this function as self contained as possible.
-//	keystate = SDL_GetKeyState(NULL);
-//	bsymwaspressed = keystate[keysym.sym];
+	//	keystate = SDL_GetKeyState(NULL);
+	//	bsymwaspressed = keystate[keysym.sym];
 
 	// Now we can convert this key into a BBC scancode:
 	for(;((p->row != -1) && (p->sym != keysym.sym));p++);
@@ -1413,20 +1335,17 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 	// Map the key pressed. If not matched sets as -1, -1
 	*(row) = p->row;
 	*(col) = p->col;
-//	*(pressed) = (bsymwaspressed ? 1 : 0);
+	//	*(pressed) = (bsymwaspressed ? 1 : 0);
 
-//	printf("KEY [%d][%d][%d]\n", keysym.sym, p->row, p->col);
+	//	printf("KEY [%d][%d][%d]\n", keysym.sym, p->row, p->col);
 
-	return(1);
+	return 1;
 }
-
-
-
 
 //--/* Initialize GUI. Must be called before any other EG function call.
 //-- */
 //--EG_BOOL EG_Initialize(void)
-//--{	
+//--{
 //--//	/* Initialize event handler:
 //--//	 */
 //--//	if (EG_Event_InitializeQueue() == EG_FALSE)
@@ -1663,12 +1582,12 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--}
 //--
 //--void EG_Draw_Box(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color)
-//--{       
+//--{
 //--	SDL_Rect drawing_area = EG_Draw_CalcDrawingArea(surface, area);
-//--      
+//--
 //--        if (surface == NULL)
 //--                return;
-//--        
+//--
 //--	drawing_area.x = (int) (drawing_area.x * EG_Draw_GetScale() );
 //--	drawing_area.y = (int) (drawing_area.y * EG_Draw_GetScale() );
 //--	drawing_area.w = (int) (drawing_area.w * EG_Draw_GetScale() );
@@ -1704,8 +1623,8 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--			 , (Uint8) color->r
 //--			 , (Uint8) color->g
 //--			 , (Uint8) color->b );
-//--			
-//--			dull_col = bright_col;	
+//--
+//--			dull_col = bright_col;
 //--		break;
 //--
 //--		case EG_Draw_Border_BoxHigh:
@@ -1713,7 +1632,7 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 //--			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 //--			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-//--	
+//--
 //--			dull_col = SDL_MapRGB(surface->format
 //--			 , (int) (color->r * 0.6666)
 //--			 , (int) (color->g * 0.6666)
@@ -1725,7 +1644,7 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 //--			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 //--			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-//--	
+//--
 //--			bright_col = SDL_MapRGB(surface->format
 //--			 , (int) (color->r * 0.6666)
 //--			 , (int) (color->g * 0.6666)
@@ -1745,13 +1664,13 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--	}
 //--
 //--        // Top line:
-//--        line.x = drawing_area.x  +1  ; line.y = drawing_area.y; 
+//--        line.x = drawing_area.x  +1  ; line.y = drawing_area.y;
 //--	line.w = drawing_area.w  -2  ; line.h = 1;
 //--        SDL_FillRect(surface, &line, bright_col);
 //--
 //--        // Bottom line:
 //--        line.x = drawing_area.x  +1  ; line.y = drawing_area.y + drawing_area.h-1;
-//--	line.w = drawing_area.w  -2  ; 
+//--	line.w = drawing_area.w  -2  ;
 //--	line.h = 1;
 //-- //       SDL_FillRect(surface, &line, dull_col);
 //--
@@ -1800,8 +1719,8 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--			 , (Uint8) color->r
 //--			 , (Uint8) color->g
 //--			 , (Uint8) color->b );
-//--			
-//--			dull_col = bright_col;	
+//--
+//--			dull_col = bright_col;
 //--		break;
 //--
 //--		case EG_Draw_Border_BoxHigh:
@@ -1809,7 +1728,7 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 //--			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 //--			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-//--	
+//--
 //--			dull_col = SDL_MapRGB(surface->format
 //--			 , (int) (color->r * 0.6666)
 //--			 , (int) (color->g * 0.6666)
@@ -1821,7 +1740,7 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
 //--			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
 //--			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
-//--	
+//--
 //--			bright_col = SDL_MapRGB(surface->format
 //--			 , (int) (color->r * 0.6666)
 //--			 , (int) (color->g * 0.6666)
@@ -1840,13 +1759,13 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col
 //--	}
 //--
 //--        // Top line:
-//--        line.x = drawing_area.x  +1  ; line.y = drawing_area.y; 
+//--        line.x = drawing_area.x  +1  ; line.y = drawing_area.y;
 //--	line.w = drawing_area.w  -2  ; line.h = 1;
 //--        SDL_FillRect(surface, &line, bright_col);
 //--
 //--        // Bottom line:
 //--        line.x = drawing_area.x  +1  ; line.y = drawing_area.y + drawing_area.h-1;
-//--	line.w = drawing_area.w  -2  ; 
+//--	line.w = drawing_area.w  -2  ;
 //--	line.h = 1;
 //--        SDL_FillRect(surface, &line, dull_col);
 //--

@@ -18,11 +18,16 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA  02110-1301, USA.
 ****************************************************************/
 
-#include <windows.h>
+#include "Windows.h"
 
-#include <stdarg.h>
+#include <string.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "FileUtils.h"
+#include "StringUtils.h"
 
 /****************************************************************************/
 
@@ -32,20 +37,50 @@ const char DIR_SEPARATOR = '\\';
 
 bool FileExists(const char* PathName)
 {
+	#ifdef WIN32
+
 	DWORD dwAttrib = GetFileAttributes(PathName);
 
 	return dwAttrib != INVALID_FILE_ATTRIBUTES &&
 	       !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+
+	#else
+
+	struct stat st;
+	
+	if (stat(PathName, &st) == -1)
+	{
+		return false;
+	}
+
+	return S_ISREG(st.st_mode);
+
+	#endif
 }
 
 /****************************************************************************/
 
 bool FolderExists(const char* PathName)
 {
+	#ifdef WIN32
+
 	DWORD dwAttrib = GetFileAttributes(PathName);
 
 	return dwAttrib != INVALID_FILE_ATTRIBUTES &&
 	       (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+	#else
+
+	struct stat st;
+	
+	if (stat(PathName, &st) == -1)
+	{
+		return false;
+	}
+
+	return S_ISDIR(st.st_mode);
+
+	#endif
 }
 
 /****************************************************************************/
@@ -77,7 +112,7 @@ bool HasFileExt(const char* FileName, const char* Ext)
 	const size_t FileNameLen = strlen(FileName);
 
 	return FileNameLen >= ExtLen &&
-	       _stricmp(FileName + FileNameLen - ExtLen, Ext) == 0;
+	       StrCaseCmp(FileName + FileNameLen - ExtLen, Ext) == 0;
 }
 
 /****************************************************************************/

@@ -40,11 +40,12 @@ Boston, MA  02110-1301, USA.
 #include "DiscType.h"
 #include "KeyMap.h"
 #include "Model.h"
+#include "MonitorType.h"
 #include "Port.h"
 #include "Preferences.h"
+#include "SoundStreamerType.h"
 #include "Tube.h"
 #include "Video.h"
-#include "Windows.h"
 
 // Registry defs for disabling windows keys
 #define CFG_KEYBOARD_LAYOUT "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layout"
@@ -63,12 +64,16 @@ union SixteenUChars
 	unsigned char data[16];
 	EightByteType eightbytes[2];
 };
- 
-//-- typedef struct bmiData
-//-- {
-//--   BITMAPINFOHEADER	bmiHeader;
-//--   RGBQUAD			bmiColors[256];
-//-- } bmiData;
+
+#ifdef WIN32
+
+struct bmiData
+{
+	BITMAPINFOHEADER bmiHeader;
+	RGBQUAD bmiColors[256];
+};
+
+#endif
 
 struct LEDType
 {
@@ -139,25 +144,11 @@ enum class MessageResult
 	Cancel
 };
 
-enum class MonitorType
-{
-	RGB,
-	BW,
-	Amber,
-	Green
-};
-
 enum class DisplayRendererType
 {
 	GDI,
 	DirectDraw,
 	DirectX9
-};
-
-enum class SoundStreamerType
-{
-	XAudio2,
-	DirectSound
 };
 
 enum class JoystickOption
@@ -245,19 +236,32 @@ public:
 	BeebWin();
 	~BeebWin();
 
-	enum PaletteType { RGB, BW, AMBER, GREEN } palette_type;
+	bool Initialise();
+	void ApplyPrefs();
+	void Shutdown();
 
-	void Initialise();
+	#ifdef WIN32
+
+	static LRESULT CALLBACK WndProc(HWND hWnd,
+	                                UINT nMessage,
+	                                WPARAM wParam,
+	                                LPARAM lParam);
+
+	LRESULT WndProc(UINT nMessage, WPARAM wParam, LPARAM lParam);
+
+	#endif
 
 	void UpdateModelMenu();
 	void SetSoundMenu(void);
 	void SetPBuff(void);
 	void SetImageName(const char *DiscName, int Drive, DiscType Type);
 	void SetTapeSpeedMenu();
+	void SetUnlockTape(bool Unlock);
 	void SetRomMenu(); // LRW  Added for individual ROM/RAM
+	void SelectTube(TubeDevice Device);
+	void UpdateTubeMenu();
 	void SelectFDC();
 	void LoadFDC(char *DLLName, bool save);
-	void KillDLLs(void);
 	void UpdateLEDMenu();
 	void SetDriveControl(unsigned char value);
 	unsigned char GetDriveControl(void);
@@ -267,195 +271,45 @@ public:
 		updateLines(m_hDC, StartY, NLines);
 	}
 
-//+>
-	bool CursorShouldBeHidden(void){if (m_HideCursor)return true; else return false;}
-//<+
+	bool CursorShouldBeHidden(){ return m_HideCursor; }
 
-	void doHorizLine(unsigned long Col, int y, int sx, int width);
-	void doInvHorizLine(unsigned long Col, int y, int sx, int width);
-	void doUHorizLine(unsigned long Col, int y, int sx, int width);
-
-
-/*
-	void doHorizLine(unsigned long Col, int y, int sx, int width) {
-//->		if (TeletextEnabled) y/=TeletextStyle;
-//--		int d = (y*800)+sx+ScreenAdjust+(TeletextEnabled?36:0);
-//--		if ((d+width)>(500*800)) return;
-//--		if (d<0) return;
-//--		memset(m_screen+d, Col, width);
-//++
-		int d;
-		unsigned char *p = NULL;
-
-		if (TeletextEnabled)
-			y/=TeletextStyle;
-
-
-
-		switch (fullscreen
-		 ?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution) {
-			case RESOLUTION_640X512:
-				break;
-			case RESOLUTION_640X480_S:
-				break;
-			case RESOLUTION_640X480_V:
-				break;
-			case RESOLUTION_320X240_S:
-				break;
-			case RESOLUTION_320X240_V:
-				break;
-			case RESOLUTION_320X256:
-				break;
-			default:
-				break;
-		}
-
-
-
-
-
-		if (y >= 600){
-			//pERROR(dL"[0332]: y >= 600 (is %d)", dR, (int) y);
-			return;
-		}
-
-//->		d = sx+(TeletextEnabled?36:0);
-//++
-		d = sx+(TeletextEnabled?72:0);
-//<-
-
-		if ( d < 0) { return; } // qERROR("[0332]: d < 0"); return; }
-	
-		p = (unsigned char*) GetSDLScreenLinePtr(y-2);
-		if (p == NULL){
-			qERROR("GetSDLScreenLinePtr returned NULL!");
-			exit(1);
-		}else{
-			memset(p + d, Col, width);
-		}
-//<-
-	};
-
-	void doInvHorizLine(unsigned long Col, int y, int sx, int width) {
-//->		if (TeletextEnabled) y/=TeletextStyle;
-//--		int d = (y*800)+sx+ScreenAdjust+(TeletextEnabled?36:0);
-//--		char *vaddr;
-//--		if ((d+width)>(500*800)) return;
-//--		if (d<0) return;
-//--		vaddr=m_screen+d;
-//--		for (int n=0;n<width;n++) *(vaddr+n)^=Col;
-//++
+	void doHorizLine(int Colour, int y, int sx, int width) {
 		if (TeletextEnabled) y/=TeletextStyle;
+		int d = (y*800)+sx+ScreenAdjust+(TeletextEnabled?36:0);
+		if ((d+width)>(500*800)) return;
+		if (d<0) return;
+		memset(m_screen+d, Colour, width);
+	}
 
+	void doInvHorizLine(int Colour, int y, int sx, int width) {
+		if (TeletextEnabled) y/=TeletextStyle;
+		int d = (y*800)+sx+ScreenAdjust+(TeletextEnabled?36:0);
 		char *vaddr;
-		int d, n;
+		if ((d+width)>(500*800)) return;
+		if (d<0) return;
+		vaddr=m_screen+d;
+		for (int n = 0; n < width; n++) *(vaddr+n) ^= Colour;
+	}
 
-//->		d = sx + (TeletextEnabled?36:0);
-//++
-		d = sx + (TeletextEnabled?72:0);
-//<-
-		if ( y >= 600) {
-			//pERROR(dL"[0333]: y >= 600 (is %d)", dR, (int) y); 
-			return; 
-		}
+	void doUHorizLine(int Colour, int y, int sx, int width) {
+		if (TeletextEnabled) y /= TeletextStyle;
+		if (y > 500) return;
+		memset(m_screen + (y * 800) + sx, Colour, width);
+	}
 
-		if ( d < 0) { return; } //qERROR("[0333]: d < 0"); return; }
-
-		vaddr = (char*) GetSDLScreenLinePtr(y);
-		if (vaddr == NULL) {
-			qERROR("GetSDLScreenLinePtr returned NULL!");
-			exit(1);
-		} else {
-			vaddr += d;
-			for (n = 0; n < width; n++) *(vaddr + n) ^= Col;
-		}
-//<-
-	};
-
-	void doUHorizLine(unsigned long Col, int y, int sx, int width) {
-//->		if (TeletextEnabled) y/=TeletextStyle;
-//--		if (y>500) return;
-//--		memset(m_screen+ (y* 800) + sx, Col, width);
-//++
-		unsigned char *p = NULL;
-
-		if (TeletextEnabled) y/=TeletextStyle;
-		
-		if ( y>=600) { 
-			//pERROR(dL"[0334]: y >= 600 (is %d)", dR, (int) y); 
-			return; 
-		}
-
-		p = (unsigned char*) GetSDLScreenLinePtr(y);
-		if (p == NULL){
-			qERROR("GetSDLScreenLinePtr returned NULL!");
-			exit(1);
-		}else{
-			memset(p + sx, Col, width);
-		}
-//<-
-	};
-*/
-
+	// TODO: set m_screen to video_output->pixels
 	EightUChars *GetLinePtr(int y) {
-//->		int d = (y*800)+ScreenAdjust;
-//--		if (d > (MAX_VIDEO_SCAN_LINES*800))
-//--			return((EightUChars *)(m_screen+(MAX_VIDEO_SCAN_LINES*800)));
-//--		return((EightUChars *)(m_screen + d));
-//++
-		unsigned char *p = NULL;
-		if (y > MAX_VIDEO_SCAN_LINES){
-			//qERROR("MAX_VIDEO_SCAN_LINES EXCEEDED!");
-			y = MAX_VIDEO_SCAN_LINES;
-		}
-
-		p = GetSDLScreenLinePtr(y);
-		if (p == NULL){
-			qERROR("GetSDLScreenLinePtr returned NULL!");
-			exit(1);
-		}
-
-		p+=ScreenAdjust;
-
-		return (EightUChars*) p;
-//<-
+		int d = (y * 800) + ScreenAdjust;
+		if (d > MAX_VIDEO_SCAN_LINES * 800)
+			return (EightUChars *)(m_screen + MAX_VIDEO_SCAN_LINES * 800);
+		return (EightUChars *)(m_screen + d);
 	}
 
 	SixteenUChars *GetLinePtr16(int y) {
-//->		int d = (y*800)+ScreenAdjust;
-//--		if (d > (MAX_VIDEO_SCAN_LINES*800))
-//--			return((SixteenUChars *)(m_screen+(MAX_VIDEO_SCAN_LINES*800)));
-//--		return((SixteenUChars *)(m_screen + d));
-//++
-		unsigned char *p = NULL;
-		if (y > MAX_VIDEO_SCAN_LINES){
-			//qERROR("MAX_VIDEO_SCAN_LINES EXCEEDED!");
-			y = MAX_VIDEO_SCAN_LINES;
-		}
-
-		p = GetSDLScreenLinePtr(y);
-		if (p == NULL){
-			qERROR("GetSDLScreenLinePtr returned NULL!");
-			exit(1);
-		}
-
-		p+=ScreenAdjust;
-
-		return (SixteenUChars*) p;
-//<-
-	}
-
-	char *imageData(void) {
-//->		return (m_screen+ScreenAdjust>m_screen)?m_screen+ScreenAdjust:m_screen;
-//++
-		char *p = NULL;
-		p = (char*) GetSDLScreenLinePtr(0);
-		if (p == NULL){
-			qERROR("GetSDLScreenLinePtr returned NULL!");
-			exit(1);
-		}
-		return p;
-//<-
+		int d = (y * 800) + ScreenAdjust;
+		if (d > MAX_VIDEO_SCAN_LINES * 800)
+			return (SixteenUChars *)(m_screen + MAX_VIDEO_SCAN_LINES * 800);
+		return (SixteenUChars *)(m_screen + d);
 	}
 
 	HWND GethWnd() { return m_hWnd; }
@@ -464,26 +318,43 @@ public:
 	void ResetBeebSystem(Model NewModelType, bool LoadRoms);
 	void Break();
 
+	void CreateArmCoPro();
+	void DestroyArmCoPro();
+	void CreateSprowCoPro();
+	void DestroySprowCoPro();
+
 	int StartOfFrame(void);
 	bool UpdateTiming();
 	void AdjustSpeed(bool up);
-	void DisplayTiming(void);
 	bool ShouldDisplayTiming() const;
+	void DisplayTiming();
 	void UpdateWindowTitle();
 	bool IsWindowMinimized() const;
 	void DisplayClientAreaText(HDC hDC);
 	void DisplayFDCBoardInfo(HDC hDC, int x, int y);
+
+	#ifdef WIN32
+	void InitJoystick();
+	void ResetJoystick();
 	void ScaleJoystick(unsigned int x, unsigned int y);
+	#endif
+
 	void SetMousestickButton(int index, bool button);
 	void ScaleMousestick(unsigned int x, unsigned int y);
 	void HandleCommand(UINT MenuID);
 	void SetAMXPosition(unsigned int x, unsigned int y);
 	void ChangeAMXPosition(int deltaX, int deltaY);
+	
+	#ifdef WIN32
 	void CaptureMouse();
 	void ReleaseMouse();
+	#endif
+
 	void Activate(bool Active);
 	void Focus(bool Focus);
+	#ifdef WIN32
 	void OnSize(WPARAM ResizeType, int Width, int Height);
+	#endif
 	bool IsFrozen() const;
 	void TogglePause();
 	bool IsPaused() const;
@@ -493,7 +364,6 @@ public:
 	void UserKeyboardDialogClosed();
 	void ShowMenu(bool on);
 	void HideMenu(bool hide);
-	void TrackPopupMenu(int x, int y);
 	bool IsFullScreen() const { return m_FullScreen; }
 	// Member function for SDL to access (+ some code that's still in main.cpp):
 	void SetFullScreenToggle(bool fullscreen) { m_FullScreen = fullscreen; }
@@ -504,6 +374,7 @@ public:
 	bool FindCommandLineFile(char *FileName);
 	void HandleCommandLineFile(int Drive, const char *FileName);
 	bool CheckUserDataPath(bool Persist);
+	bool CopyFiles(const char* SourceFileSpec, const char* DestPath);
 	void SelectUserDataPath(void);
 	void StoreUserDataPath(void);
 	bool NewTapeImage(char *FileName, int Size);
@@ -540,10 +411,17 @@ public:
 	void SaveEmuUEF(FILE *SUEF);
 	void LoadEmuUEF(FILE *SUEF,int Version);
 
+	#ifdef WIN32
 	bool InitClass();
-	void UpdateOptionsMenu();
 	bool CreateBeebWindow();
+	#endif
+	
+	void UpdateOptionsMenu();
+	
+	#ifdef WIN32
 	void DisableRoundedCorners(HWND hWnd);
+	#endif
+
 	void FlashWindow();
 	void CreateBitmap(void);
 	void InitMenu();
@@ -560,7 +438,11 @@ public:
 
 	void UpdateSFXMenu();
 
+	#ifdef WIN32
 	void DisableWindowsKeys();
+	bool RebootSystem();
+	#endif
+	
 	void UpdateDisableKeysMenu();
 
 	void SetDisplayRenderer(DisplayRendererType DisplayRenderer);
@@ -630,8 +512,6 @@ public:
 
 	void SetJoystickOption(JoystickOption Option);
 	void UpdateJoystickMenu();
-	void InitJoystick();
-	void ResetJoystick();
 
 	void RestoreState(void);
 	void SaveState(void);
@@ -713,7 +593,6 @@ public:
 	void TextViewSetCursorPos(int line, int col);
 	void TextViewSyncWithBeebCursor();
 
-	bool RebootSystem();
 	void LoadUserKeyMap(void);
 	void SaveUserKeyMap(void);
 
@@ -812,7 +691,9 @@ public:
 	HGDIOBJ m_hOldObj;
 	HDC m_hDCBitmap;
 	HGDIOBJ m_hBitmap;
+	#ifdef WIN32
 	bmiData m_bmi;
+	#endif
 	MonitorType m_MonitorType;
 	char* m_screen;
 	char* m_screen_blur;
@@ -950,7 +831,9 @@ public:
 	BitmapCaptureFormat m_BitmapCaptureFormat;
 
 	// Video capture
+	#ifdef WIN32
 	bmiData m_Avibmi;
+	#endif
 	HBITMAP m_AviDIB;
 	HDC m_AviDC;
 	char* m_AviScreen;
@@ -987,6 +870,12 @@ public:
 	// Debug
 	bool m_WriteInstructionCounts;
 };
+
+class CArm;
+class CSprowCoPro;
+
+extern CArm *arm;
+extern CSprowCoPro *sprow;
 
 extern const char DefaultBlurIntensities[8];
 

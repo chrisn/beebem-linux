@@ -19,11 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-/* SEE limits and BYTE-, WORD- and FASTREG - defintions im MEM_MMU.h */
+#ifndef Z80_HEADER
+#define Z80_HEADER
 
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
+/* SEE limits and BYTE-, WORD- and FASTREG - defintions im MEM_MMU.h */
 
 typedef unsigned short WORD;
 
@@ -44,13 +43,10 @@ extern WORD ix;
 extern WORD iy;
 extern WORD sp;
 extern WORD pc;
-extern WORD IFF;
+extern WORD IFF1;
+extern WORD IFF2;
 
 /* see definitions for memory in mem_mmu.h */
-
-#ifdef DEBUG
-extern volatile int stopsim;
-#endif
 
 extern FASTWORK simz80(FASTREG PC);
 
@@ -77,7 +73,7 @@ extern FASTWORK simz80(FASTREG PC);
 */
 
 #ifndef BIOS
-extern int in(unsigned int);
+extern unsigned char in(unsigned int);
 extern void out(unsigned int, unsigned char);
 #define Input(port) in(port)
 #define Output(port, value) out(port,value)
@@ -93,8 +89,6 @@ void init_z80();
 void Debug_Z80();
 int Z80_Disassemble(int adr, char *s);
 void PrintHex(int PC);
-extern int TorchTube;
-extern int Enable_Z80;
 unsigned char ReadZ80Mem(int pc);
 void WriteZ80Mem(int pc, unsigned char data);
 void Disp_RegSet1(char *str);
@@ -102,6 +96,10 @@ void Disp_RegSet2(char *str);
 
 void z80_NMI_Interrupt(void);
 void z80_IRQ_Interrupt(void);
-void set_Z80_irq_line(int state);
-void set_Z80_nmi_line(int state);
+void set_Z80_irq_line(bool state);
+void set_Z80_nmi_line(bool state);
 
+void SaveZ80UEF(FILE *SUEF);
+void LoadZ80UEF(FILE *SUEF);
+
+#endif

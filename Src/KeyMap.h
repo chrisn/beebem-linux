@@ -23,6 +23,8 @@ Boston, MA  02110-1301, USA.
 
 #include <string>
 
+#include <SDL.h>
+
 #include "BeebWin.h"
 
 struct KeyMapping {
@@ -31,7 +33,7 @@ struct KeyMapping {
 	bool shift; // Beeb shift state
 };
 
-constexpr int KEYMAP_SIZE = 256;
+constexpr int KEYMAP_SIZE = SDLK_LAST;
 
 typedef KeyMapping KeyMap[KEYMAP_SIZE][2]; // Indices are: [Virt key][shift state]
 

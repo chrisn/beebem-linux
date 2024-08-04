@@ -20,16 +20,16 @@ Boston, MA  02110-1301, USA.
 
 // Created by Jon Welch on 27/08/2006.
 
+#include "Windows.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <zlib.h>
 
-
 #include "Csw.h"
 #include "6502core.h"
 #include "BeebWin.h"
-#include "BeebSound.h"
 #include "Debug.h"
 #include "Serial.h"
 #include "Sound.h"

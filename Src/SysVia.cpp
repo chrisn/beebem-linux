@@ -1,690 +1,878 @@
-/****************************************************************************/
-/*              Beebem - (c) David Alan Gilbert 1994                        */
-/*              ------------------------------------                        */
-/* This program may be distributed freely within the following restrictions:*/
-/*                                                                          */
-/* 1) You may not charge for this program or for any part of it.            */
-/* 2) This copyright message must be distributed with all copies.           */
-/* 3) This program must be distributed complete with source code.  Binary   */
-/*    only distribution is not permitted.                                   */
-/* 4) The author offers no warrenties, or guarentees etc. - you use it at   */
-/*    your own risk.  If it messes something up or destroys your computer   */
-/*    thats YOUR problem.                                                   */
-/* 5) You may use small sections of code from this program in your own      */
-/*    applications - but you must acknowledge its use.  If you plan to use  */
-/*    large sections then please ask the author.                            */
-/*                                                                          */
-/* If you do not agree with any of the above then please do not use this    */
-/* program.                                                                 */
-/* Please report any problems to the author at beebem@treblig.org           */
-/****************************************************************************/
+/****************************************************************
+BeebEm - BBC Micro and Master 128 Emulator
+Copyright (C) 1994  David Alan Gilbert
+Copyright (C) 1997  Mike Wyatt
+Copyright (C) 2001  Richard Gellman
+Copyright (C) 2004  Ken Lowe
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA  02110-1301, USA.
+****************************************************************/
+
 /* System VIA support file for the beeb emulator- includes things like the
 keyboard emulation - David Alan Gilbert 30/10/94 */
 /* CMOS Ram finalised 06/01/2001 - Richard Gellman */
 
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
+#include "Windows.h"
 
-#include <iostream>
-#include <fstream>
 #include <stdio.h>
 #include <time.h>
-#include "Windows.h"
 
+#include "SysVia.h"
 #include "6502core.h"
-#include "Sound.h"
+#include "Bcd.h"
 #include "BeebMem.h"
 #include "BeebWin.h"
-#include "SysVia.h"
-#include "Via.h"
-#include "Main.h"
-#include "ViaState.h"
 #include "Debug.h"
+#include "DebugTrace.h"
+#include "IC32Latch.h"
+#include "Main.h"
+#include "Model.h"
+#include "Rtc.h"
+#include "Sound.h"
 #include "Speech.h"
+#include "Via.h"
 
-//--#ifdef WIN32
-#include "Windows.h"
-//--#endif
-
-using namespace std;
-
-/* Clock stuff for Master 128 RTC */
-time_t SysTime;
-struct tm * CurTime;
+// #define DEBUG_IC32
+// #define DEBUG_KEYBOARD
+// #define DEBUG_SLOW_DATA_BUS
 
 // Shift register stuff
-unsigned char SRMode;
-unsigned char SRCount;
-unsigned char SRData;
-unsigned char SREnabled;
+static unsigned char SRMode;
+static unsigned char SRCount;
+static unsigned char SRData;
+static unsigned char SREnabled;
 
-/* Fire button for joystick 1, 0=not pressed, 1=pressed */
-int JoystickButton = 0;
+// Fire button for joystick 1 and 2, false=not pressed, true=pressed
+bool JoystickButton[2] = { false, false };
 
-extern int DumpAfterEach;
-/* My raw VIA state */
+// My raw VIA state
 VIAState SysVIAState;
-char WECycles=0;
-char WEState=0;
+// static char WECycles = 0;
+// static char WEState = 0;
 
-/* State of the 8bit latch IC32 - bit 0 is WE for sound gen, B1 is read
-   select on speech proc, B2 is write select on speech proc, b4,b5 select
-   screen start address offset , b6 is CAPS lock, b7 is shift lock */
-unsigned char IC32State=0;
-unsigned char OldCMOSState=0;
+// Last value written to the slow data bus - sound reads it later
+static unsigned char SlowDataBusWriteValue = 0;
 
-// CMOS logging facilities
-unsigned char CMOSDebug=0;
-FILE *CMDF;
-FILE *vialog;
-/* Last value written to the slow data bus - sound reads it later */
-static unsigned char SlowDataBusWriteValue=0;
+// Currently selected keyboard row, column
+static unsigned int KBDRow = 0;
+static unsigned int KBDCol = 0;
 
-/* Currently selected keyboard row, column */
-static unsigned int KBDRow=0;
-static unsigned int KBDCol=0;
-
-static char SysViaKbdState[10][8]; /* Col,row */
-
+static bool SysViaKbdState[16][8]; // Col, row
 static int KeysDown=0;
 
-/*--------------------------------------------------------------------------*/
-static void UpdateIFRTopBit(void) {
-  /* Update top bit of IFR */
-  if (SysVIAState.ifr&(SysVIAState.ier&0x7f))
-    SysVIAState.ifr|=0x80;
-  else
-    SysVIAState.ifr&=0x7f;
-  intStatus&=~(1<<sysVia);
-  intStatus|=((SysVIAState.ifr & 128)?(1<<sysVia):0);
-}; /* UpdateIFRTopBit */
+unsigned char KeyboardLinks = 0;
 
-void PulseSysViaCB1(void) {
-/// Set IFR bit 4 - AtoD end of conversion interrupt
-	if (SysVIAState.ier & 16) {
-		SysVIAState.ifr|=16;
+/*--------------------------------------------------------------------------*/
+
+static void TranslateKeyboardLinks(unsigned char Value)
+{
+	for (int i = 0; i < 8; i++)
+	{
+		const int Row = 0;
+		const int Column = 9 - i;
+
+		if (Value & (1 << i))
+		{
+			BeebKeyDown(Row, Column);
+		}
+	}
+}
+
+/*--------------------------------------------------------------------------*/
+
+void BeebReleaseAllKeys()
+{
+	KeysDown = 0;
+
+	for (int Row = 0; Row < 8; Row++)
+	{
+		for (int Column = 0; Column < 16; Column++)
+		{
+			SysViaKbdState[Column][Row] = false;
+		}
+	}
+
+	if (MachineType != Model::Master128 && MachineType != Model::MasterET)
+	{
+		TranslateKeyboardLinks(KeyboardLinks);
+	}
+}
+
+/*--------------------------------------------------------------------------*/
+
+static void UpdateIFRTopBit()
+{
+	// Update top bit of IFR
+	if (SysVIAState.ifr & (SysVIAState.ier & 0x7f))
+	{
+		SysVIAState.ifr |= 0x80;
+		intStatus |= 1 << sysVia;
+	}
+	else
+	{
+		SysVIAState.ifr &= 0x7f;
+		intStatus &= ~(1 << sysVia);
+	}
+}
+
+/*--------------------------------------------------------------------------*/
+
+void PulseSysViaCB1()
+{
+	// Set IFR bit 4 - AtoD end of conversion interrupt
+	if (SysVIAState.ier & 16)
+	{
+		SysVIAState.ifr |= 16;
 		UpdateIFRTopBit();
 	}
 }
 
 /*--------------------------------------------------------------------------*/
-void BeebKeyUp(int row,int col) {
-  if (row<0 || col<0) return;
 
-  /* Update keys down count - unless its shift/control */
-  if ((SysViaKbdState[col][row]) && (row!=0)) KeysDown--;
+void DoKbdIntCheck()
+{
+	// Now lets see if we just caused a CA2 interrupt - note we will flag
+	// it multiply - we aren't going to test for the edge
+	// Two cases - write enable is OFF the keyboard - basically any key will cause an
+	// interrupt in a few cycles.
 
-  SysViaKbdState[col][row]=0;
-}; /* BeebKeyUp */
+	#ifdef DEBUG_KEYBOARD
+	int Oldflag = (SysVIAState.ifr & 1);
+	#endif
 
-/*--------------------------------------------------------------------------*/
-void BeebReleaseAllKeys() {
+	if (KeysDown > 0 && (SysVIAState.pcr & 0xc) == 4)
+	{
+		if (IC32State & IC32_KEYBOARD_WRITE)
+		{
+			SysVIAState.ifr |= 1; // CA2
+			//DebugTrace("DoKbdIntCheck: Caused interrupt case 1\n");
+			UpdateIFRTopBit();
+		}
+		else
+		{
+			if (KBDCol < 15)
+			{
+				for (int Row = 1; Row < 8; Row++)
+				{
+					if (SysViaKbdState[KBDCol][Row])
+					{
+						SysVIAState.ifr |= 1;
+						// DebugTrace("DoKbdIntCheck: Caused interrupt case 2\n");
+						UpdateIFRTopBit();
+					}
+				}
+			}
+		} // WriteEnable on
+	} // Keys down and CA2 input enabled
 
-  KeysDown = 0;
-    for(int row=0;row<8;row++)
-      for(int col=0;col<10;col++)
-        SysViaKbdState[col][row]=0;
-}; /* BeebKeyUp */
+	#ifdef DEBUG_KEYBOARD
 
-/*--------------------------------------------------------------------------*/
-void DoKbdIntCheck() {
-  /* Now lets see if we just caused a CA2 interrupt - note we will flag
-     it multiply - we aren't going to test for the edge */
-  /* Two cases - write enable is OFF the keyboard - basically any key will cause an
-     interrupt in a few cycles.
-     */
-#ifdef KBDDEBUG
-  int Oldflag=(SysVIAState.ifr & 1);
-#endif
+	DebugTrace("DoKbdIntCheck KeysDown=%d pcr & c=%d IC32State & 8=%d "
+	           "KBDRow=%d KBDCol=%d oldIFRflag=%d Newflag=%d\n",
+	           KeysDown, SysVIAState.pcr & 0xc, IC32State & IC32_KEYBOARD_WRITE,
+	           KBDRow, KBDCol, Oldflag, SysVIAState.ifr & 1);
 
-  if ((KeysDown>0) && ((SysVIAState.pcr & 0xc)==4)) {
-    if ((IC32State & 8)==8) {
-      SysVIAState.ifr|=1; /* CA2 */
-      /*cerr << "DoKbdIntCheck: Caused interrupt case 1\n"; */
-      UpdateIFRTopBit();
-    } else {
-      if (KBDCol<10) {
-        int presrow;
-        for(presrow=1;presrow<8;presrow++) {
-          if (SysViaKbdState[KBDCol][presrow]) {
-            SysVIAState.ifr|=1;
-            /*cerr << "DoKbdIntCheck: Caused interrupt case 2\n"; */
-            UpdateIFRTopBit();
-          }
-        } /* presrow */
-      } /* KBDCol range */
-    } /* WriteEnable on */
-  } /* Keys down and CA2 input enabled */
-#ifdef KBDDEBUG
-  cout << "DoKbdIntCheck KeysDown=" << KeysDown << "pcr & c=" << (int)(SysVIAState.pcr & 0xc);
-  cout << " IC32State & 8=" << (int)(IC32State & 8) << " KBDRow=" << KBDRow << "KBDCol=" << KBDCol;
-  cout << " oldIFRflag=" << Oldflag << " Newflag=" << (int)(SysVIAState.ifr & 1) << "\n";
-#endif
-} /* DoKbdIntCheck */
+	#endif
+}
 
 /*--------------------------------------------------------------------------*/
-void BeebKeyDown(int row,int col) {
-  if (row<0 || col<0) return;
 
-  /* Update keys down count - unless its shift/control */
-  if ((!SysViaKbdState[col][row]) && (row!=0)) KeysDown++;
+void BeebKeyDown(int Row, int Column)
+{
+	if (Row < 0 || Column < 0)
+	{
+		return;
+	}
 
-  SysViaKbdState[col][row]=1;
+	// Update keys down count - unless it's shift/control
+	if (!SysViaKbdState[Column][Row] && Row != 0)
+	{
+		KeysDown++;
+	}
 
-  DoKbdIntCheck();
-#ifdef KBDDEBUG
-  DumpAfterEach=1;
-#endif
+	SysViaKbdState[Column][Row] = true;
 
-}; /* BeebKeyDown */
-
-
-/*--------------------------------------------------------------------------*/
-/* Return current state of the single bi output of the keyboard matrix - NOT the
-  any keypressed interrupt */
-static int KbdOP(void) {
-  /* Check range validity */
-  if ((KBDCol>9) || (KBDRow>7)) return(0); /* Key not down if overrange - perhaps we should do something more? */
-
-  return(SysViaKbdState[KBDCol][KBDRow]);
-} /* KbdOP */
-
+	DoKbdIntCheck();
+}
 
 /*--------------------------------------------------------------------------*/
-static void IC32Write(unsigned char Value) {
-  // Hello. This is Richard Gellman. It is 10:25pm, Friday 2nd February 2001
-  // I have to do CMOS RAM now. And I think I'm going slightly potty.
-  // Additional, Sunday 4th February 2001. I must have been potty. the line above did read January 2000.
-  int bit;
-  int oldval=IC32State;
-  unsigned char tmpCMOSState;
 
+void BeebKeyUp(int Row, int Column)
+{
+	if (Row < 0 || Column < 0)
+	{
+		return;
+	}
 
-  bit=Value & 7;
-  if (Value & 8) {
-    IC32State|=(1<<bit);
-  } else {
-    IC32State&=0xff-(1<<bit);
-  }
-  LEDs.CapsLock=((IC32State&64)==0);
-  LEDs.ShiftLock=((IC32State&128)==0);
-  /* hmm, CMOS RAM? */
-  // Monday 5th February 2001 - Scrapped my CMOS code, and restarted as according to the bible of the god Tom Lees
-  CMOS.Op=((IC32State & 2)>>1);
-  tmpCMOSState=(IC32State & 4)>>1;
-  CMOS.DataStrobe=(tmpCMOSState==OldCMOSState)?0:1;
-  OldCMOSState=tmpCMOSState;
-  if (CMOS.DataStrobe && CMOS.Enabled && !CMOS.Op && MachineType==3) {
-	  CMOSWrite(CMOS.Address,SlowDataBusWriteValue);
-	  if (CMOSDebug) fprintf(CMDF,"Wrote %02x to %02x\n",SlowDataBusWriteValue,CMOS.Address);
-  }
-  if (CMOS.Enabled && CMOS.Op && MachineType==3) {
-	  SysVIAState.ora=CMOSRead(CMOS.Address);
-	  if (CMOSDebug) fprintf(CMDF,"Read %02x from %02x\n",SysVIAState.ora,CMOS.Address);
-  }
+	// Update keys down count - unless it's shift/control
+	if (SysViaKbdState[Column][Row] && Row != 0)
+	{
+		KeysDown--;
+	}
 
-  /* Must do sound reg access when write line changes */
-//--#ifdef SOUNDSUPPORT
-  if (((oldval & 1)) && (!(IC32State & 1))) { Sound_RegWrite(SlowDataBusWriteValue); }
-  // now, this was a change from 0 to 1, but my docs say its a change from 1 to 0. might work better this way.
-//--#endif
-  /* cerr << "IC32State now=" << hex << int(IC32State) << dec << "\n"; */
+	SysViaKbdState[Column][Row] = false;
+}
 
-  if ( (bit == 2) && ( (Value & 8)  == 0) && (MachineType != 3) )		//  Write Command
-  {
-	  tms5220_data_w(SlowDataBusWriteValue);
-  }
+/*--------------------------------------------------------------------------*/
 
-  DoKbdIntCheck(); /* Should really only if write enable on KBD changes */
-} /* IC32Write */
+// Return current state of the single bit output of the keyboard matrix
+// - NOT the any keypressed interrupt
 
+static bool KbdOP()
+{
+	// Check range validity
+	if (KBDCol > 14 || KBDRow > 7) return false; // Key not down if overrange - perhaps we should do something more?
 
-void ChipClock(int Cycles) {
-//	if (WECycles>0) WECycles-=Cycles;
+	return SysViaKbdState[KBDCol][KBDRow];
+}
+
+/*--------------------------------------------------------------------------*/
+
+static void IC32Write(unsigned char Value)
+{
+	// Hello. This is Richard Gellman. It is 10:25pm, Friday 2nd February 2001
+	// I have to do CMOS RAM now. And I think I'm going slightly potty.
+	// Additional, Sunday 4th February 2001. I must have been potty. the line above did read January 2000.
+	int PrevIC32State = IC32State;
+
+	int Bit = Value & 7;
+
+	if (Value & 8)
+	{
+		#ifdef DEBUG_IC32
+
+		if (!(IC32State & (1 << Bit)))
+		{
+			DebugTrace("IC32 set bit %d (0x%02d)\n", Bit, 1 << Bit);
+		}
+
+		#endif
+
+		IC32State |= 1 << Bit;
+	}
+	else
+	{
+		#ifdef DEBUG_IC32
+
+		if (IC32State & (1 << Bit))
+		{
+			DebugTrace("IC32 clear bit %d (0x%02d)\n", Bit, 1 << Bit);
+		}
+
+		#endif
+
+		IC32State &= ~(1 << Bit);
+	}
+
+	LEDs.CapsLock = (IC32State & IC32_CAPS_LOCK) == 0;
+	LEDs.ShiftLock = (IC32State & IC32_SHIFT_LOCK) == 0;
+
+	if (MachineType == Model::Master128 || MachineType == Model::MasterET)
+	{
+		if (RTCIsChipEnable())
+		{
+			if (IC32State & IC32_RTC_READ)
+			{
+				// During read cycles, DS signifies the time that the RTC
+				// is to drive the bidirectional bus.
+				if (!(PrevIC32State & IC32_RTC_DATA_STROBE) && (IC32State & IC32_RTC_DATA_STROBE))
+				{
+					SysVIAState.ora = RTCReadData();
+				}
+			}
+			else
+			{
+				// In write cycles, the trailing edge of DS causes the RTC
+				// to latch the written data.
+				if ((PrevIC32State & IC32_RTC_DATA_STROBE) && !(IC32State & IC32_RTC_DATA_STROBE))
+				{
+					RTCWriteData(SysVIAState.ora);
+				}
+			}
+		}
+	}
+
+	// Must do sound reg access when write line changes
+
+	if ((PrevIC32State & IC32_SOUND_WRITE) && !(IC32State & IC32_SOUND_WRITE))
+	{
+		Sound_RegWrite(SlowDataBusWriteValue);
+	}
+
+	#if ENABLE_SPEECH
+
+	if (MachineType != Model::Master128 && MachineType != Model::MasterET)
+	{
+		if ((PrevIC32State & IC32_SPEECH_WRITE) && !(IC32State & IC32_SPEECH_WRITE))
+		{
+			SpeechWrite(SlowDataBusWriteValue);
+		}
+
+		if ((PrevIC32State & IC32_SPEECH_READ) && !(IC32State & IC32_SPEECH_READ))
+		{
+			SpeechReadEnable();
+		}
+	}
+
+	#endif
+
+	if (!(IC32State & IC32_KEYBOARD_WRITE) && (PrevIC32State & IC32_KEYBOARD_WRITE))
+	{
+		KBDRow = (SlowDataBusWriteValue >> 4) & 7;
+		KBDCol = (SlowDataBusWriteValue & 0xf);
+		DoKbdIntCheck(); /* Should really only if write enable on KBD changes */
+	}
+}
+
+void ChipClock(int /* nCycles */) {
+//	if (WECycles > 0) WECycles -= nCycles;
 //	else
 //	if (WEState) Sound_RegWrite(SlowDataBusWriteValue);
 }
 
 /*--------------------------------------------------------------------------*/
-static void SlowDataBusWrite(unsigned char Value) {
-  SlowDataBusWriteValue=Value;
-  /*cerr << "Slow data bus write IC32State=" << int(IC32State) << " Value=" << int(Value) << "\n";*/
-  if (!(IC32State & 8)) {
-    KBDRow=(Value>>4) & 7;
-    KBDCol=(Value & 0xf);
-    /*cerr << "SlowDataBusWrite to kbd  Row=" << KBDRow << " Col=" << KBDCol << "\n"; */
-    DoKbdIntCheck(); /* Should really only if write enable on KBD changes */
-  } /* kbd write */
 
-  if (CMOS.DataStrobe && CMOS.Enabled && !CMOS.Op && MachineType==3) 
-  {
-        CMOSWrite(CMOS.Address,Value);
-  }
+static void SlowDataBusWrite(unsigned char Value)
+{
+	SlowDataBusWriteValue = Value;
 
-//--#ifdef SOUNDSUPPORT
-  if (!(IC32State & 1)) {
+	#ifdef DEBUG_SLOW_DATA_BUS
+	DebugTrace("Slow data bus write IC32State=%d Value=0x%02x\n", IC32State, Value);
+	#endif
+
+	if ((IC32State & IC32_KEYBOARD_WRITE) == 0)
+	{
+		// kbd write
+		KBDRow = (Value >> 4) & 7;
+		KBDCol = Value & 0xf;
+		// DebugTrace("SlowDataBusWrite to kbd  Row=%d Col=%d\n", KBDRow, KBDCol);
+		DoKbdIntCheck(); /* Should really only if write enable on KBD changes */
+	}
+
+	if ((IC32State & IC32_SOUND_WRITE) == 0)
+	{
 		Sound_RegWrite(SlowDataBusWriteValue);
-  } 
-//--#endif
-
-
-} /* SlowDataBusWrite */
-
-
-/*--------------------------------------------------------------------------*/
-static int SlowDataBusRead(void) {
-  int result;
-  if (CMOS.Enabled && CMOS.Op && MachineType==3) 
-  {
-       SysVIAState.ora=CMOSRead(CMOS.Address); //SysVIAState.ddra ^ CMOSRAM[CMOS.Address];
-	  if (CMOSDebug) fprintf(CMDF,"Read %02x from %02x\n",SysVIAState.ora,CMOS.Address);
-  }
-  result=(SysVIAState.ora & SysVIAState.ddra);
-  if (CMOS.Enabled) result=(SysVIAState.ora & ~SysVIAState.ddra);
-  /* I don't know this lot properly - just put in things as we figure them out */
-  if (MachineType!=3) if (!(IC32State & 8)) { if (KbdOP()) result|=128; }
-  if ((MachineType==3) && (!CMOS.Enabled)) {
-	  if (KbdOP()) result|=128; 
-  }
-
-  if ((!(IC32State & 2)) && (MachineType != 3) ) {
-    result = tms5220_status_r();
-  }
-
-  if ((!(IC32State & 4)) && (MachineType != 3) ) {
-	  result = 0xff;
-  }
-
-  /* cerr << "SlowDataBusRead giving 0x" << hex << result << dec << "\n"; */
-  return(result);
-} /* SlowDataBusRead */
-
-
-/*--------------------------------------------------------------------------*/
-/* Address is in the range 0-f - with the fe40 stripped out */
-void SysVIAWrite(int Address, int Value) {
-  //fprintf(vialog,"SYSTEM VIA Write of %d (%02x) to address %d\n",Value,Value,Address);
-  /* cerr << "SysVIAWrite: Address=0x" << hex << Address << " Value=0x" << Value << dec << " at " << TotalCycles << "\n";
-  DumpRegs(); */
-
-	if (DebugEnabled) {
-		char info[200];
-		sprintf(info, "SysVia: Write address %X value %02X", (int)(Address & 0xf), Value & 0xff);
-		DebugDisplayTrace(DEBUG_SYSVIA, true, info);
 	}
-
-  switch (Address) {
-    case 0:
-	  // Clear bit 4 of IFR from ATOD Conversion
-      SysVIAState.ifr&=~16;
-      SysVIAState.orb=Value & 0xff;
-      IC32Write(Value);
-	  CMOS.Enabled=((Value & 64)>>6); // CMOS Chip select
-	  CMOS.Address=(((Value & 128)>>7)) ? SysVIAState.ora : CMOS.Address; // CMOS Address strobe
-      if ((SysVIAState.ifr & 8) && ((SysVIAState.pcr & 0x20)==0)) {
-        SysVIAState.ifr&=0xf7;
-        UpdateIFRTopBit();
-      };
-	  SysVIAState.ifr&=~16;
-	  UpdateIFRTopBit();
-      break;
-
-    case 1:
-      SysVIAState.ora=Value & 0xff;
-      SlowDataBusWrite(Value & 0xff);
-      SysVIAState.ifr&=0xfc;
-      UpdateIFRTopBit();
-      break;
-
-    case 2:
-      SysVIAState.ddrb=Value & 0xff;
-      break;
-
-    case 3:
-      SysVIAState.ddra=Value & 0xff;
-      break;
-
-    case 4:
-    case 6:
-      SysVIAState.timer1l&=0xff00;
-      SysVIAState.timer1l|=(Value & 0xff);
-      break;
-
-    case 5:
-      SysVIAState.timer1l&=0xff;
-      SysVIAState.timer1l|=(Value & 0xff)<<8;
-      SysVIAState.timer1c=SysVIAState.timer1l * 2 + 1;
-      SysVIAState.ifr &=0xbf; /* clear timer 1 ifr */
-      /* If PB7 toggling enabled, then lower PB7 now */
-      if (SysVIAState.acr & 128) {
-        SysVIAState.orb&=0x7f;
-        SysVIAState.irb&=0x7f;
-      };
-      UpdateIFRTopBit();
-      SysVIAState.timer1hasshot=0;
-      break;
-
-    case 7:
-      SysVIAState.timer1l&=0xff;
-      SysVIAState.timer1l|=(Value & 0xff)<<8;
-      SysVIAState.ifr &=0xbf; /* clear timer 1 ifr (this is what Model-B does) */
-      UpdateIFRTopBit();
-      break;
-
-    case 8:
-      SysVIAState.timer2l&=0xff00;
-      SysVIAState.timer2l|=(Value & 0xff);
-      break;
-
-    case 9:
-      SysVIAState.timer2l&=0xff;
-      SysVIAState.timer2l|=(Value & 0xff)<<8;
-      SysVIAState.timer2c=SysVIAState.timer2l * 2 + 1;
-      if (SysVIAState.timer2c == 0) SysVIAState.timer2c = 0x20000; 
-      SysVIAState.ifr &=0xdf; // clear timer 2 ifr 
-      UpdateIFRTopBit();
-      SysVIAState.timer2hasshot=0;
-      break;
-
-    case 10:
-      SRData=Value;
-      break;
-
-    case 11:
-      SysVIAState.acr=Value & 0xff;
-      SRMode=(Value>>2)&7;
-      break;
-
-    case 12:
-      SysVIAState.pcr=Value & 0xff;
-      break;
-
-    case 13:
-      SysVIAState.ifr&=~(Value & 0xff);
-      UpdateIFRTopBit();
-      break;
-
-    case 14:
-      /*cerr << "Write ier Value=" << Value << "\n"; */
-      if (Value & 0x80)
-        SysVIAState.ier|=Value & 0xff;
-      else
-        SysVIAState.ier&=~(Value & 0xff);
-      SysVIAState.ier&=0x7f;
-      UpdateIFRTopBit();
-      break;
-
-    case 15:
-      SysVIAState.ora=Value & 0xff;
-      SlowDataBusWrite(Value & 0xff);
-      break;
-  } /* Address switch */
-} /* SysVIAWrite */
-
-
-
-/*--------------------------------------------------------------------------*/
-/* Address is in the range 0-f - with the fe40 stripped out */
-int SysVIARead(int Address) {
-  int tmp = 0xff;
-  //fprintf(vialog,"SYSTEM VIA Read of address %02x (%d)\n",Address,Address);
-  /* cerr << "SysVIARead: Address=0x" << hex << Address << dec << " at " << TotalCycles << "\n";
-  DumpRegs(); */
-  switch (Address) {
-    case 0: /* IRB read */
-	  // Clear bit 4 of IFR from ATOD Conversion
-      SysVIAState.ifr&=~16;
-      tmp=SysVIAState.orb & SysVIAState.ddrb;
-      tmp |= 32;    /* Fire button 2 released */
-      if (!JoystickButton)
-        tmp |= 16;
-      if (MachineType == 3)
-      {
-        tmp |= 192; /* Speech system non existant */
-      }
-      else
-      {
-        if (SpeechDefault)
-        {
-          if (tms5220_int_r()) tmp |= 64;
-          if (tms5220_ready_r() == 0) tmp |= 128;
-        }
-        else
-        {
-          tmp |= 192; /* Speech system non existant */
-        }
-      }
-      UpdateIFRTopBit();
-      break;
-
-    case 2:
-      tmp = SysVIAState.ddrb;
-      break;
-
-    case 3:
-      tmp = SysVIAState.ddra;
-      break;
-
-    case 4: /* Timer 1 lo counter */
-      if (SysVIAState.timer1c < 0)
-        tmp=0xff;
-      else
-        tmp=(SysVIAState.timer1c / 2) & 0xff;
-      SysVIAState.ifr&=0xbf; /* Clear bit 6 - timer 1 */
-      UpdateIFRTopBit();
-      break;
-
-    case 5: /* Timer 1 hi counter */
-      tmp=(SysVIAState.timer1c>>9) & 0xff; //K.Lowe
-      break;
-
-    case 6: /* Timer 1 lo latch */
-      tmp = SysVIAState.timer1l & 0xff;
-      break;
-
-    case 7: /* Timer 1 hi latch */
-      tmp = (SysVIAState.timer1l>>8) & 0xff; //K.Lowe
-      break;
-
-    case 8: /* Timer 2 lo counter */
-      if (SysVIAState.timer2c < 0) /* Adjust for dividing -ve count by 2 */
-        tmp=((SysVIAState.timer2c - 1) / 2) & 0xff;
-      else
-        tmp=(SysVIAState.timer2c / 2) & 0xff;
-      SysVIAState.ifr&=0xdf; /* Clear bit 5 - timer 2 */
-      UpdateIFRTopBit();
-      break;
-
-    case 9: /* Timer 2 hi counter */
-      tmp = (SysVIAState.timer2c>>9) & 0xff; //K.Lowe
-      break;
-
-    case 10:
-      tmp = SRData;
-      break;
-
-    case 11:
-      tmp = SysVIAState.acr;
-      break;
-
-    case 12:
-      tmp = SysVIAState.pcr;
-      break;
-
-    case 13:
-      UpdateIFRTopBit();
-#ifdef KBDDEBUG
-      cerr << "Read IFR got=0x" << hex << int(SysVIAState.ifr) << dec << "\n";
-#endif
-      tmp = SysVIAState.ifr;
-      break;
-
-    case 14:
-      tmp = SysVIAState.ier | 0x80;
-      break;
-
-    case 1:
-      SysVIAState.ifr&=0xfc;
-      UpdateIFRTopBit();
-    case 15:
-      /* slow data bus read */
-      tmp = SlowDataBusRead();
-      break;
-  } /* Address switch */
-
-	if (DebugEnabled) {
-		char info[200];
-		sprintf(info, "SysVia: Read address %X value %02X", (int)(Address & 0xf), tmp & 0xff);
-		DebugDisplayTrace(DEBUG_SYSVIA, true, info);
-	}
-
-  return(tmp);
-} /* SysVIARead */
-
-/*--------------------------------------------------------------------------*/
-/* Value denotes the new value - i.e. 1 for a rising edge */
-void SysVIATriggerCA1Int(int value) {
-  /*value^=1; */
-  /*cerr << "SysVIATriggerCA1Int at " << TotalCycles << "\n"; */
-  /* Cause interrupt on appropriate edge */
-  if (!((SysVIAState.pcr & 1) ^ value)) {
-    SysVIAState.ifr|=2; /* CA1 */
-    UpdateIFRTopBit();
-  };
-}; /* SysVIATriggerCA1Int */
-
-/*--------------------------------------------------------------------------*/
-void SysVIA_poll_real(void) {
-  static bool t1int=false;
-
-  if (SysVIAState.timer1c<-2 && !t1int) {
-    t1int=true;
-    if ((SysVIAState.timer1hasshot==0) || (SysVIAState.acr & 0x40)) {
-      /* cerr << "SysVia timer1 int at " << TotalCycles << "\n"; */
-      SysVIAState.ifr|=0x40; /* Timer 1 interrupt */
-      UpdateIFRTopBit();
-      if (SysVIAState.acr & 0x80) {
-        SysVIAState.orb^=0x80; /* Toggle PB7 */
-        SysVIAState.irb^=0x80; /* Toggle PB7 */
-      }
-      if ((SysVIAState.ier & 0x40) && CyclesToInt == NO_TIMER_INT_DUE) {
-          CyclesToInt = 3 + SysVIAState.timer1c;
-      }
-      SysVIAState.timer1hasshot=1;
-    }
-  }
-
-  if (SysVIAState.timer1c<-3) {
-    SysVIAState.timer1c += (SysVIAState.timer1l * 2) + 4;
-    t1int=false;
-  }
-
-  if (SysVIAState.timer2c<-2) {
-    if (SysVIAState.timer2hasshot==0) {
-      /* cerr << "SysVia timer2 int at " << TotalCycles << "\n"; */
-      SysVIAState.ifr|=0x20; /* Timer 2 interrupt */
-      UpdateIFRTopBit();
-      if ((SysVIAState.ier & 0x20) && CyclesToInt == NO_TIMER_INT_DUE) {
-        CyclesToInt = 3 + SysVIAState.timer2c;
-      }
-      SysVIAState.timer2hasshot=1;
-    }
-  }
-
-  if (SysVIAState.timer2c<-3) {
-    SysVIAState.timer2c += 0x20000; // Do not reload latches for T2
-  }
-} /* SysVIA_poll */
-
-void SysVIA_poll(unsigned int ncycles) {
-	// Converted to a proc to allow shift register functions
-//	ChipClock(ncycles);
-
-  SysVIAState.timer1c-=ncycles;
-  if (!(SysVIAState.acr & 0x20))
-    SysVIAState.timer2c-=ncycles;
-  if ((SysVIAState.timer1c<0) || (SysVIAState.timer2c<0)) SysVIA_poll_real();
-
-  // Do Shift register stuff
-//  if (SRMode==2) {
-	  // Shift IN under control of Clock 2
-//	  SRCount=8-(ncycles%8);
-//  }
 }
 
 /*--------------------------------------------------------------------------*/
-void SysVIAReset(void) {
-  int row,col;
-  VIAReset(&SysVIAState);
-  //vialog=fopen("/via.log","wt");
 
-  /* Make it no keys down and no dip switches set */
-  for(row=0;row<8;row++)
-    for(col=0;col<10;col++)
-      SysViaKbdState[col][row]=0;
-	SRData=0;
-	SRMode=0;
-    SRCount=0;
-	SREnabled=0; // Disable Shift register shifting shiftily. (I am nuts) - Richard Gellman
-} /* SysVIAReset */
-
-/*-------------------------------------------------------------------------*/
-unsigned char BCD(unsigned char nonBCD) {
-	// convert a decimal value to a BCD value
-	return(((nonBCD/10)*16)+nonBCD%10);
-}
-/*-------------------------------------------------------------------------*/
-void CMOSWrite(unsigned char CMOSAddr,unsigned char CMOSData) {
-	char TmpPath[256];
-	unsigned char CMA;
-	// Many thanks to Tom Lees for supplying me with info on the 146818 registers 
-	// for these two functions.
-	// Clock registers 0-0x9h shall not be writable
-	// ignore all status registers, so this function shall just write to CMOS
-	// but we can leave it here for future developments
-	if (CMOSAddr>0xd) {
-		CMOSRAM[CMOSAddr]=CMOSData;
-		// write CMOS Ram
-		strcpy(TmpPath,RomPath); strcat(TmpPath,"/beebstate/cmos.ram");
-		CMDF=fopen(TmpPath,"wb");
-		if (CMDF != NULL)
+static unsigned char SlowDataBusRead()
+{
+	if (MachineType == Model::Master128 || MachineType == Model::MasterET)
+	{
+		if (RTCIsChipEnable() && (IC32State & IC32_RTC_READ))
 		{
-			for(CMA=0xe;CMA<64;CMA++) fputc(CMOSRAM[CMA],CMDF);
-			fclose(CMDF);
+			return SysVIAState.ora & ~SysVIAState.ddra;
 		}
 	}
-}
 
-/*-------------------------------------------------------------------------*/
-unsigned char CMOSRead(unsigned char CMOSAddr) {
-	// 0x0 to 0x9 - Clock
-	// 0xa to 0xd - Regs
-	// 0xe to 0x3f - RAM
-	if (CMOSAddr>0xd) return(CMOSRAM[CMOSAddr]);
-	if (CMOSAddr<0xa) {
-		time( &SysTime );
-		CurTime = localtime( &SysTime );
-		if (CMOSAddr==0x00) return(BCD(CurTime->tm_sec));
-		if (CMOSAddr==0x02) return(BCD(CurTime->tm_min));
-		if (CMOSAddr==0x04) return(BCD(CurTime->tm_hour));
-		if (CMOSAddr==0x06) return(BCD((CurTime->tm_wday)+1));
-		if (CMOSAddr==0x07) return(BCD(CurTime->tm_mday));
-		if (CMOSAddr==0x08) return(BCD((CurTime->tm_mon)+1));
-		if (CMOSAddr==0x09) return(BCD((CurTime->tm_year)-10));
+	unsigned char result = SysVIAState.ora & SysVIAState.ddra;
+
+	if (MachineType == Model::Master128 || MachineType == Model::MasterET)
+	{
+		// I don't know this lot properly - just put in things as we figure them out
+
+		if (KbdOP()) result |= 128;
 	}
-	if (CMOSAddr>0x9 && CMOSAddr<0xe) return(0);
-	return(0);
+	else
+	{
+		if ((IC32State & IC32_KEYBOARD_WRITE) == 0)
+		{
+			if (KbdOP()) result |= 128;
+		}
+
+		#if ENABLE_SPEECH
+
+		if ((IC32State & IC32_SPEECH_READ) == 0)
+		{
+			result = SpeechRead();
+		}
+
+		#endif
+
+		if ((IC32State & IC32_SPEECH_WRITE) == 0)
+		{
+			result = 0xff;
+		}
+	}
+
+	#ifdef DEBUG_SLOW_DATA_BUS
+	DebugTrace("SlowDataBusRead giving 0x%02x\n", result);
+	#endif
+
+	return result;
 }
 
 /*--------------------------------------------------------------------------*/
-void sysvia_dumpstate(void) {
-  cerr << "Sysvia:\n";
-  cerr << "  IC32State=" << IC32State << "\n";
-  via_dumpstate(&SysVIAState);
-}; /* sysvia_dumpstate */
+
+// Address is in the range 0-f - with the fe40 stripped out
+
+void SysVIAWrite(int Address, unsigned char Value)
+{
+	// DebugTrace("SysVIAWrite: Address=0x%02x Value=0x%02x\n", Address, Value);
+
+	if (DebugEnabled)
+	{
+		DebugDisplayTraceF(DebugType::SysVIA, true,
+		                   "SysVia: Write address %X value %02X",
+		                   Address & 0xf, Value);
+	}
+
+	switch (Address)
+	{
+		case 0: // ORB
+			// Clear bit 4 of IFR from AtoD Conversion
+			SysVIAState.ifr &= ~16;
+			SysVIAState.orb = Value;
+
+			if (MachineType == Model::Master128 || MachineType == Model::MasterET)
+			{
+				// In the Master series, PB6 is the MC146818AP RTC Chip Enable
+				// and PB7 is the MC146818AP RTC Address Strobe (AS)
+
+				RTCChipEnable((Value & 0x40) != 0);
+
+				if ((Value & 0xC0)== 0xC0)
+				{
+					// Address must be valid just prior to the fall of AS,
+					// at which time the address is latched.
+					RTCWriteAddress(SysVIAState.ora);
+				}
+			}
+
+			// The bottom 4 bits of ORB connect to the IC32 latch.
+			IC32Write(Value);
+
+			if ((SysVIAState.ifr & 8) && ((SysVIAState.pcr & 0x20) == 0))
+			{
+				SysVIAState.ifr &= 0xf7;
+				UpdateIFRTopBit();
+			}
+			SysVIAState.ifr &= ~16;
+			UpdateIFRTopBit();
+			break;
+
+		case 1: // ORA
+			SysVIAState.ora = Value;
+			SlowDataBusWrite(Value);
+			SysVIAState.ifr&=0xfc;
+			UpdateIFRTopBit();
+			break;
+
+		case 2:
+			SysVIAState.ddrb = Value;
+			break;
+
+		case 3:
+			SysVIAState.ddra = Value;
+			break;
+
+		case 4:
+		case 6:
+			SysVIAState.timer1l &= 0xff00;
+			SysVIAState.timer1l |= Value;
+			break;
+
+		case 5:
+			SysVIAState.timer1l &= 0xff;
+			SysVIAState.timer1l |= Value << 8;
+			SysVIAState.timer1c = SysVIAState.timer1l * 2 + 1;
+			SysVIAState.ifr &= 0xbf; // clear timer 1 ifr
+			// If PB7 toggling enabled, then lower PB7 now
+			if (SysVIAState.acr & 0x80)
+			{
+				SysVIAState.orb &= 0x7f;
+				SysVIAState.irb &= 0x7f;
+			}
+			UpdateIFRTopBit();
+			SysVIAState.timer1hasshot = false;
+			break;
+
+		case 7:
+			SysVIAState.timer1l &= 0xff;
+			SysVIAState.timer1l |= Value << 8;
+			SysVIAState.ifr &= 0xbf; // clear timer 1 ifr (this is what Model-B does)
+			UpdateIFRTopBit();
+			break;
+
+		case 8:
+			SysVIAState.timer2l &= 0xff00;
+			SysVIAState.timer2l |= Value;
+			break;
+
+		case 9:
+			SysVIAState.timer2l &= 0xff;
+			SysVIAState.timer2l |= Value << 8;
+			SysVIAState.timer2c=SysVIAState.timer2l * 2 + 1;
+			if (SysVIAState.timer2c == 0) SysVIAState.timer2c = 0x20000;
+			SysVIAState.ifr &= 0xdf; // Clear timer 2 IFR
+			UpdateIFRTopBit();
+			SysVIAState.timer2hasshot = false;
+			break;
+
+		case 10:
+			SRData = Value;
+			break;
+
+		case 11:
+			SysVIAState.acr = Value;
+			SRMode = (Value >> 2) & 7;
+			break;
+
+		case 12:
+			SysVIAState.pcr = Value;
+
+			if ((Value & PCR_CA2_CONTROL) == PCR_CA2_OUTPUT_HIGH)
+			{
+				SysVIAState.ca2 = true;
+			}
+			else if ((Value & PCR_CA2_CONTROL) == PCR_CA2_OUTPUT_LOW)
+			{
+				SysVIAState.ca2 = false;
+			}
+
+			if ((Value & PCR_CB2_CONTROL) == PCR_CB2_OUTPUT_HIGH)
+			{
+				if (!SysVIAState.cb2)
+				{
+					// Light pen strobe on CB2 low -> high transition
+					VideoLightPenStrobe();
+				}
+
+				SysVIAState.cb2 = true;
+			}
+			else if ((Value & PCR_CB2_CONTROL) == PCR_CB2_OUTPUT_LOW)
+			{
+				SysVIAState.cb2 = false;
+			}
+			break;
+
+		case 13:
+			SysVIAState.ifr &= ~Value;
+			UpdateIFRTopBit();
+			break;
+
+		case 14:
+			// DebugTrace("Write ier Value=0x%02x\n", Value);
+
+			if (Value & 0x80)
+			{
+				SysVIAState.ier |= Value;
+			}
+			else
+			{
+				SysVIAState.ier &= ~Value;
+			}
+			SysVIAState.ier &= 0x7f;
+			UpdateIFRTopBit();
+			break;
+
+		case 15:
+			SysVIAState.ora = Value;
+			SlowDataBusWrite(Value);
+			break;
+	}
+}
+
+/*--------------------------------------------------------------------------*/
+
+// Address is in the range 0-f - with the fe40 stripped out
+
+unsigned char SysVIARead(int Address)
+{
+	unsigned char tmp = 0xff;
+
+	// DebugTrace("SysVIARead: Address=0x%02x at %d\n", Address, TotalCycles);
+
+	switch (Address)
+	{
+		case 0: // IRB read
+			// Clear bit 4 of IFR from AtoD Conversion
+			SysVIAState.ifr &= ~16;
+			tmp = SysVIAState.orb & SysVIAState.ddrb;
+
+			if (!JoystickButton[1])
+			{
+				tmp |= 0x20;
+			}
+
+			if (!JoystickButton[0])
+			{
+				tmp |= 0x10;
+			}
+
+			#if ENABLE_SPEECH
+
+			if (!SpeechStarted)
+			{
+				tmp |= 0xc0; // Speech system non existant
+			}
+			else
+			{
+				if (SpeechInterrupt()) // Flag is active low
+				{
+					tmp |= 0x40;
+				}
+				else
+				{
+					tmp &= ~0x40;
+				}
+
+				if (SpeechReady()) // Flag is active low
+				{
+					tmp |= 0x80;
+				}
+				else
+				{
+					tmp &= ~0x80;
+				}
+			}
+
+			#else
+
+			tmp |= 0xc0; // Speech system non existant
+
+			#endif
+
+			UpdateIFRTopBit();
+			break;
+
+		case 2:
+			tmp = SysVIAState.ddrb;
+			break;
+
+		case 3:
+			tmp = SysVIAState.ddra;
+			break;
+
+		case 4: // Timer 1 lo counter
+			if (SysVIAState.timer1c < 0)
+			{
+				tmp = 0xff;
+			}
+			else
+			{
+				tmp = (SysVIAState.timer1c / 2) & 0xff;
+			}
+
+			SysVIAState.ifr &= 0xbf; // Clear bit 6 - timer 1
+			UpdateIFRTopBit();
+			break;
+
+		case 5: // Timer 1 hi counter
+			tmp = (SysVIAState.timer1c >> 9) & 0xff; // K.Lowe
+			break;
+
+		case 6: // Timer 1 lo latch
+			tmp = SysVIAState.timer1l & 0xff;
+			break;
+
+		case 7: // Timer 1 hi latch
+			tmp = (SysVIAState.timer1l >> 8) & 0xff; // K.Lowe
+			break;
+
+		case 8: // Timer 2 lo counter
+			if (SysVIAState.timer2c < 0) // Adjust for dividing -ve count by 2
+			{
+				tmp = ((SysVIAState.timer2c - 1) / 2) & 0xff;
+			}
+			else
+			{
+				tmp = (SysVIAState.timer2c / 2) & 0xff;
+			}
+			SysVIAState.ifr &= 0xdf; // Clear bit 5 - timer 2
+			UpdateIFRTopBit();
+			break;
+
+		case 9: // Timer 2 hi counter
+			tmp = (SysVIAState.timer2c >> 9) & 0xff; // K.Lowe
+			break;
+
+		case 10:
+			tmp = SRData;
+			break;
+
+		case 11:
+			tmp = SysVIAState.acr;
+			break;
+
+		case 12:
+			tmp = SysVIAState.pcr;
+			break;
+
+		case 13:
+			UpdateIFRTopBit();
+
+			#ifdef DEBUG_KEYBOARD
+			// DebugTrace("Read IFR got=0x%02x\n", SysVIAState.ifr);
+			#endif
+
+			tmp = SysVIAState.ifr;
+			break;
+
+		case 14:
+			tmp = SysVIAState.ier | 0x80;
+			break;
+
+		case 1:
+			SysVIAState.ifr &= 0xfc;
+			UpdateIFRTopBit();
+			// Fall through...
+
+		case 15:
+			// slow data bus read
+			tmp = SlowDataBusRead();
+			break;
+	}
+
+	if (DebugEnabled)
+	{
+		DebugDisplayTraceF(DebugType::SysVIA, true,
+		                   "SysVia: Read address %X value %02X",
+		                   Address & 0xf, tmp & 0xff);
+	}
+
+	return tmp;
+}
+
+/*--------------------------------------------------------------------------*/
+
+// Value denotes the new value - i.e. 1 for a rising edge
+
+void SysVIATriggerCA1Int(int value)
+{
+	// value^=1;
+	// DebugTrace("SysVIATriggerCA1Int at %d\n", TotalCycles);
+
+	// Cause interrupt on appropriate edge
+	if (!((SysVIAState.pcr & 1) ^ value))
+	{
+		SysVIAState.ifr |= 2; // CA1
+		UpdateIFRTopBit();
+	}
+}
+
+/*--------------------------------------------------------------------------*/
+
+void SysVIA_poll_real()
+{
+	static bool t1int = false;
+
+	if (SysVIAState.timer1c < -2 && !t1int)
+	{
+		t1int = true;
+
+		if (!SysVIAState.timer1hasshot || (SysVIAState.acr & 0x40))
+		{
+			// DebugTrace("SysVia timer1 int at %d\n", TotalCycles);
+			SysVIAState.ifr |= 0x40; // Timer 1 interrupt
+			UpdateIFRTopBit();
+
+			if (SysVIAState.acr & 0x80)
+			{
+				SysVIAState.orb ^= 0x80; // Toggle PB7
+				SysVIAState.irb ^= 0x80; // Toggle PB7
+			}
+
+			if ((SysVIAState.ier & 0x40) && CyclesToInt == NO_TIMER_INT_DUE)
+			{
+				CyclesToInt = 3 + SysVIAState.timer1c;
+			}
+
+			SysVIAState.timer1hasshot = true;
+		}
+	}
+
+	if (SysVIAState.timer1c < -3)
+	{
+		SysVIAState.timer1c += (SysVIAState.timer1l * 2) + 4;
+		t1int = false;
+	}
+
+	if (SysVIAState.timer2c < -2)
+	{
+		if (!SysVIAState.timer2hasshot)
+		{
+			// DebugTrace("SysVia timer2 int at %d\n", TotalCycles);
+			SysVIAState.ifr |= 0x20; // Timer 2 interrupt
+			UpdateIFRTopBit();
+
+			if ((SysVIAState.ier & 0x20) && CyclesToInt == NO_TIMER_INT_DUE)
+			{
+				CyclesToInt = 3 + SysVIAState.timer2c;
+			}
+
+			SysVIAState.timer2hasshot = true;
+		}
+	}
+
+	if (SysVIAState.timer2c < -3)
+	{
+		SysVIAState.timer2c += 0x20000; // Do not reload latches for T2
+	}
+}
+
+void SysVIA_poll(unsigned int ncycles)
+{
+	// Converted to a proc to allow shift register functions
+	// ChipClock(ncycles);
+
+	SysVIAState.timer1c -= ncycles;
+
+	if (!(SysVIAState.acr & 0x20))
+	{
+		SysVIAState.timer2c -= ncycles;
+	}
+
+	if (SysVIAState.timer1c < 0 || SysVIAState.timer2c < 0)
+	{
+		SysVIA_poll_real();
+	}
+
+	// Ensure that CA2 keyboard interrupt is asserted when key pressed
+	DoKbdIntCheck();
+
+	// Do Shift register stuff
+	// if (SRMode == 2) {
+	//   Shift IN under control of Clock 2
+	// SRCount = 8 - (ncycles % 8);
+	// }
+}
+
+/*--------------------------------------------------------------------------*/
+
+void SysVIAReset()
+{
+	VIAReset(&SysVIAState);
+
+	// Make it no keys down and set dip switches
+	BeebReleaseAllKeys();
+
+	SRData = 0;
+	SRMode = 0;
+	SRCount = 0;
+	SREnabled = 0; // Disable Shift register shifting shiftily. (I am nuts) - Richard Gellman
+}
+
+/*--------------------------------------------------------------------------*/
 
 void DebugSysViaState()
 {
 	DebugViaState("SysVia", &SysVIAState);
 }
+
+/*--------------------------------------------------------------------------*/

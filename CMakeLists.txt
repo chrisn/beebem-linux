@@ -99,7 +99,7 @@ if(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7"
     set(CMAKE_CXX_FLAGS "-std=c++11")
 endif()
 
-set(COMMON_FLAGS "-Wall -Wextra -pedantic") # -Wconversion 
+set(COMMON_FLAGS "-Wall -Wextra -pedantic") # -Wconversion
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
 set(CMAKE_C_FLAGS ${COMMON_FLAGS})
 
@@ -134,35 +134,51 @@ add_definitions(-DWITHOUT_WELCOME_MESSAGE) # Disable annoying welcome message
 add_definitions(-DWITH_FS_FPS) # Enable fullscreen FPS indicator
 # add_definitions(-DWITH_SYSTEM_CP) # Compile with call to system 'cp' command when copying files
 # add_definitions(-DWITH_FORCED_CM) # Compile with a forced colormap for 8 bit displays
+add_definitions(-DMODET) # Enable ARM Thumb instructions
+add_definitions(-DMODE32) # Enable 32-bit ARM instructions
+add_definitions(-DBEEBEM)
 
 set(SRCS
     Src/6502core.cpp
+    Src/Arm.cpp
+    Src/ArmDisassembler.cpp
     Src/AtoDConv.cpp
-    Src/AVIWriter.cpp
+    Src/AviWriter.cpp
     Src/Bcd.cpp
     Src/BeebEmPages.cpp
     Src/BeebEmPagesDisks.cpp
     Src/BeebMem.cpp
     Src/BeebWin.cpp
+    Src/BeebWinDx.cpp
+    Src/BeebWinIo.cpp
+    Src/BeebWinPrefs.cpp
+    Src/BeebWinSpeech.cpp
     Src/Csw.cpp
     Src/Debug.cpp
+    Src/DebugTrace.cpp
+    Src/Dialog.cpp
     Src/Disc1770.cpp
     Src/Disc8271.cpp
     Src/DiscEdit.cpp
     Src/DiscInfo.cpp
     Src/Econet.cpp
+    Src/Ext1770.cpp
+    Src/FileDialog.cpp
     Src/FileType.cpp
     Src/FileUtils.cpp
     Src/Hardware.cpp
-    Src/i86.cpp
-    Src/i386dasm.cpp
     Src/IC32Latch.cpp
+    Src/Ide.cpp
+    Src/IP232.cpp
     Src/KeyMap.cpp
-    # Src/Log.c
+    Src/Log.cpp
     Src/Main.cpp
+    Src/Master512CoPro.cpp
     Src/Model.cpp
+    Src/Music5000.cpp
     Src/PALRom.cpp
     Src/Preferences.cpp
+    Src/RingBuffer.cpp
     Src/RomConfigFile.cpp
     Src/Rtc.cpp
     Src/Sasi.cpp
@@ -170,22 +186,36 @@ set(SRCS
     Src/Sdl.cpp
     Src/Serial.cpp
     Src/SerialDevices.cpp
+    Src/SerialPort.cpp
+    Src/Socket.cpp
     Src/Sound.cpp
+    Src/SoundStreamer.cpp
     Src/Speech.cpp
+    Src/SprowCoPro.cpp
     Src/StringUtils.cpp
     Src/SysVia.cpp
+    Src/TapeControlDialog.cpp
+    Src/TapeMap.cpp
     Src/Teletext.cpp
+    Src/Thread.cpp
     Src/Tube.cpp
     Src/Uef.cpp
     Src/UefState.cpp
-    Src/UserConfig.c
+    Src/UserConfig.cpp
     Src/UserKeyboardDialog.cpp
+    Src/UserPortBreakoutBox.cpp
+    Src/UserPortRTC.cpp
     Src/UserVia.cpp
     Src/Via.cpp
     Src/Video.cpp
     Src/Z80Support.cpp
     Src/Z80.cpp
     Src/Z80dis.cpp
+    Src/ARMulator/armdis.cpp
+    Src/ARMulator/armemu.cpp
+    Src/ARMulator/arminit.cpp
+    Src/ARMulator/armsupp.cpp
+    Src/ARMulator/thumbemu.cpp
     Src/gui/box.c
     Src/gui/button.c
     Src/gui/functions.c
@@ -205,9 +235,8 @@ set(SRCS
     Src/gui/widget.c
     Src/gui/window.c
     Src/posix/CRegistry.cpp
-    Src/posix/FakeRegistry.c
+    Src/posix/FakeRegistry.cpp
     Src/posix/Windows.cpp
-    # Src/win/CRegistry.cpp
 )
 
 add_executable(beebem ${SRCS})

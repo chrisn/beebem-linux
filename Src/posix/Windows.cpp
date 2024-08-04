@@ -1,16 +1,28 @@
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
+#include <time.h>
+
+#include <unistd.h>
+#include <sys/ioctl.h>
 
 #include "log.h"
 #include "Windows.h"
 #include "BeebEmPages.h"
 #include "FakeRegistry.h"
 
-#include <gui.h>
+#include "gui/gui.h"
+#include "Sdl.h"
 
 /* Fake windows stuff:
  */
+
+int _vscprintf(const char * format, va_list pargs)
+{
+    int retval;
+    va_list argcopy;
+    va_copy(argcopy, pargs);
+    retval = vsnprintf(NULL, 0, format, argcopy);
+    va_end(argcopy);
+    return retval;
+}
 
 /* Fake windows MessageBox
  */
@@ -26,7 +38,7 @@ int MessageBox(HWND hwnd, const char *message_p, const char *title_p, int type)
 
 
 	switch (type & 0xf0){
-	
+
 	case MB_ICONHAND:
 		icon_type = EG_MESSAGEBOX_STOP;
 		break;
@@ -138,7 +150,7 @@ UINT GetMenuState(HMENU hMenu, UINT uId, UINT uFlags)
 //	printf("GetMenuState\n");
 
 	v = GetGUIOption(uId);
-	
+
 	if (v == EG_TRUE) v = MF_CHECKED;
 	if (v == EG_FALSE) v = MF_UNCHECKED;
 
@@ -180,7 +192,7 @@ Remarks
 */
 }
 
-DWORD CheckMenuItem(HMENU hmenu, UINT uIDCheckItem, UINT uCheck)
+DWORD CheckMenuItem(HMENU /* hMenu */, UINT uIDCheckItem, UINT uCheck)
 {
 	//printf("Asked to set %d to %d\n", uIDCheckItem, uCheck);
 
@@ -188,6 +200,14 @@ DWORD CheckMenuItem(HMENU hmenu, UINT uIDCheckItem, UINT uCheck)
 		return( UpdateGUIOption(uIDCheckItem, 1) );
 	else
 		return( UpdateGUIOption(uIDCheckItem, 0) );
+}
+
+BOOL CheckMenuRadioItem(HMENU /* hMenu */, UINT FirstID, UINT LastID, UINT SelectedID, UINT /* Flags */)
+{
+	for (UINT MenuItemID = FirstID; MenuItemID < LastID; MenuItemID++)
+	{
+		UpdateGUIOption(MenuItemID, MenuItemID == SelectedID);
+	}
 }
 
 BOOL MoveFileEx(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, DWORD dwFlags)
@@ -265,7 +285,7 @@ void GetLocalTime(SYSTEMTIME* pTime)
 	time_t Time;
 	time(&Time);
 	struct tm *pTM = localtime(&Time);
-	
+
 	pTime->wYear = pTM->tm_year + 1900;
 	pTime->wMonth = pTM->tm_mon + 1;
 	pTime->wDayOfWeek = pTM->tm_wday;
@@ -274,4 +294,96 @@ void GetLocalTime(SYSTEMTIME* pTime)
 	pTime->wMinute = pTM->tm_min;
 	pTime->wSecond = pTM->tm_sec;
 	pTime->wMilliseconds = 0;
+}
+
+int ioctlsocket(SOCKET Socket, long Cmd, unsigned long* pArg)
+{
+	return ioctl(Socket, Cmd, pArg);
+}
+
+void ZeroMemory(PVOID Destination, SIZE_T Length)
+{
+	memset(Destination, 0, Length);
+}
+
+UINT_PTR SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc)
+{
+	// TODO
+	return 0;
+}
+
+BOOL KillTimer(HWND hWnd, UINT_PTR nIDEvent)
+{
+	// TODO
+	return FALSE;
+}
+
+BOOL PathIsRelative(LPCSTR pszPath)
+{
+	return pszPath[0] != '/';
+}
+
+BOOL PathCanonicalize(LPSTR pszBuf, LPCSTR pszPath)
+{
+	// TODO
+	strcpy(pszBuf, pszPath);
+}
+
+int SHCreateDirectoryEx(HWND hWnd, LPCSTR pszPath, const void *psa)
+{
+	// TODO
+	return 0;
+}
+
+DWORD GetFullPathName(LPCSTR pszFileName, DWORD BufferLength, LPSTR pszBuffer, LPSTR *pszFilePart)
+{
+	// TODO
+	return 0;
+}
+
+
+void InitializeCriticalSection(CRITICAL_SECTION* pCriticalSection)
+{
+}
+
+void DeleteCriticalSection(CRITICAL_SECTION* pCriticalSection)
+{
+}
+
+void EnterCriticalSection(CRITICAL_SECTION* pCriticalSection)
+{
+}
+
+void LeaveCriticalSection(CRITICAL_SECTION* pCriticalSection)
+{
+}
+
+BOOL GetWindowRect(HWND hWnd, RECT* pRect)
+{
+	ZeroMemory(pRect, sizeof(RECT));
+
+	return TRUE;
+}
+
+BOOL MessageBeep(UINT uType)
+{
+	return TRUE;
+}
+
+void _splitpath(const char *path,
+                char *drive,
+                char *dir,
+                char *fname,
+                char *ext)
+{
+	// TODO
+}
+
+void _makepath(char *path,
+               const char *drive,
+               const char *dir,
+               const char *fname,
+               const char *ext)
+{
+	// TODO
 }

@@ -49,27 +49,22 @@ extern int Tmp_Command_Line_Fullscreen;
 extern cRegistry SysReg;
 extern char FDCDLL[256];
 
-extern char *CFG_REG_KEY;
-
 //extern int fullscreen;
 extern int done;
 
 extern Model MachineType;
 extern BeebWin *mainWin;
-//-- extern HINSTANCE hInst;
+extern HINSTANCE hInst;
+extern HWND hCurrentDialog;
+extern HACCEL hCurrentAccelTable;
+
 void WriteLog(char *fmt, ...);
-extern int trace_186;
-
-
 
 void Quit(void);
 void SetActiveWindow(EG_Window *window_ptr);
-int GetFullscreenState(void);
+bool GetFullscreenState();
 int ToggleFullscreen(void);
 void ShowingMenu(void);
 void NoMenuShown(void);
-
-
-
 
 #endif

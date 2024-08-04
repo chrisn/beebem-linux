@@ -1,76 +1,81 @@
+/****************************************************************
+BeebEm - BBC Micro and Master 128 Emulator
+Copyright (C) 1994  David Alan Gilbert
+Copyright (C) 1997  Mike Wyatt
+Copyright (C) 2001  Richard Gellman
+Copyright (C) 2008  Rich Talbot-Watkins
 
-/****************************************************************************/
-/*              Beebem - (c) David Alan Gilbert 1994/1995                   */
-/*              -----------------------------------------                   */
-/* This program may be distributed freely within the following restrictions:*/
-/*                                                                          */
-/* 1) You may not charge for this program or for any part of it.            */
-/* 2) This copyright message must be distributed with all copies.           */
-/* 3) This program must be distributed complete with source code.  Binary   */
-/*    only distribution is not permitted.                                   */
-/* 4) The author offers no warrenties, or guarentees etc. - you use it at   */
-/*    your own risk.  If it messes something up or destroys your computer   */
-/*    thats YOUR problem.                                                   */
-/* 5) You may use small sections of code from this program in your own      */
-/*    applications - but you must acknowledge its use.  If you plan to use  */
-/*    large sections then please ask the author.                            */
-/*                                                                          */
-/* If you do not agree with any of the above then please do not use this    */
-/* program.                                                                 */
-/* Please report any problems to the author at beebem@treblig.org           */
-/****************************************************************************/
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA  02110-1301, USA.
+****************************************************************/
+
 /* Sound emulation for the beeb - David Alan Gilbert 26/11/94 */
 
 #ifndef SOUND_HEADER
 #define SOUND_HEADER
 
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
-
-//-- #ifdef WIN32
-/* Always compile sound code - it is switched on and off using SoundEnabled */
-//-- #define SOUNDSUPPORT
 #include "Windows.h"
-//-- #endif
+#include "SoundStreamerType.h"
 
-#define MUTED 0
-#define UNMUTED 1
+enum class SoundState : char {
+	Muted,
+	Unmuted
+};
 
-#include <stdio.h>
+extern SoundStreamerType SelectedSoundStreamer;
+extern bool SoundDefault; // Default sound state (enabled/disabled via sound menu)
+extern bool SoundEnabled; // Sound on/off flag - will be off if DirectSound init fails
+extern bool RelaySoundEnabled; // Relay Click noise enable
+extern bool DiscDriveSoundEnabled; // Disc drive sound enable
+extern unsigned int SoundSampleRate; // Sample rate, 11025, 22050 or 44100 Hz
+extern int SoundVolume; // Volume: 1 (full), 2, 3 or 4 (low)
+extern bool SoundExponentialVolume;
 
-extern int SoundDefault; // Default sound state (enabled/disabled via sound menu)
-extern int SoundEnabled;    /* Sound on/off flag - will be off if DirectSound init fails */
-extern int DirectSoundEnabled;  /* DirectSound enabled for Win32 */
-extern int RelaySoundEnabled; // Relay Click noise enable
-extern int SoundSampleRate; /* Sample rate, 11025, 22050 or 44100 Hz */
-extern int SoundVolume;     /* Volume, 1(full),2,3 or 4(low) */
-extern char SoundExponentialVolume;
-
-extern __int64 SoundTrigger; /* Cycle based trigger on sound */
+extern int SoundTrigger; // Cycle based trigger on sound
 extern double SoundTuning;
-extern __int64 SoundCycles;
 
 void SoundInit();
 void SoundReset();
 
-/* Called in sysvia.cc when a write to one of the 76489's registers occurs */
+// Called in SysVia.cpp when a write to one of the 76489's registers occurs
 void Sound_RegWrite(int Value);
-void DumpSound(void);
-void SoundTrigger_Real(void);
-void ClickRelay(unsigned char RState);
+void ClickRelay(bool RelayState);
 
-void Sound_Trigger(int NCycles);
+#define SAMPLE_RELAY_ON         0
+#define SAMPLE_RELAY_OFF        1
+#define SAMPLE_DRIVE_MOTOR      2
+#define SAMPLE_HEAD_LOAD        3
+#define SAMPLE_HEAD_UNLOAD      4
+#define SAMPLE_HEAD_SEEK        5
+#define SAMPLE_HEAD_STEP        6
 
-extern volatile BOOL bDoSound;
-extern void AdjustSoundCycles(void);
+constexpr int SAMPLE_HEAD_SEEK_CYCLES_PER_TRACK = 48333; // 0.02415s per track in the sound file
+constexpr int SAMPLE_HEAD_STEP_CYCLES = 100000; // 0.05s sound file
+constexpr int SAMPLE_HEAD_LOAD_CYCLES = 400000; // 0.2s sound file
 
-void SetSound(char State);
+void PlaySoundSample(int sample, bool repeat);
+void StopSoundSample(int sample);
+
+void SoundPoll();
+
+void SetSound(SoundState state);
 
 struct AudioType {
 	char Signal; // Signal type: data, gap, or tone.
 	char BytePos; // Position in data byte
-	bool Enabled; // Enable state of audio deooder
+	bool Enabled; // Enable state of audio decoder
 	int Data; // The actual data itself
 	int Samples; // Samples counted in current pattern till changepoint
 	char CurrentBit; // Current bit in data being processed
@@ -79,14 +84,12 @@ struct AudioType {
 
 extern struct AudioType TapeAudio;
 extern bool TapeSoundEnabled;
-extern int SoundChipEnabled;
-void SoundChipReset(void);
-void SwitchOnSound(void);
-extern int UseHostClock;
-extern int UsePrimaryBuffer;
+extern bool SoundChipEnabled;
+extern bool PartSamples;
+
+void SoundChipReset();
+void SwitchOnSound();
 void LoadSoundUEF(FILE *SUEF);
 void SaveSoundUEF(FILE *SUEF);
-extern int PartSamples;
-extern int SBSize;
-void MuteSound(void);
+
 #endif

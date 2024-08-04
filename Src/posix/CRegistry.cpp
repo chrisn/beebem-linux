@@ -17,11 +17,9 @@
 //
 // * Doesn't provide network registry support.
 
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
-
 #include <ctype.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "CRegistry.h"
 
@@ -31,7 +29,7 @@
 //<-
 
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/sysinfo/base/regcreatekey.asp
-bool cRegistry::CreateKey(HKEY hKeyRoot, LPSTR lpSubKey)
+bool cRegistry::CreateKey(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */)
 {
 //+>
 	// We don't need this as our config file will contain only BeebEm
@@ -50,7 +48,7 @@ bool cRegistry::CreateKey(HKEY hKeyRoot, LPSTR lpSubKey)
 //--	return false;
 }
 
-bool cRegistry::DeleteKey(HKEY hKeyRoot, LPSTR lpSubKey)
+bool cRegistry::DeleteKey(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */)
 {
 //+>
 	// The Windows version of Beebem does not call this function.
@@ -68,7 +66,7 @@ bool cRegistry::DeleteKey(HKEY hKeyRoot, LPSTR lpSubKey)
 //--	return false;
 }
 
-bool cRegistry::DeleteValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValueName)
+bool cRegistry::DeleteValue(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */, LPCSTR /* lpValueName */)
 {
 //+>
 //## The Windows version of Beebem does not call this function.
@@ -81,7 +79,7 @@ bool cRegistry::DeleteValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValueName)
 //<+
 }
 
-bool cRegistry::GetBinaryValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, PVOID pData, int *pnSize)
+bool cRegistry::GetBinaryValue(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */, LPCSTR lpValue, PVOID pData, int *pnSize)
 {
 
 //+>
@@ -92,18 +90,22 @@ bool cRegistry::GetBinaryValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, PVO
 	// pnSize = size in bytes.
 
 	char *fake_registry_ptr;
-	unsigned char *callers_buffer_ptr = (unsigned char*) pData;
+	unsigned char *callers_buffer_ptr = (unsigned char*)pData;
 	BOOL ret;
-	unsigned int i, val;
+	int i;
+	unsigned int val;
 
-	ret = GetFakeRegistryItem_String( (char*) lpValue, &fake_registry_ptr);
+	ret = GetFakeRegistryItem_String(lpValue, &fake_registry_ptr);
 
-	if (ret == TRUE) {
-		for (i=0; i< (unsigned int) (*pnSize); i++)
+	if (ret == TRUE)
+	{
+		for (i = 0; i < *pnSize; i++)
+		{
 			callers_buffer_ptr[i] = 0;
+		}
 
-		for (i=0; i< (*pnSize) / 2; i++){
-
+		for (i = 0; i < (*pnSize) / 2; i++)
+		{
 			sscanf(fake_registry_ptr, "%02X", &val);
 
 			fake_registry_ptr += 2;
@@ -132,7 +134,7 @@ bool cRegistry::GetBinaryValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, PVO
 //--	return false;
 }
 
-bool cRegistry::GetDWORDValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, DWORD &dwBuffer)
+bool cRegistry::GetDWORDValue(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */, LPCSTR lpValue, DWORD &dwBuffer)
 {
 //+>
 	// hKeyRoot = User
@@ -150,7 +152,17 @@ bool cRegistry::GetDWORDValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, DWOR
 //	*p = (DWORD) val;
 //	return ret;
 
-	return(GetFakeRegistryItem_Long( (char*) lpValue, (long*) &dwBuffer));
+	long Value;
+	
+	if (GetFakeRegistryItem_Long(lpValue, &Value))
+	{
+		dwBuffer = Value;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 //<-
 
 
@@ -176,7 +188,7 @@ bool cRegistry::GetDWORDValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, DWOR
 //--	return false;
 }
 
-bool cRegistry::GetStringValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, LPSTR lpBuffer)
+bool cRegistry::GetStringValue(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */, LPCSTR lpValue, LPSTR lpBuffer)
 {
 //+>
 	// hKeyRoot = User
@@ -185,9 +197,8 @@ bool cRegistry::GetStringValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, LPS
 	// lpBuffer = pointer to where string should be copied to (does not seem to specify a length).
 
 	char *fake_registry_string_ptr;
-	bool ret;
 
-	ret = GetFakeRegistryItem_String( (char*) lpValue, &fake_registry_string_ptr);
+	bool ret = GetFakeRegistryItem_String(lpValue, &fake_registry_string_ptr);
 
 	if (ret == TRUE)
 		strcpy(lpBuffer,fake_registry_string_ptr);
@@ -217,7 +228,7 @@ bool cRegistry::GetStringValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, LPS
 //--	return false;
 }
 
-bool cRegistry::SetBinaryValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, PVOID pData, int* pnSize)
+bool cRegistry::SetBinaryValue(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */, LPCSTR lpValue, const void* pData, int* pnSize)
 {
 //+>
 	// hKeyRoot = User
@@ -228,7 +239,7 @@ bool cRegistry::SetBinaryValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, PVO
 
 	char buffer[1024*4];
 	char *buffer_ptr = buffer;
-	unsigned char *callers_buffer_ptr = (unsigned char*) pData;
+	const unsigned char *callers_buffer_ptr = (const unsigned char*)pData;
 	int i, val;
 
 #ifdef WITH_DEBUG_OUTPUT
@@ -262,7 +273,7 @@ bool cRegistry::SetBinaryValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, PVO
 //--	return false;
 }
 
-bool cRegistry::SetDWORDValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, DWORD dwValue)
+bool cRegistry::SetDWORDValue(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */, LPCSTR lpValue, DWORD dwValue)
 {
 //+>
 	// hKeyRoot = User
@@ -270,7 +281,7 @@ bool cRegistry::SetDWORDValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, DWOR
 	// lpValue = value (all we need to concern ourselves with - string ptr).
 	// dwValue = word value.
 
-	return(SetFakeRegistryItem_Long((char*) lpValue, (long) dwValue));
+	return SetFakeRegistryItem_Long(lpValue, (long)dwValue);
 //<-
 
 
@@ -288,7 +299,7 @@ bool cRegistry::SetDWORDValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, DWOR
 //--	return false;
 }
 
-bool cRegistry::SetStringValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, LPSTR lpData)
+bool cRegistry::SetStringValue(HKEY /* hKeyRoot */, LPCSTR /* lpSubKey */, LPCSTR lpValue, LPCSTR lpData)
 {
 //+>
 	// hKeyRoot = User
@@ -296,7 +307,7 @@ bool cRegistry::SetStringValue(HKEY hKeyRoot, LPSTR lpSubKey, LPSTR lpValue, LPS
 	// lpValue = value (all we need to concern ourselves with - string ptr).
 	// lpData = pointer to the string.
 
-	return(SetFakeRegistryItem_String((char*) lpValue, (char*) lpData) );
+	return SetFakeRegistryItem_String(lpValue, lpData);
 //<-
 
 

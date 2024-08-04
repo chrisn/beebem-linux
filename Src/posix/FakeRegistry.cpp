@@ -3,10 +3,6 @@
  * What was I thinking when I made this?  This sucks big-time.
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
 #include "FakeRegistry.h"
 
 #include <functions.h>

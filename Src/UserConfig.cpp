@@ -1,5 +1,24 @@
-/* START OF user_config.c ------------------------------------------------------
- *
+/****************************************************************
+BeebEm - BBC Micro and Master 128 Emulator
+Copyright (C) 2006  David Eggleston
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA  02110-1301, USA.
+****************************************************************/
+
+/*
  * 	Locate/create user configuration files.
  *
  * 	There are two versions of the below, a UNIX version (WITH_UNIX_EXTRAS)
@@ -10,34 +29,19 @@
  *
  *	(This again is not fantastic code, but if I'm going to get anywhere with
  *	this I'm going to have to speedup development a bit.)
- *
- *      ---
- *      Written by David Eggleston (2006) <deggleston@users.sourceforge.net>
- *      for the 'BeebEm' Acorn BBC Model B, Integra-B, Model B Plus and
- *      Master 128 emulator.
- *
- *      This file is part of BeebEm and may be copied only under the terms of
- *	either the GNU General Public License (GPL) or Dr. David Alan Gilbert's
- *	BeebEm license.
- *
- *      For more details please visit:
- *
- *      http://www.gnu.org/copyleft/gpl.html
- *      ---
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include "UserConfig.h"
-#include <gui.h>
-#include <sdl.h>
-#include "BeebEm.h"
+#include "Windows.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "UserConfig.h"
+
+#include <gui.h>
+#include <sdl.h>
+
 
 /* Extra UNIX specific includes:
  */
@@ -67,19 +71,22 @@
  */
 static BOOL ConcatenateStrings(char *destination, char *append, size_t len)
 {
-	if (destination == NULL){
-		qERROR("Tried to append string to a NULL pointer.");
+	if (destination == NULL)
+	{
+		// qERROR("Tried to append string to a NULL pointer.");
 		return FALSE;
 	}
+
 	if (append == NULL || strlen(append)==0) return TRUE;
 
 	/* If the actual length of destination is greater than len suggests it
 	 * should be, bail out with error. (>= as len includes '\0' and strlen
 	 * does not).
 	 */
-	if (strlen(destination)>=len){
-		qERROR("The actual length of destination string is greater than"
-	 	 " it's length flag suggests..");
+	if (strlen(destination) >= len)
+	{
+		// qERROR("The actual length of destination string is greater than"
+	 	//  " it's length flag suggests..");
 		return FALSE;
 	}
 
@@ -87,7 +94,7 @@ static BOOL ConcatenateStrings(char *destination, char *append, size_t len)
 	 * strncat will add the terminator '\0' to the end (unlike strncpy) so
 	 * we need to subtract one from len.
 	 */
-	strncat( destination, append, len - strlen(destination) - 1 );
+	strncat(destination, append, len - strlen(destination) - 1);
 
 	/* If we could not concatenate all characters from source to destination
 	 * then return failure.
@@ -106,21 +113,25 @@ static BOOL CopyString(char *destination, char *source, size_t len)
 {
 	/* Make sure string is valid.
 	 */
-	if (destination == NULL){
-                qERROR("Tried to copy string to a NULL pointer.");
-                return FALSE;
-        }
-	if (len<1){
-		qERROR("Tried to copy string to string with length zero.");
+	if (destination == NULL)
+	{
+		// qERROR("Tried to copy string to a NULL pointer.");
+		return FALSE;
+	}
+	
+	if (len < 1)
+	{
+		// qERROR("Tried to copy string to string with length zero.");
 		return FALSE;
 	}
 
 	/* If the actual length of destination is greater than len suggests it
 	 * should be, bail out with error.
 	 */
-	if (strlen(destination)>=len){
-		qERROR("The actual length of destination string is greater than"
-	 	 " it's length flag suggests..");
+	if (strlen(destination) >= len)
+	{
+		// qERROR("The actual length of destination string is greater than"
+	 	//  " it's length flag suggests..");
 		return FALSE;
 	}
 
@@ -134,10 +145,9 @@ static BOOL CopyString(char *destination, char *source, size_t len)
 	 */
 	if (source == NULL || strlen(source)==0) return TRUE;
 
-
-        /* If destination string is long enough to hold the source strings
+	/* If destination string is long enough to hold the source strings
 	 * contents copy as many characters as we can.
-         */
+	 */
 	strncpy(destination, source, len);
 
 	/* strncpy will not terminate the destination string if the length of
@@ -150,7 +160,7 @@ static BOOL CopyString(char *destination, char *source, size_t len)
 		destination[len-1]='\0'; return FALSE;
 	}
 
-        return TRUE;
+	return TRUE;
 }
 
 /* Convert path into a C path.  Assumes pointer passed is a valid terminated C 
@@ -163,10 +173,8 @@ static BOOL CopyString(char *destination, char *source, size_t len)
  */
 static void ConvertPathToC(char *path, size_t len)
 {
-	int i;
-
-        if (path != NULL)
-		for (i=0; i<=strlen(path) && i<len; i++)
+	if (path != NULL)
+		for (int i = 0; i <= strlen(path) && i < len; i++)
 			if (path[i]=='\\')
 				path[i]='/';
 }
@@ -184,13 +192,13 @@ static BOOL TurnStringIntoAPath(char *path, size_t len)
 	/* Don't bother if path NULL.
 	 */
 	if (path == NULL){
-		qERROR("Path is a NULL string.");
+		// qERROR("Path is a NULL string.");
 		return FALSE;
 	}
 
-        /* Convert the string into a C friendly path.
-         */
-        ConvertPathToC(path, len);
+	/* Convert the string into a C friendly path.
+	 */
+	ConvertPathToC(path, len);
 
 	/* Don't append forward slash if string empty.
 	 */
@@ -251,9 +259,9 @@ static BOOL AppendDirToPath(char *path, char *dir, size_t len)
  */
 static BOOL AppendFilenameToPath(char *path, char *filename, size_t len)
 {
-        /* Make sure path really is a path. If conversion fails, bail out.
-         */
-        if (! TurnStringIntoAPath(path, len) ) return FALSE;
+	/* Make sure path really is a path. If conversion fails, bail out.
+	 */
+	if (! TurnStringIntoAPath(path, len) ) return FALSE;
 
 	/* If the filename is not valid, fail
 	 */
@@ -316,8 +324,8 @@ static BOOL CopyFile(char *source_file, char *dest_file)
 	if ( source_file == NULL || dest_file == NULL
 	 || strlen(source_file) == 0 || strlen(dest_file) == 0
 	 || source_file[0] != '/' || dest_file[0] != '/') {
-		qFATAL("File copy arguments are either invalid or not fully"
-		 " quantified - bailing out (call security).");
+		// qFATAL("File copy arguments are either invalid or not fully"
+		// " quantified - bailing out (call security).");
 		exit(1);
 	}
 
@@ -339,20 +347,22 @@ static BOOL CopyFile(char *source_file, char *dest_file)
 	FILE *src_f, *dst_f;
 	int c, failed=0;
 
-	if (source_file == NULL){
-		qERROR("Source file is null string.");
+	if (source_file == NULL) {
+		// qERROR("Source file is null string.");
 		return FALSE;
 	}
-	if (dest_file == NULL){
-		qERROR("Destination file is null string.");
+
+	if (dest_file == NULL) {
+		// qERROR("Destination file is null string.");
 		return FALSE;
 	}
 
 	/* Open the source file for reading, quit on fail.
 	 */
-	if ( (src_f=fopen(source_file, "r")) == NULL){
-		pERROR(dL"Unable to open source file [%s]."
-		 , dR, source_file);
+	if ( (src_f=fopen(source_file, "r")) == NULL)
+	{
+		// pERROR(dL"Unable to open source file [%s]."
+		//  , dR, source_file);
 		return FALSE;
 	}
 
@@ -360,8 +370,8 @@ static BOOL CopyFile(char *source_file, char *dest_file)
 	 * close source file and quit on fail.
 	 */
 	if ( (dst_f=fopen(dest_file, "w")) == NULL){
-		pERROR(dL"Unable to write to dest file [%s]."
-		 , dR, dest_file);
+		// pERROR(dL"Unable to write to dest file [%s]."
+		//  , dR, dest_file);
 		fclose(src_f);
 		return FALSE;
 	}
@@ -382,13 +392,13 @@ static BOOL CopyFile(char *source_file, char *dest_file)
 	fclose(src_f);
 
 	if (failed==1){
-		qERROR("File copy failed during copy.");
+		// qERROR("File copy failed during copy.");
 		return FALSE;
 	}else
 		return TRUE;
+
 #endif
 }
-
 
 /* Create a new directory (succeeds if dir already exists).
  */
@@ -401,8 +411,8 @@ static BOOL CreateDirectory(char *file)
 	 * be a security risk).
 	 */
 	if ( file == NULL || strlen(file) == 0 || file[0] != '/') {
-		qFATAL("Directory creation argument is either invalid or not"
-		 " fully quantified - bailing out (call security).");
+		// qFATAL("Directory creation argument is either invalid or not"
+		//  " fully quantified - bailing out (call security).");
 		exit(1);
 	}
 
@@ -414,7 +424,7 @@ static BOOL CreateDirectory(char *file)
 	 | S_IXGRP | S_IROTH | S_IXOTH ) == 0)
 		return TRUE;
 
-	pFATAL(dL"Could not create directory: %s", dR, strerror(errno));
+	// pFATAL(dL"Could not create directory: %s", dR, strerror(errno));
 	return FALSE;
 #else
 #	error You need to add CreateDirectory support for your OS here.
@@ -453,17 +463,18 @@ char* GetUserConfigPath(char *path, size_t len)
 	if ( ! (pw_ptr=getpwuid(getuid())) ){
 		/* Not found, clear config filename.
 		 */
-		pFATAL(dL"Unable to determine user home dir: %s", dR, strerror(errno));
+		// pFATAL(dL"Unable to determine user home dir: %s", dR, strerror(errno));
 		exit(1);
-	}else{
-
+	}
+	else
+	{
 		if (! AppendDirToPath(path, pw_ptr->pw_dir, len) ){
-			qFATAL("Unable to accept user accounts dir.");
+			// qFATAL("Unable to accept user accounts dir.");
 			exit(1);
 		}
 
 		if (! AppendDirToPath(path, "." PACKAGE, len) ){
-			qFATAL("Unable to append ." PACKAGE " to user accounts dir.");
+			// qFATAL("Unable to append ." PACKAGE " to user accounts dir.");
 			exit(1);
 		}
 	}
@@ -472,14 +483,14 @@ char* GetUserConfigPath(char *path, size_t len)
 	 */
 	
 	if (! AppendDirToPath(path, DATA_DIR, len) ){
-		qFATAL("Unable to determine default user config dir.");
+		// qFATAL("Unable to determine default user config dir.");
 		exit(1);
 	}
 
 	/* Add config dir
 	 */
 	if (! AppendDirToPath(path,NONE_UNIX_CONFIG_DIR, len) ){
-		qFATAL("Unable to accept default user config dir.");
+		// qFATAL("Unable to accept default user config dir.");
 		exit(1);
 	}
 #endif
@@ -488,7 +499,7 @@ char* GetUserConfigPath(char *path, size_t len)
 	 */
 	if (! TestDirectory(path) ){
 		if (! CreateDirectory(path)){
-			qFATAL("Unable to create user config dir.");
+			// qFATAL("Unable to create user config dir.");
 			exit(1);
 		}
 
@@ -529,11 +540,11 @@ static BOOL MakeSureBufferIsSane(char *buffer, size_t length)
 	/* Make sure buffer is sane.
 	 */
 	if (length<1){
-		qERROR("Buffer is too small to contain a string.");
+		// qERROR("Buffer is too small to contain a string.");
 		return FALSE;
 	}
 	if (buffer == NULL){
-		qERROR("Buffer is NULL.");
+		// qERROR("Buffer is NULL.");
 		return FALSE;
 	}
 
@@ -551,7 +562,7 @@ static BOOL GetConfigFilePath(char *filepath, size_t length, char *file)
 	 * the .beebem directory is created if it does not exist).
 	 */
 	if ( GetUserConfigPath(filepath, length) == NULL ){
-		pERROR(dL"Unable to determine %s file path.", dR, file);
+		// pERROR(dL"Unable to determine %s file path.", dR, file);
 		return FALSE;
 	}
 
@@ -572,8 +583,8 @@ static BOOL CreateFileFromMaster(char *source_filepath, char *master_filepath)
 		/* Make local copy (in ~/.beebem/ for UNIX)
 		 */
 		if (CopyFile(master_filepath, source_filepath) == FALSE){
-			pERROR(dL"Unable to make copy of master file '%s'.", dR
-			 , master_filepath);
+			// pERROR(dL"Unable to make copy of master file '%s'.", dR
+			//  , master_filepath);
 			return FALSE;
 		}
 	}
@@ -614,8 +625,6 @@ char* GetLocation_roms_cfg(char *buffer, size_t length)
 //
 //	return CopyFilePathToBuffer(filepath, buffer, length);
 
-
-
 	if (MakeSureBufferIsSane(buffer, length) != TRUE)
 		return NULL;
 
@@ -646,8 +655,6 @@ char* GetLocation_econet_cfg(char *buffer, size_t length)
 //
 //	return CopyFilePathToBuffer(filepath, buffer, length);
 
-
-	
 	if (MakeSureBufferIsSane(buffer, length) != TRUE)
 		return NULL;
 
@@ -678,9 +685,6 @@ char* GetLocation_phroms_cfg(char *buffer, size_t length)
 //
 //	return CopyFilePathToBuffer(filepath, buffer, length);
 
-	
-
-
 	if (MakeSureBufferIsSane(buffer, length) != TRUE)
 		return NULL;
 
@@ -710,8 +714,6 @@ char* GetLocation_cmos_ram(char *buffer, size_t length)
 //	 == FALSE) return NULL;
 //
 //	return CopyFilePathToBuffer(filepath, buffer, length);
-
-
 
 	if (MakeSureBufferIsSane(buffer, length) != TRUE)
 		return NULL;
@@ -779,8 +781,6 @@ char* GetLocation_roms(char *buffer, size_t length)
 //
 //	return CopyFilePathToBuffer(DATA_DIR"/roms/" , buffer, length);
 
-
-
 	if (MakeSureBufferIsSane(buffer, length) != TRUE)
 		return NULL;
 
@@ -788,7 +788,7 @@ char* GetLocation_roms(char *buffer, size_t length)
 	 * one instead of the read only system one.
 	 */
 	if ( GetUserConfigPath(buffer, length) == NULL ){
-		qERROR("Unable to determine users config filepath.");
+		// qERROR("Unable to determine users config filepath.");
 		return NULL;
 	}
 	if ( AppendDirToPath(buffer, "roms", length) )
@@ -841,15 +841,14 @@ BOOL CopyScsiImagesToUser(char *filepath)
 			/* This make be slow (especially if C copy is used) so
 			 * print warning.
 		 	 */
-			pINFO(dL"Creating %s (may take a while).", dR
-			 , files[i]);
+			// pINFO(dL"Creating %s (may take a while).", dR
+			//  , files[i]);
 
 			/* Physically copy the disk images from shared.
 		 	*/
-			if (CreateFileFromMaster(dst_filepath, src_filepath)
-			 == FALSE){
-				pERROR(dL"Failed to create '%s'.", dR
-				 , dst_filepath);
+			if (CreateFileFromMaster(dst_filepath, src_filepath) == FALSE)
+			{
+				// pERROR(dL"Failed to create '%s'.", dR, dst_filepath);
 			}
 		}
 	}
@@ -899,38 +898,42 @@ char* GetLocation_scsi(char *buffer, size_t length)
 //	
 //	return CopyFilePathToBuffer(filepath, buffer, length);
 
-
-
 	if (MakeSureBufferIsSane(buffer, length) != TRUE)
 		return NULL;
 
 	/* Determine users location.
 	 */
-	if ( GetUserConfigPath(buffer, length) == NULL ){
-		qERROR("Unable to determine users config filepath.");
+	if (GetUserConfigPath(buffer, length) == NULL)
+	{
+		// qERROR("Unable to determine users config filepath.");
 		return NULL;
-	}else{
+	}
+	else
+	{
 		/* Create a filepath to the users scsi disk images.
 		 */
-		if (! AppendDirToPath(buffer, "scsi", length) ){
-			qERROR("Unable to determine scsi folder location!");
+		if (! AppendDirToPath(buffer, "scsi", length) )
+		{
+			// qERROR("Unable to determine scsi folder location!");
 			return NULL;
-		}else{
+		}
+		else
+		{
 			/* If users scsi directory does not exist, create it.
 			 */
-			if (! TestDirectory(buffer) ){
+			if (!TestDirectory(buffer))
+			{
 				if (CreateDirectory(buffer) != TRUE){
-					pERROR(dL"Unable to create '%s'."
-					 , dR, buffer);
+					// pERROR(dL"Unable to create '%s'.", dR, buffer);
 					return NULL;
 				}
 			}
 
 			/* Create drive images (if required).
 			 */
-			if (CopyScsiImagesToUser(buffer) != TRUE){
-				qERROR("Unable to create a local copy"
-				 " of SCSI disk images!");
+			if (CopyScsiImagesToUser(buffer) != TRUE)
+			{
+				// qERROR("Unable to create a local copy of SCSI disk images!");
 				 return NULL;
 			}
 		}

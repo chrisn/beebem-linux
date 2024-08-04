@@ -18,9 +18,13 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA  02110-1301, USA.
 ****************************************************************/
 
+#include "Windows.h"
+
 #include <assert.h>
 #include <fstream>
+#include <limits>
 #include <string>
+#include <string.h>
 
 #include "Preferences.h"
 #include "StringUtils.h"

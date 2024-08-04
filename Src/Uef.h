@@ -1,52 +1,118 @@
-#ifndef _UEF_H
-#define _UEF_H
+/****************************************************************
+BeebEm - BBC Micro and Master 128 Emulator
+Copyright (C) 2004  Mike Wyatt
 
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-extern int uef_errno;
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-/* some defines related to the status byte - these may change! */
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA  02110-1301, USA.
+****************************************************************/
 
-#define UEF_MMASK			(3 << 16)
-#define UEF_STARTBIT		(2 << 8)
-#define UEF_STOPBIT			(1 << 8)
-#define UEF_BYTEMASK		0xff
+#ifndef UEF_HEADER
+#define UEF_HEADER
 
-/* some macros for reading parts of the status byte */
+#include <string>
+#include <vector>
 
-#define UEF_HTONE			(0 << 16)
-#define UEF_DATA			(1 << 16)
-#define UEF_GAP				(2 << 16)
-#define UEF_EOF				(3 << 16)
+#include "TapeMap.h"
 
-#define UEFRES_TYPE(x)		(x&UEF_MMASK)
-#define UEFRES_BYTE(x)		(x&UEF_BYTEMASK)
-#define UEFRES_10BIT(x)		(((x&UEF_BYTEMASK) << 1) | ((x&UEF_STARTBIT) ? 1 : 0) | ((x&UEF_STOPBIT) ? 0x200 : 0))
-#define UEFRES_STARTBIT(x)	(x&UEF_STARTBIT)
-#define UEFRES_STOPBIT(x)	(x&UEF_STOPBIT)
+#include <zlib.h>
 
-/* some possible return states */
-#define UEF_OK				0
-#define UEF_OPEN_NOTUEF		-1
-#define UEF_OPEN_NOTTAPE	-2
-#define UEF_OPEN_NOFILE		-3
-#define UEF_OPEN_MEMERR		-4
+// Some defines related to the status byte - these may change!
+constexpr int UEF_TYPE_MASK = 0x30000;
+constexpr int UEF_BYTE_MASK = 0x000ff;
 
-/* setup */
-extern "C" void uef_setclock(int beats);
-extern "C" void uef_setunlock(int unlock);
+// Some macros for reading parts of the status byte
+constexpr int UEF_CARRIER_TONE = 0x00000;
+constexpr int UEF_DATA         = 0x10000;
+constexpr int UEF_GAP          = 0x20000;
+constexpr int UEF_EOF          = 0x30000;
 
-/* poll mode */
-extern "C" int uef_getdata(int time);
+constexpr int           UEFRES_TYPE(int x) { return x & UEF_TYPE_MASK; }
+constexpr unsigned char UEFRES_BYTE(int x) { return x & UEF_BYTE_MASK; }
 
-/* open & close */
-extern "C" int uef_open(char *name);
-extern "C" void uef_close(void);
+// Some possible return states
+enum class UEFResult
+{
+	Success,
+	NotUEF,
+	NotTape,
+	NoFile
+};
 
-/* writing */
-extern "C" int uef_create(char *name);
-extern "C" int uef_putdata(int data, int time);
+struct UEFChunkInfo
+{
+	int type;
+	int len;
+	std::vector<unsigned char> data;
+	int l1;
+	int l2;
+	int unlock_offset;
+	int crc;
+	int start_time;
+	int end_time;
+};
+
+class UEFFileWriter
+{
+	public:
+		UEFFileWriter();
+		~UEFFileWriter();
+
+	public:
+		UEFResult Open(const char *FileName);
+		UEFResult PutData(int Data, int Time);
+		void Close();
+
+	private:
+		UEFResult WriteChunk();
+
+	private:
+		std::string m_FileName;
+		gzFile m_OutputFile;
+		int m_LastPutData;
+		UEFChunkInfo m_Chunk;
+};
+
+class UEFFileReader
+{
+	public:
+		UEFFileReader();
+		~UEFFileReader();
+
+	public:
+		UEFResult Open(const char *FileName);
+		void Close();
+
+		// Setup
+		void SetClock(int Speed);
+		void SetUnlock(bool Unlock);
+
+		// Poll mode
+		int GetData(int Time);
+
+		void CreateTapeMap(std::vector<TapeMapEntry>& TapeMap);
+
+	private:
+		UEFResult LoadData(const char *FileName);
+		const UEFChunkInfo* FindChunk(int Time);
+
+	private:
+		std::string m_FileName;
+		std::vector<UEFChunkInfo> m_Chunks;
+		int m_ClockSpeed;
+		const UEFChunkInfo *m_LastChunk;
+		bool m_Unlock;
+};
 
 #endif

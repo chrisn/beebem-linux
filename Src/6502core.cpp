@@ -28,17 +28,25 @@ Boston, MA  02110-1301, USA.
 #include <iostream>
 
 #include "6502core.h"
+#include "Arm.h"
 #include "AtoDConv.h"
 #include "BeebMem.h"
+#include "Debug.h"
 #include "Disc1770.h"
 #include "Disc8271.h"
-#include "Debug.h"
 #include "Econet.h"
+#include "Ide.h"
+#include "Log.h"
 #include "Main.h"
+#include "Master512CoPro.h"
 #include "Model.h"
+#include "Music5000.h"
+#include "Sound.h"
+#include "Teletext.h"
 #include "Scsi.h"
 #include "Serial.h"
-#include "Sound.h"
+#include "Speech.h"
+#include "SprowCoPro.h"
 #include "SysVia.h"
 #include "Tube.h"
 #include "UserVia.h"
@@ -47,11 +55,7 @@ Boston, MA  02110-1301, USA.
 #include "Z80mem.h"
 #include "Z80.h"
 
-//--#ifdef WIN32
 #define INLINE inline
-//--#else
-//--#define INLINE
-//--#endif
 
 static CPU CPUType;
 static int CurrentInstruction;
@@ -3247,19 +3251,19 @@ void Exec6502Instruction()
 				break;
 
 			case TubeDevice::AcornArm: // TODO: 8MHz
-				// arm->exec(4);
+				arm->exec(4);
 				break;
 
 			case TubeDevice::SprowArm: // 64MHz
-				// #if _DEBUG
-				// sprow->Execute(2);
-				// #else
-				// sprow->Execute(32 * Cycles);
-				// #endif
+				#if _DEBUG
+				sprow->Execute(2);
+				#else
+				sprow->Execute(32 * Cycles);
+				#endif
 				break;
 
 			case TubeDevice::Master512CoPro: // 8MHz
-				// master512CoPro.Execute(4 * Cycles);
+				master512CoPro.Execute(4 * Cycles);
 				break;
 
 			default:
@@ -3290,16 +3294,22 @@ static void PollHardware(unsigned int nCycles)
 	{
 		TotalCycles -= CycleCountWrap;
 		AdjustTrigger(AtoDTrigger);
-		if (!DirectSoundEnabled) AdjustTrigger(SoundTrigger);
+		AdjustTrigger(SoundTrigger);
 		AdjustTrigger(Disc8271Trigger);
+		AdjustTrigger(TeletextAdapterTrigger);
 		AdjustTrigger(AMXTrigger);
 		AdjustTrigger(PrinterTrigger);
 		AdjustTrigger(VideoTriggerCount);
 		AdjustTrigger(TapeTrigger);
-#ifdef WITH_ECONET
+
+		#ifdef WITH_ECONET
+
 		AdjustTrigger(EconetTrigger);
 		AdjustTrigger(EconetFlagFillTimeoutTrigger);
-#endif
+
+		#endif
+
+		AdjustTrigger(IP232RxTrigger);
 		if (TubeType == TubeDevice::Acorn65C02)
 			WrapTubeCycles();
 	}
@@ -3310,11 +3320,20 @@ static void PollHardware(unsigned int nCycles)
 		SerialPoll(nCycles);
 	}
 	Disc8271Poll();
-	Sound_Trigger(nCycles);
+	Music5000Poll(nCycles);
+	SoundPoll();
+
+	#if ENABLE_SPEECH
+	SpeechPoll(nCycles);
+	#endif
+
+	TeletextPoll();
+
 	if (DisplayCycles>0) DisplayCycles-=nCycles; // Countdown time till end of display of info.
 	if (MachineType == Model::Master128 || !NativeFDC) Poll1770(nCycles); // Do 1770 Background stuff
 
-#ifdef WITH_ECONET
+	#ifdef WITH_ECONET
+
 	if (EconetEnabled && EconetPoll())
 	{
 		if (EconetNMIEnabled)
@@ -3330,7 +3349,8 @@ static void PollHardware(unsigned int nCycles)
 				DebugDisplayTrace(DebugType::Econet, true, "Econet: NMI requested but supressed");
 		}
 	}
-#endif
+
+	#endif
 }
 
 /*-------------------------------------------------------------------------*/

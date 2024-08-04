@@ -22,6 +22,7 @@ Boston, MA  02110-1301, USA.
 #include <cctype>
 #include <codecvt>
 #include <locale>
+#include <strings.h> // For strcasecmp
 
 #include "StringUtils.h"
 
@@ -63,6 +64,16 @@ bool ParseNumber(const std::string& str, int* pValue)
 	return true;
 }
 
+char ToHexDigit(int Value)
+{
+	static const char HexDigit[16] =
+	{
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+	};
+
+	return HexDigit[Value];
+}
+
 bool StringEndsWith(const std::string& str, const std::string& suffix)
 {
 	return str.size() >= suffix.size() &&
@@ -81,4 +92,13 @@ std::wstring Str2WStr(const std::string& str)
 	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> Converter;
 
 	return Converter.from_bytes(str);
+}
+
+int StrCaseCmp(const char *str1, const char *str2)
+{
+	#ifdef WIN32
+	return _stricmp(str1, str2);
+	#else
+	return strcasecmp(str1, str2);
+	#endif
 }

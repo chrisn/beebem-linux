@@ -40,7 +40,6 @@ Offset  Description                 Access
 #include "FileUtils.h"
 #include "Log.h"
 #include "Main.h"
-#include "UserConfig.h"
 
 static unsigned char ReadData();
 static void WriteData(unsigned char data);
@@ -114,12 +113,6 @@ bool SCSIDriveEnabled = false;
 
 void SCSIReset()
 {
-FILE *f;
-int i;
-char buff[256];
-//+>
-char pathbuff[256];
-//<+
 	scsi.code = 0x00;
 	scsi.sector = 0x00;
 
@@ -130,55 +123,39 @@ char pathbuff[256];
 		return;
 	}
 
-//+>
-	/* If fails will make pathbuff a blank string ("").
-	 */
-	if(! GetLocation_scsi(pathbuff, 256) )
-		qERROR("Unable to read SCSI disks.");
-//<+
-
 	for (int i = 0; i < 4; ++i)
 	{
+		char FileName[MAX_PATH];
+		MakeFileName(FileName, MAX_PATH, HardDrivePath, "scsi%d.dat", i);
 
-//->	sprintf(buff, "%s/discims/scsi%d.dat", RomPath, i);
-//++
-	sprintf(buff, "%sscsi%d.dat", pathbuff, i);
-	pINFO(dL"Opening/Closing SCSI file: '%s'\n", dR, buff);
-//<-
+		SCSIDisc[i] = fopen(FileName, "rb+");
 
-//->        if (SCSIDisc[i] != NULL)
-//--			fclose(SCSIDisc[i]);
-//++
-		if (SCSIDisc[i] != NULL) {
-			fclose(SCSIDisc[i]);
-			SCSIDisc[i]=NULL;
-		}
-//<-
-
-        if (!HardDriveEnabled)
-            continue;
-
-        SCSIDisc[i] = fopen(buff, "rb+");
-    
-        if (SCSIDisc[i] == NULL)
-        {
-            SCSIDisc[i] = fopen(buff, "wb");
-            if (SCSIDisc[i] != NULL) fclose(SCSIDisc[i]);
-            SCSIDisc[i] = fopen(buff, "rb+");
-        }
-
-	SCSISize[i] = 0;
-        if (SCSIDisc[i] != NULL)
+		if (SCSIDisc[i] == nullptr)
 		{
-    
-//->			sprintf(buff, "%s/discims/scsi%d.dsc", RomPath, i);
-//++
-			sprintf(buff, "%sscsi%d.dsc", pathbuff, i);
-			pINFO(dL"Loading SCSI file: '%s'\n", dR, buff);
-//<-
-			f = fopen(buff, "rb");
-			
-			if (f != NULL)
+			#ifdef WIN32
+
+			char* Error = _strerror(nullptr);
+			Error[strlen(Error) - 1] = '\0'; // Remove trailing '\n'
+
+			#else
+
+			char* Error = strerror(errno);
+
+			#endif
+
+			mainWin->Report(MessageType::Error,
+			                "Could not open SCSI disc image:\n  %s\n\n%s", FileName, Error);
+		}
+
+		SCSISize[i] = 0;
+
+		if (SCSIDisc[i] != nullptr)
+		{
+			MakeFileName(FileName, MAX_PATH, HardDrivePath, "scsi%d.dsc", i);
+
+			FILE *f = fopen(FileName, "rb");
+
+			if (f != nullptr)
 			{
 				unsigned char buff[22];
 				fread(buff, 1, 22, f);
@@ -751,133 +728,110 @@ static void ModeSense()
 
 static int DiscModeSense(unsigned char *cdb, unsigned char *buf)
 {
-	FILE *f;
-	
-	int size;
-	
-	char buff[256];
-		
 	if (SCSIDisc[scsi.lun] == NULL) return 0;
 
-//->	sprintf(buff, "%s/discims/scsi%d.dsc", RomPath, scsi.lun);
-//++
-	sprintf(buff, "%s/media/scsi/scsi%d.dsc", DATA_DIR, scsi.lun);
-	printf("%s\n", buff);
-//<-			
-	f = fopen(buff, "rb");
-			
-	if (f == NULL) return 0;
+	char FileName[MAX_PATH];
+	MakeFileName(FileName, MAX_PATH, HardDrivePath, "scsi%d.dsc", scsi.lun);
 
-	size = cdb[4];
+	FILE *f = fopen(FileName, "rb");
+
+	if (f == nullptr) return 0;
+
+	int size = cdb[4];
 	if (size == 0)
 		size = 22;
 
-	size = fread(buf, 1, size, f);
-	
-// heads = buf[15];
-// cyl   = buf[13] * 256 + buf[14];
-// step  = buf[21];
-// rwcc  = buf[16] * 256 + buf[17];
-// lz    = buf[20];
-	
+	size = (int)fread(buf, 1, size, f);
+
+	// heads = buf[15];
+	// cyl   = buf[13] * 256 + buf[14];
+	// step  = buf[21];
+	// rwcc  = buf[16] * 256 + buf[17];
+	// lz    = buf[20];
+
 	fclose(f);
 
 	return size;
 }
 
-void ModeSelect(void)
+static void ModeSelect()
 {
-
 	scsi.length = scsi.cmd[4];
 	scsi.blocks = 1;
-	
+
 	scsi.status = (scsi.lun << 5) | 0x00;
 	scsi.message = 0x00;
-	
+
 	scsi.next = 0;
 	scsi.offset = 0;
-	
-	scsi.phase = write;
+
+	scsi.phase = Phase::Write;
 	scsi.cd = false;
-	
+
 	scsi.req = true;
 }
 
-bool WriteGeometory(unsigned char *buf)
+static bool WriteGeometory(unsigned char *buf)
 {
-	FILE *f;
-	
-	char buff[256];
-	
 	if (SCSIDisc[scsi.lun] == NULL) return false;
-	
-//->	sprintf(buff, "%s/discims/scsi%d.dsc", RomPath, scsi.lun);
-//++
-	sprintf(buff, "%s/media/scsi/scsi%d.dsc", DATA_DIR, scsi.lun);
-	printf("%s\n", buff);
-//<-	
-	f = fopen(buff, "wb");
-	
-	if (f == NULL) return false;
-	
+
+	char FileName[MAX_PATH];
+	MakeFileName(FileName, MAX_PATH, HardDrivePath, "scsi%d.dsc", scsi.lun);
+
+	FILE *f = fopen(FileName, "wb");
+
+	if (f == nullptr) return false;
+
 	fwrite(buf, 22, 1, f);
-	
+
 	fclose(f);
-	
+
 	return true;
 }
 
-
-bool DiscFormat(unsigned char *buf)
-
+static bool DiscFormat(unsigned char * /* buf */)
 {
-// Ignore defect list
+	// Ignore defect list
 
-	FILE *f;
-	char buff[256];
-	
-	if (SCSIDisc[scsi.lun] != NULL) {
+	if (SCSIDisc[scsi.lun] != nullptr) {
 		fclose(SCSIDisc[scsi.lun]);
+		SCSIDisc[scsi.lun] = nullptr;
 	}
-	
-//->	sprintf(buff, "%s/discims/scsi%d.dat", RomPath, scsi.lun);
-//++
-	sprintf(buff, "%s/media/scsi/scsi%d.dat", DATA_DIR, scsi.lun);
-	printf("%s\n", buff);
-//<-	
-	SCSIDisc[scsi.lun] = fopen(buff, "wb");
-	if (SCSIDisc[scsi.lun] != NULL) fclose(SCSIDisc[scsi.lun]);
-	SCSIDisc[scsi.lun] = fopen(buff, "rb+");
-	
-	if (SCSIDisc[scsi.lun] == NULL) return false;
 
-//->	sprintf(buff, "%s/discims/scsi%d.dsc", RomPath, scsi.lun);
-//++
-	sprintf(buff, "%s/media/scsi/scsi%d.dsc", DATA_DIR, scsi.lun);
-//<-	
-	f = fopen(buff, "rb");
-	
-	if (f != NULL)
+	char FileName[MAX_PATH];
+	MakeFileName(FileName, MAX_PATH, HardDrivePath, "scsi%d.dat", scsi.lun);
+
+	SCSIDisc[scsi.lun] = fopen(FileName, "wb");
+	if (SCSIDisc[scsi.lun] != nullptr) fclose(SCSIDisc[scsi.lun]);
+	SCSIDisc[scsi.lun] = fopen(FileName, "rb+");
+
+	if (SCSIDisc[scsi.lun] == nullptr) return false;
+
+	MakeFileName(FileName, MAX_PATH, HardDrivePath, "scsi%d.dsc", scsi.lun);
+
+	FILE *f = fopen(FileName, "rb");
+
+	if (f != nullptr)
 	{
+		unsigned char buff[22];
 		fread(buff, 1, 22, f);
-		
+
 		// heads = buf[15];
 		// cyl   = buf[13] * 256 + buf[14];
-		
-		SCSISize[scsi.lun] = buff[15] * (buff[13] * 256 + buff[14]) * 33;		// Number of sectors on disk = heads * cyls * 33
-		
+
+		// Number of sectors on disk = heads * cyls * 33
+		SCSISize[scsi.lun] = buff[15] * (buff[13] * 256 + buff[14]) * 33;
+
 		fclose(f);
-	
 	}
-	
+
 	return true;
 }
 
-void Format(void)
+static void Format()
 {
-	bool status;
-	
-	status = DiscFormat(scsi.cmd);
+	bool status = DiscFormat(scsi.cmd);
+
 	if (status) {
 		scsi.status = (scsi.lun << 5) | 0x00;
 		scsi.message = 0x00;
@@ -885,20 +839,18 @@ void Format(void)
 		scsi.status = (scsi.lun << 5) | 0x02;
 		scsi.message = 0x00;
 	}
+
 	Status();
 }
 
-bool DiscVerify(unsigned char *buf)
-
+static bool DiscVerify(unsigned char * /* buf */)
 {
-	int sector;
-	
-	sector = scsi.cmd[1] & 0x1f;
+	int sector = scsi.cmd[1] & 0x1f;
 	sector <<= 8;
 	sector |= scsi.cmd[2];
 	sector <<= 8;
 	sector |= scsi.cmd[3];
-	
+
 	if (sector >= SCSISize[scsi.lun])
 	{
 		scsi.code = 0x21;
@@ -909,11 +861,10 @@ bool DiscVerify(unsigned char *buf)
 	return true;
 }
 
-void Verify(void)
+static void Verify()
 {
-	bool status;
-	
-	status = DiscVerify(scsi.cmd);
+	bool status = DiscVerify(scsi.cmd);
+
 	if (status) {
 		scsi.status = (scsi.lun << 5) | 0x00;
 		scsi.message = 0x00;
@@ -921,14 +872,13 @@ void Verify(void)
 		scsi.status = (scsi.lun << 5) | 0x02;
 		scsi.message = 0x00;
 	}
+
 	Status();
 }
 
-void Translate(void)
+static void Translate()
 {
-	int record;
-	
-	record = scsi.cmd[1] & 0x1f;
+	int record = scsi.cmd[1] & 0x1f;
 	record <<= 8;
 	record |= scsi.cmd[2];
 	record <<= 8;
@@ -938,17 +888,17 @@ void Translate(void)
 	scsi.buffer[1] = scsi.cmd[2];
 	scsi.buffer[2] = scsi.cmd[1] & 0x1f;
 	scsi.buffer[3] = 0x00;
-		
+
 	scsi.length = 4;
-	
+
 	scsi.offset = 0;
 	scsi.blocks = 1;
-	scsi.phase = read;
-	scsi.io = TRUE;
-	scsi.cd = FALSE;
-	
+	scsi.phase = Phase::Read;
+	scsi.io = true;
+	scsi.cd = false;
+
 	scsi.status = (scsi.lun << 5) | 0x00;
 	scsi.message = 0x00;
-		
+
 	scsi.req = true;
 }

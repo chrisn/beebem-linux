@@ -20,6 +20,8 @@ Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA  02110-1301, USA.
 ****************************************************************/
 
+#include "Windows.h"
+
 #include <stdio.h>
 #include <string>
 #include <time.h>
@@ -34,7 +36,6 @@ Boston, MA  02110-1301, USA.
 #include "UserPortBreakoutBox.h"
 #include "UserPortRTC.h"
 #include "Via.h"
-#include "Windows.h"
 
 // AMX mouse (see UserVia.h)
 bool AMXMouseEnabled = false;
@@ -355,6 +356,8 @@ unsigned char UserVIARead(int Address)
 		case 1:
 			UserVIAState.ifr &= 0xfc;
 			UpdateIFRTopBit();
+			// Fall through...
+
 		case 15:
 			tmp = 255;
 			break;
