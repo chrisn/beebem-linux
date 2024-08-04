@@ -7,7 +7,6 @@
  *	---
  */
 
-
 #ifndef _DW_BUTTON_H_
 #define _DW_BUTTON_H_
 
@@ -18,7 +17,6 @@
 #include "widget.h"
 
 #include <SDL.h>
-
 
 /* Widget type:
  */

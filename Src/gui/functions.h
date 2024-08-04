@@ -20,15 +20,6 @@
 #ifndef _EG_FUNCTIONS_H_
 #define _EG_FUNCTIONS_H_
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
-
-/* START OF functions.h --------------------------------------------------------
- */
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -37,8 +28,6 @@
 #include "types.h"
 #include "line.h"
 #include "log.h"
-
-
 
 /* The following three definitions exist because I don't know what pointers
  * on 64 bit machines look like.

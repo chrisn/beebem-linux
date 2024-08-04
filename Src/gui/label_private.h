@@ -7,21 +7,16 @@
  *	---
  */
 
-
 #ifndef _DW_LABEL_PRIVATE_H_
 #define _DW_LABEL_PRIVATE_H_
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include <gui/types.h>
+#include "types.h"
 #include <SDL.h>
 
-#include <gui/label.h>
+#include "label.h"
 
-#include <gui/window.h>
-#include <gui/widget.h>
+#include "window.h"
+#include "widget.h"
 
 
 /* Get EG_Label struct.

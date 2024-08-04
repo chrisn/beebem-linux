@@ -1,7 +1,7 @@
 /* START OF slidebar_private.h --------------------------------------------------
  *
  *	A slide bar widget.
- * 
+ *
  *	---
  *	THIS GUI IS TOTALLY *BROKEN*! PLEASE DO NOT USE IT!
  *	---
@@ -12,14 +12,10 @@
 #define _DW_SLIDEBAR_PRIVATE_H_
 
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "types.h"
 
-#include <gui/types.h>
-
-#include <gui/widget.h>
-#include <gui/window.h>
+#include "widget.h"
+#include "window.h"
 
 #include <SDL.h>
 
