@@ -11,21 +11,16 @@
 #ifndef _DW_WIDGET_PRIVATE_H_
 #define _DW_WIDGET_PRIVATE_H_
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "types.h"
+#include "widget.h"
 
-#include <gui/types.h>
 #include <SDL.h>
-
-#include <gui/widget.h>
-
 
 /* Convenient macro to check for more obvious EG_Widget struct pointer errors.
  */
 
 // [TODO] Probably a bit late now, but add the type as an argument so it can test that it is the correct type of widget too.
-#ifdef EG_DEBUG                 
+#ifdef EG_DEBUG
 #       define CHECK_EG_WIDGET_IS_VALID(o, r) \
                 if (o == NULL){ \
                         EG_Log(EG_LOG_WARNING, dL"EG_Widget pointer is NULL." \

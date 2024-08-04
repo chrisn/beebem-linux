@@ -7,24 +7,20 @@
  *	---
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "log.h"
 
-#include <gui/log.h>
+#include "functions.h"
 
-#include <gui/functions.h>
+#include "togglebutton.h"
+#include "togglebutton_private.h"
 
-#include <gui/togglebutton.h>
-#include <gui/togglebutton_private.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
-#include <gui/widget.h>
-#include <gui/widget_private.h>
-
-#include <gui/widget_shared.h>
+#include "widget_shared.h"
 
 #include <SDL.h>
 
@@ -64,8 +60,8 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 	/* Dull down the button a bit when disabled.
 	 */
 	if (EG_Widget_IsEnabled(widget_ptr) != EG_TRUE){
-		color.r = (int) ( color.r * 0.9); 
-		color.g = (int) ( color.g * 0.9); 
+		color.r = (int) ( color.r * 0.9);
+		color.g = (int) ( color.g * 0.9);
 		color.b = (int) ( color.b * 0.9);
 	}
 
@@ -154,14 +150,14 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 		 */
 		if (togglebutton_ptr->depressed == EG_TRUE && event_ptr->button.state
 		 == SDL_RELEASED && event_ptr->button.button ==SDL_BUTTON_LEFT){
-	
+
 			/* If released with mouse pointer within area of widget
-			 * and -------- the minimum click-time has been met. 
+			 * and -------- the minimum click-time has been met.
 			 */
 			if (mouse_over_widget == EG_TRUE &&
 			 EG_Widget_GetVisibleToggle(widget_ptr) == EG_TRUE
                          && EG_Widget_GetStoppedToggle(widget_ptr) == EG_FALSE){
-				
+
 				/* If this toggle button has a group widget value,
 				 * then it's part of a group (a radio button),
 				 * so process it in that mode instead.
@@ -180,7 +176,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 				}else{
 					/* Process as normal tickbox.
 					 */
-	
+
 					/* Toggle value.
 				 	 */
 					if (togglebutton_ptr->is_selected == EG_TRUE){
@@ -195,12 +191,12 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 						 " move focus to pressed EG_TickBox."
 						 , dR);
 				}
-					
+
                                 	/* Call users 'OnClick' event.
                                  	 */
 					EG_Widget_CallUserOnClick(widget_ptr);
 			}
-	
+
 			/* Regardless of mouse pointers location, set
 			 * depressed = false; repaint widget.
 			 */
@@ -250,7 +246,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 						togglebutton_ptr->is_selected = EG_TRUE;
 //						togglebutton_ptr->caption[0] = togglebutton_ptr->set_value;
 					}
-	
+
 					if (EG_Window_SetFocusToThisWidget(widget_ptr)
 					 != EG_TRUE)
 					 	EG_Log(EG_LOG_WARNING, dL"Could net"
@@ -268,8 +264,8 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 	}
 
         /* If mouse over widget, and users event callback is set, call users
-         * callback.             
-         */                             
+         * callback.
+         */
         if (mouse_over_widget == EG_TRUE)
                 EG_Widget_CallUserOnEvent(widget_ptr, event_ptr);
 
@@ -385,7 +381,7 @@ EG_BOOL EG_ToggleButton_SetGroupParent(EG_Widget *togglebutton_widget_ptr
  , EG_Widget *group_parent_widget_ptr)
 {
 	EG_ToggleButton *togglebutton_ptr;
-	
+
 	EG_TOGGLEBUTTON_GET_STRUCT_PTR(togglebutton_widget_ptr, togglebutton_ptr, EG_FALSE);
 	togglebutton_ptr->parent_group_widget = group_parent_widget_ptr;
 	return(EG_TRUE);

@@ -12,18 +12,14 @@
 #define _DW_BOX_PRIVATE_H_
 
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include <gui/types.h>
+#include "types.h"
 
 #include <SDL.h>
 
-#include <gui/window.h>
-#include <gui/widget.h>
+#include "window.h"
+#include "widget.h"
 
-#include <gui/box.h>
+#include "box.h"
 
 
 /* Get EG_Box struct.
@@ -55,4 +51,4 @@ typedef struct{
 
 /* END OF box_private.h --------------------------------------------------------
  */
-#endif                 
+#endif

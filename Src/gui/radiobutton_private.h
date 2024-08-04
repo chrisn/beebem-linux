@@ -11,17 +11,12 @@
 #ifndef _DW_RADIOBUTTON_PRIVATE_H_
 #define _DW_RADIOBUTTON_PRIVATE_H_
 
+#include "types.h"
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "tickbox_private.h"
 
-#include <gui/types.h>
-
-#include <gui/tickbox_private.h>
-
-#include <gui/window.h>
-#include <gui/widget.h>
+#include "window.h"
+#include "widget.h"
 
 #include <SDL.h>
 
@@ -46,4 +41,4 @@
 
 /* END OF tickbox_private.h ----------------------------------------------------
  */
-#endif                                                                           
+#endif

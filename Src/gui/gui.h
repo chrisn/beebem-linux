@@ -7,24 +7,24 @@
  *	---
  */
 
-#include <gui/types.h>
+#include "types.h"
 
-#include <gui/window.h>
-#include <gui/widget.h>
-#include <gui/box.h>
-#include <gui/label.h>
-#include <gui/button.h>
-#include <gui/tickbox.h>
-#include <gui/radiogroup.h>
-#include <gui/radiobutton.h>
-#include <gui/tabgroup.h>
-#include <gui/tabpage.h>
-#include <gui/slidebar.h>
-#include <gui/togglebutton.h>
-#include <gui/progressbar.h>
+#include "window.h"
+#include "widget.h"
+#include "box.h"
+#include "label.h"
+#include "button.h"
+#include "tickbox.h"
+#include "radiogroup.h"
+#include "radiobutton.h"
+#include "tabgroup.h"
+#include "tabpage.h"
+#include "slidebar.h"
+#include "togglebutton.h"
+#include "progressbar.h"
 
-#include <gui/messagebox.h>
+#include "messagebox.h"
 
-#include <gui/sdl.h>
+#include "sdl.h"
 
 #include <SDL.h>

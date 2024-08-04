@@ -7,17 +7,12 @@
  *	---
  */
 
-
 #ifndef _DW_WIDGET_H_
 #define _DW_WIDGET_H_
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "types.h"
 
-#include <gui/types.h>
-
-#include <gui/widget.h>
+#include "widget.h"
 
 #include <SDL.h>
 
@@ -25,7 +20,7 @@
 #define EG_WIDGET_MAX_STRING_VALUE_SIZE                 1024
 
 typedef struct{
-        /* Widget ID:           
+        /* Widget ID:
          */
         EG_StringHash		type;
 
@@ -43,7 +38,7 @@ typedef struct{
         /* A value the parent Window may ask the Widget to
          * hold for it, never reference or change this within
          * the Widget code, leave it to the Window to access.
-         * 
+         *
          * (It's here so I don't have to implement fast hash
          * tables).
          */
@@ -83,7 +78,7 @@ typedef struct{
         /* Widget value:
          *
          * Numeric widgets will set numeric_value, string widgets will set
-         * string_value.  String widgets can only contain strings upto 
+         * string_value.  String widgets can only contain strings upto
          * EG_WIDGET_MAX_STRING_VALUE_SIZE in length.  But it's easy to increase
          * this above.
          */
@@ -117,7 +112,7 @@ typedef struct{
          *
          *
          * can_get_focus:
-         * 
+         *
          * Determine whether the widget can receive focus or not.
 	 *
 	 * has_focus needs to be set by EG_Window.
@@ -176,7 +171,7 @@ extern "C"{
 	EG_BOOL 	EG_Widget_SetUserCallback_OnEvent(EG_Widget *widget_ptr, EG_Callback_User_OnEvent user_callback_ptr, void* user_event_value_ptr);
 	EG_BOOL		EG_Widget_SetUserCallback_OnLostFocus(EG_Widget *widget_ptr, EG_Callback_User_OnLostFocus user_callback_ptr, void* user_lostfocus_value_ptr);
 	EG_BOOL		EG_Widget_SetUserCallback_OnGotFocus(EG_Widget *widget_ptr, EG_Callback_User_OnGotFocus user_callback_ptr, void* user_gotfocus_value_ptr);
-	
+
 	void 		EG_Widget_ClearUserCallback_OnChange(EG_Widget *widget_ptr);
 	void 		EG_Widget_ClearUserCallback_OnClick(EG_Widget *widget_ptr);
 	void 		EG_Widget_ClearUserCallback_OnEvent(EG_Widget *widget_ptr);

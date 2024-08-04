@@ -8,26 +8,21 @@
  */
 
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "types.h"
+#include "log.h"
 
+#include "functions.h"
 
-#include <gui/types.h>
-#include <gui/log.h>
+#include "progressbar.h"
+#include "progressbar_private.h"
 
-#include <gui/functions.h>
+#include "widget_shared.h"
 
-#include <gui/progressbar.h>
-#include <gui/progressbar_private.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/widget_shared.h>
-
-#include <gui/window.h>
-#include <gui/window_private.h>
-
-#include <gui/widget.h>
-#include <gui/widget_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
 
 #include <SDL.h>
@@ -73,7 +68,7 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 	SDL_Color color;
 	SDL_Surface *surface_ptr;
 
-	if ( EG_Shared_GetRenderingDetails(widget_ptr, area, 
+	if ( EG_Shared_GetRenderingDetails(widget_ptr, area,
 	 (void*) &progressbar_ptr, &window_ptr, &surface_ptr, &color, &loc) != EG_TRUE )
 		return(EG_TRUE);
 
@@ -90,7 +85,7 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 
 	if (progressbar_ptr->unknown_position == EG_FALSE){
 
-//		if (progressbar_ptr->position != progressbar_ptr->previous_position){		
+//		if (progressbar_ptr->position != progressbar_ptr->previous_position){
 //			progressbar_ptr->previous_position = progressbar_ptr->position;
 			tmp.x = loc.x + 2;
 			tmp.y = loc.y + 2;
@@ -108,7 +103,7 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 			if (tmp.w >= 2){
 				EG_Draw_Box(surface_ptr, &tmp, &progressbar_ptr->bar_color);
 				EG_Draw_Border(surface_ptr, &tmp, &progressbar_ptr->bar_color
-				 , EG_Draw_Border_BoxHigh);	
+				 , EG_Draw_Border_BoxHigh);
 			}
 //		}
 	}else{
@@ -123,7 +118,7 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 
 		EG_Draw_Box(surface_ptr, &tmp, &progressbar_ptr->bar_color);
 		EG_Draw_Border(surface_ptr, &tmp, &progressbar_ptr->bar_color, EG_Draw_Border_BoxHigh);
-	
+
 		progressbar_ptr->position +=  progressbar_ptr->inc;
 		if (progressbar_ptr->position >= 0.9){
 			progressbar_ptr->position = 0.9;
@@ -155,7 +150,7 @@ static EG_BOOL InitializeWidget(EG_Widget *widget_ptr, SDL_Color color, SDL_Colo
 	(void) EG_Widget_SetCallback_Destroy(widget_ptr,
 	 EG_Callback_Generic_Destroy);
 
-	(void) EG_Widget_SetCallback_Paint(widget_ptr, 
+	(void) EG_Widget_SetCallback_Paint(widget_ptr,
 	 Callback_Paint);
 
 	(void) EG_Widget_SetCallback_SDL_Event(widget_ptr,
@@ -227,7 +222,7 @@ EG_BOOL EG_ProgressBar_Resize(EG_Widget *widget_ptr, SDL_Rect area)
 		EG_Widget_RepaintLot(widget_ptr);
 		return(EG_TRUE);
 	}
-	
+
 	return(EG_FALSE);
 }
 
@@ -235,7 +230,7 @@ EG_BOOL EG_ProgressBar_PositionIsUnknown(EG_Widget *widget_ptr)
 {
 	EG_ProgressBar *progressbar_ptr;
 	EG_PROGRESSBAR_GET_STRUCT_PTR(widget_ptr, progressbar_ptr, EG_FALSE);
-	
+
 	progressbar_ptr->unknown_position = EG_TRUE;
 	progressbar_ptr->position = 0.0;
 
@@ -264,7 +259,7 @@ float	EG_ProgressBar_GetPosition(EG_Widget *widget_ptr)
 
 EG_BOOL EG_ProgressBar_SetPosition(EG_Widget *widget_ptr, float position)
 {
-	EG_ProgressBar *progressbar_ptr; 
+	EG_ProgressBar *progressbar_ptr;
 
 	EG_PROGRESSBAR_GET_STRUCT_PTR(widget_ptr, progressbar_ptr, EG_FALSE);
 

@@ -8,27 +8,22 @@
  */
 
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "log.h"
 
+#include "sdl.h"
 
-#include <gui/log.h>
+#include "functions.h"
 
-#include <gui/sdl.h>
+#include "label.h"
+#include "label_private.h"
 
-#include <gui/functions.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/label.h>
-#include <gui/label_private.h>
+#include "widget_shared.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
-
-#include <gui/widget_shared.h>
-
-#include <gui/widget.h>
-#include <gui/widget_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
 #include <SDL.h>
 
@@ -40,7 +35,7 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 {
         EG_Label *label_ptr;
         EG_Window *window_ptr;
-        
+
         SDL_Rect loc;
 
         SDL_Color color;
@@ -148,7 +143,7 @@ EG_BOOL EG_Label_SetCaption(EG_Widget *widget_ptr, const char *caption_ptr)
 	EG_Label *label_ptr;
 
 	EG_LABEL_GET_STRUCT_PTR(widget_ptr, label_ptr, EG_FALSE);
-	
+
 	/* Clear caption (not really needed but nice).
 	 */
         for(i=0; i<MAX_LABEL_CAPTIONSIZE+1; i++)

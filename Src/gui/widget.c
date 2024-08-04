@@ -7,16 +7,12 @@
  *	---
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "log.h"
 
-#include <gui/log.h>
+#include "functions.h"
 
-#include <gui/functions.h>
-
-#include <gui/widget.h>
-#include <gui/widget_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
 #include <SDL.h>
 
@@ -140,8 +136,8 @@ static EG_BOOL Callback_Stopped(EG_Widget *widget_ptr, EG_BOOL stopped)
 	tmp_e = stopped;
 
 	EG_Log(EG_LOG_WARNING, dL"EG_Widget Callback_Stopped called", dR);
-	
-	return(EG_FALSE);	
+
+	return(EG_FALSE);
 }
 
 /* If a widget is a composition widget, then it must handle being added or
@@ -227,7 +223,7 @@ static EG_BOOL InitializeWidgetStruct(EG_Widget *widget_ptr
 	(void) EG_Widget_SetUserCallback_OnGotFocus(widget_ptr, NULL, NULL);
 
 	widget_ptr->dimension = ( (SDL_Rect) {0,0,0,0} );
-	
+
 	widget_ptr->numeric_value = 0.0;
 
 	/* Clear string (+1 for paranoids like me.. {see definition of struct} )
@@ -254,8 +250,8 @@ EG_Widget* EG_Widget_Alloc(const char *name_ptr, EG_StringHash type)
                 EG_Log(EG_LOG_WARNING, dL"Unable to malloc EG_Widget struct"
                  , dR);
                 return(NULL);
-        }        
-                
+        }
+
         if(InitializeWidgetStruct(widget_ptr, name_ptr, type) == EG_FALSE){
                 EG_Free(widget_ptr);
                 return(NULL);
@@ -283,7 +279,7 @@ void EG_Widget_CallDestroy(EG_Widget *widget_ptr)
 		EG_Log(EG_LOG_ERROR, dL"EG_Widget.func_destroy_ptr"
 		 " = NULL, widget not freed!", dR);
 	}else{
-		func_ptr 
+		func_ptr
 		 = (EG_Callback_Destroy) widget_ptr->func_destroy_ptr;
 
 		func_ptr(widget_ptr);
@@ -306,7 +302,7 @@ EG_BOOL EG_Widget_CallPaint(EG_Widget *widget_ptr, SDL_Rect rect)
 		return(EG_TRUE);
 
 	if (widget_ptr->func_paint_ptr != NULL){
-		func_ptr 
+		func_ptr
 		 = (EG_Callback_Paint) widget_ptr->func_paint_ptr;
 
 		return( func_ptr(widget_ptr, rect) );
@@ -412,15 +408,15 @@ EG_BOOL EG_Widget_CallStopped(EG_Widget *widget_ptr, EG_BOOL stopped)
 
 void EG_Widget_CallAttach(EG_Widget *widget_ptr, EG_StringHash attach_to_type
  , void *attach_to_ptr, EG_BOOL attached)
-{       
+{
         EG_Callback_Attach func_ptr;
-        
+
         CHECK_EG_WIDGET_IS_VALID_VOID(widget_ptr);
-        
+
         if (widget_ptr->func_attach_ptr != NULL){
                 func_ptr
                  = (EG_Callback_Attach) widget_ptr->func_attach_ptr;
-                
+
                 func_ptr(widget_ptr, attach_to_type, attach_to_ptr, attached);
         }
 }
@@ -437,7 +433,7 @@ void EG_Widget_CallUserOnChange(EG_Widget *widget_ptr)
 	if (widget_ptr->func_user_change_ptr != NULL){
 		func_ptr
 		 = (EG_Callback_User_OnChange) widget_ptr->func_user_change_ptr;
-		
+
 		func_ptr(widget_ptr, widget_ptr->user_change_value_ptr);
 	}
 }
@@ -709,7 +705,7 @@ EG_BOOL EG_Widget_GetStoppedToggle(EG_Widget *widget_ptr)
 EG_BOOL EG_Widget_SetStoppedToggle(EG_Widget *widget_ptr, EG_BOOL stopped)
 {
 	CHECK_EG_WIDGET_IS_VALID(widget_ptr, EG_FALSE);
-	
+
 	widget_ptr->stopped = stopped;
 	return(EG_TRUE);
 }
@@ -723,7 +719,7 @@ EG_BOOL EG_Widget_GetVisibleToggle(EG_Widget *widget_ptr)
 EG_BOOL EG_Widget_SetVisibleToggle(EG_Widget *widget_ptr, EG_BOOL visible)
 {
 	CHECK_EG_WIDGET_IS_VALID(widget_ptr, EG_FALSE);
-	
+
 	widget_ptr->visible = visible;
 	return(EG_TRUE);
 }
@@ -863,7 +859,7 @@ void EG_Widget_ClearUserCallback_OnChange(EG_Widget *widget_ptr)
 void EG_Widget_ClearUserCallback_OnClick(EG_Widget *widget_ptr)
 {
 	CHECK_EG_WIDGET_IS_VALID_VOID(widget_ptr);
-	widget_ptr->func_user_click_ptr = NULL;	
+	widget_ptr->func_user_click_ptr = NULL;
 	widget_ptr->user_click_value_ptr = NULL;
 }
 

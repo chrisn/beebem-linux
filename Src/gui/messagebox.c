@@ -6,21 +6,17 @@
  */
 
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "log.h"
 
-#include <gui/log.h>
+#include "messagebox.h"
+#include "messagebox_private.h"
 
-#include <gui/messagebox.h>
-#include <gui/messagebox_private.h>
-
-#include <gui/functions.h>
+#include "functions.h"
 
 #include <SDL.h>
 
 
-/* Dimension of message box: 
+/* Dimension of message box:
  */
 #define MSGBOX_MAX_ROWS 24
 #define MSGBOX_MAX_COLS (40-4)
@@ -76,7 +72,7 @@ static const char* FormatText(const char *source_ptr, char *next_row_ptr)
 
 		return source_ptr;
 	}
-	
+
 	/* Loop incrementing index until max width, if a space/other (<=32)
 	 * is found, mark position, if a carriage return is found
 	 * break out of the loop and mark the position.
@@ -104,14 +100,14 @@ static const char* FormatText(const char *source_ptr, char *next_row_ptr)
 	 */
 	}else{
 		/* If the next character after 'max row width' is a seperator,
-		 * inc. mark to this position. 
+		 * inc. mark to this position.
 		 */
 		if ( i+1<strlen(source_ptr) && source_ptr[i+1]<=32 )
 			word_end=i+1;
 
 		/* If this row sucked-up all remaining characters in the source
 		 * string, then up the mark to the end of the text (we'll take
-		 * everything). 
+		 * everything).
 		 */
 		if ( i==strlen(source_ptr)-1 )
 			word_end=i;
@@ -141,7 +137,7 @@ static const char* FormatText(const char *source_ptr, char *next_row_ptr)
 	while ( *source_ptr>0 && *source_ptr!=10 && *source_ptr<=32 )
 		source_ptr++;
 
-	while ( strlen(next_row_ptr)>0 
+	while ( strlen(next_row_ptr)>0
 	 && next_row_ptr[strlen(next_row_ptr)-1]<=32 )
 		next_row_ptr[strlen(next_row_ptr)-1]=0;
 
@@ -201,7 +197,7 @@ int EG_MessageBox(SDL_Surface *surface_ptr, int type, const char *title_ptr
 	SDL_Colour col;
 	SDL_Rect win, loc;
 
-	EG_Widget *widget_ptr;	
+	EG_Widget *widget_ptr;
 
 	SDL_Event e;
 
@@ -243,7 +239,7 @@ int EG_MessageBox(SDL_Surface *surface_ptr, int type, const char *title_ptr
 	col = MENU_COLORS;
 
 	win = CalcRectCentered_MB(surface_ptr, 40 + 40*10
-	 , 16*5 + ((row_count<24?row_count:24)*16) );	
+	 , 16*5 + ((row_count<24?row_count:24)*16) );
 
 	window_ptr = EG_Window_Create("win_msgbox", surface_ptr, col, win);
 
@@ -295,7 +291,7 @@ int EG_MessageBox(SDL_Surface *surface_ptr, int type, const char *title_ptr
 	button_count = 0;
 
 	if (button4_ptr != NULL){
-		loc.x -= (10*(strlen(button4_ptr)+1)); 
+		loc.x -= (10*(strlen(button4_ptr)+1));
 		loc.w = (10*(strlen(button4_ptr)+1));
 		button_count++;
 
@@ -309,7 +305,7 @@ int EG_MessageBox(SDL_Surface *surface_ptr, int type, const char *title_ptr
 	}
 
 	if (button3_ptr != NULL){
-		loc.x -= (10*(strlen(button3_ptr)+1)); 
+		loc.x -= (10*(strlen(button3_ptr)+1));
 		loc.x -= (button_count>0?10:0);
 		loc.w = (10*(strlen(button3_ptr)+1)); button_count++;
 
@@ -335,8 +331,8 @@ int EG_MessageBox(SDL_Surface *surface_ptr, int type, const char *title_ptr
 		if (has_focus == 2) (void) EG_Button_GetFocus(widget_ptr);
 	}
 
-	if (button1_ptr == NULL){ 
-		loc.x -= (10*3); loc.w = (10*3); 
+	if (button1_ptr == NULL){
+		loc.x -= (10*3); loc.w = (10*3);
 		loc.x -= (button_count>0?10:0);
 
         	widget_ptr = EG_Button_Create("1", col, EG_BUTTON_ALIGN_CENTER

@@ -7,29 +7,24 @@
  *	---
  */
 
+#include "functions.h"
+#include "log.h"
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "sdl.h"
 
-#include <gui/functions.h>
-#include <gui/log.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/sdl.h>
+#include "widget.h"
+#include "widget_private.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
+#include "widget_shared.h"
 
-#include <gui/widget.h>
-#include <gui/widget_private.h>
+#include "tabgroup.h"
+#include "tabgroup_private.h"
 
-#include <gui/widget_shared.h>
-
-#include <gui/tabgroup.h>
-#include <gui/tabgroup_private.h>
-
-#include <gui/tabpage.h>
-#include <gui/tabpage_private.h>
+#include "tabpage.h"
+#include "tabpage_private.h"
 
 #include <SDL.h>
 
@@ -50,7 +45,7 @@ static void Callback_Destroy(EG_Widget *widget_ptr)
                 return;
         }
 
-        /* Child widgets become unlinked to a EG_TabPage when the 
+        /* Child widgets become unlinked to a EG_TabPage when the
          * tab page is deleted.
          */
         EG_TABPAGE_GET_STRUCT_PTR_VOID(widget_ptr, tabpage_ptr);
@@ -73,7 +68,7 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 {
 	EG_TabPage *tabpage_ptr;
         EG_Window *window_ptr;
-	
+
 	SDL_Rect loc;
         SDL_Color color;
         SDL_Surface *surface_ptr;
@@ -160,7 +155,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
         EG_BOOL mouse_over_widget;
 
 	EG_BOOL return_value = EG_FALSE;
-        
+
 	/* Populates variables needed to process the event.  If the event
          * shouldn't have been passed to us, then logs the fact (for bug
          * reporting) and returns false.  Quit the callback if this returns
@@ -195,7 +190,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
                  == SDL_RELEASED && event_ptr->button.button ==SDL_BUTTON_LEFT){
 
                         /* If released with mouse pointer within area of widget
-                         * and --------the minimum click-time has been meet. 
+                         * and --------the minimum click-time has been meet.
                          */
                         if (mouse_over_widget == EG_TRUE){
 
@@ -240,11 +235,11 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
         }
 
         /* If mouse over widget, and users event callback is set, call users
-         * callback.             
+         * callback.
          */
         if (mouse_over_widget == EG_TRUE)
                 EG_Widget_CallUserOnEvent(widget_ptr, event_ptr);
-	
+
 	return(return_value);
 }
 
@@ -349,7 +344,7 @@ static EG_BOOL Callback_Stopped(EG_Widget *widget_ptr, EG_BOOL is_stopped)
 //		if (page_is_shown == EG_TRUE && is_stopped == EG_FALSE)
 //			EG_Widget_SetStoppedToggle(tabpage_ptr->child[i].widget_ptr, is_stopped);
 	}
-	
+
 	return(EG_TRUE);
 }
 
@@ -585,7 +580,7 @@ void EG_TabPage_RemoveWidget(EG_Widget *page_widget_ptr, EG_Widget *child_widget
 
 /* Switch focus to the first widget in this tab page (if does not have a
  * focusable widget, then the page button itself).
- * 
+ *
  * If the tab page has focus and you press enter, it'll do this anyway.
  *
  * Private and does not paint.
@@ -593,7 +588,7 @@ void EG_TabPage_RemoveWidget(EG_Widget *page_widget_ptr, EG_Widget *child_widget
 EG_BOOL EG_TabPage_Show(EG_Widget *widget_ptr)
 {
 	EG_TabPage *tabpage_ptr;
-	int i;	
+	int i;
 
 	CHECK_EG_WIDGET_IS_VALID(widget_ptr, EG_FALSE);
 	EG_TABPAGE_GET_STRUCT_PTR(widget_ptr, tabpage_ptr, EG_FALSE);

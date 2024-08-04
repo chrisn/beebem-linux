@@ -7,29 +7,24 @@
  *	---
  */
 
+#include "functions.h"
+#include "log.h"
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "sdl.h"
 
-#include <gui/functions.h>
-#include <gui/log.h>
+#include "tabgroup.h"
+#include "tabgroup_private.h"
 
-#include <gui/sdl.h>
+#include "tabpage.h"
+#include "tabpage_private.h"
 
-#include <gui/tabgroup.h>
-#include <gui/tabgroup_private.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/tabpage.h>
-#include <gui/tabpage_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
-
-#include <gui/widget.h>
-#include <gui/widget_private.h>
-
-#include <gui/widget_shared.h>
+#include "widget_shared.h"
 
 #include <SDL.h>
 
@@ -40,7 +35,7 @@
 static void Callback_Destroy(EG_Widget *widget_ptr)
 {
         EG_TabGroup *tabgroup_ptr;
-	int i;        
+	int i;
 
 	/* If widget is actually just a NULL, then do nothing but log error.
 	 */
@@ -50,7 +45,7 @@ static void Callback_Destroy(EG_Widget *widget_ptr)
                 return;
         }
 
-	/* Child EG_TabPages become unlinked to a EG_TabGroup when the 
+	/* Child EG_TabPages become unlinked to a EG_TabGroup when the
 	 * tab group is deleted.
 	 */
 	EG_TABGROUP_GET_STRUCT_PTR_VOID(widget_ptr, tabgroup_ptr);
@@ -62,7 +57,7 @@ static void Callback_Destroy(EG_Widget *widget_ptr)
 	/* Free EG_Widget payload (the instance of this widget class).
 	 */
         if (tabgroup_ptr != NULL) EG_Free(tabgroup_ptr);
-                
+
         /* Free EG_Widget struct.
          */
         EG_Widget_Free(widget_ptr);
@@ -208,10 +203,10 @@ static EG_BOOL Callback_Stopped(EG_Widget *widget_ptr, EG_BOOL is_stopped)
 //	EG_BOOL tmp_is_stopped;
 //	tmp_is_stopped = is_stopped;
 //
-//	EG_Widget_SetStoppedToggle(widget_ptr, EG_FALSE);	
+//	EG_Widget_SetStoppedToggle(widget_ptr, EG_FALSE);
 //
 //	EG_Log(EG_LOG_ERROR, dL"EG_TabGroup '%s' cannot be stopped, nesting tab"
-//	 " groups is not supported.", dR, EG_Widget_GetName(widget_ptr));	
+//	 " groups is not supported.", dR, EG_Widget_GetName(widget_ptr));
 //
 //	return(EG_FALSE);
 
@@ -314,7 +309,7 @@ static void InitializePayload(EG_TabGroup *tabgroup_ptr)
 	int i;
 
 	for(i=0; i<MAX_TABGROUP_PAGES; i++)
-		tabgroup_ptr->page_widget_ptr[i] = NULL;	
+		tabgroup_ptr->page_widget_ptr[i] = NULL;
 
 	tabgroup_ptr->count = 0;
 	tabgroup_ptr->selected = -1;
@@ -471,7 +466,7 @@ void EG_TabGroup_RemovePage(EG_Widget *group_widget_ptr
 			break;
 
 	/* If not found, log error and exit.
-	 */	
+	 */
 	if (i>=tabgroup_ptr->count){
 		EG_Log(EG_LOG_ERROR, dL"Tried to delete widget %s from"
 		 " EG_TabGroup, when not memeber of group.", dR);
@@ -480,7 +475,7 @@ void EG_TabGroup_RemovePage(EG_Widget *group_widget_ptr
 
 	// [TODO] When we remove this we need to move all the tab page buttons too.
 
-	// [TODO] If one of the pages widgets has focus, remove focus altogether.  
+	// [TODO] If one of the pages widgets has focus, remove focus altogether.
 	// [TODO] Remove the page.
 	// [TODO] Set tabgroups page to page after removed page, if we deleted the last page, set tabgroups page to the previous page.  If this was the only page, render only the tabgroup (will paint background).
 	// [TODO] If a widget on the page had focus before we removed it, set focus to the next page.  If we removed the last page, set focus to the previous page, if we deleted the only page, ask window to movefocus.  (will set to first widget).
@@ -496,14 +491,14 @@ void EG_TabGroup_DeletePage(EG_Widget *group_widget_ptr
 
 EG_BOOL EG_TabGroup_SelectPage(EG_Widget *page_widget_ptr)
 {
-	EG_Widget *next_page_widget_ptr; 
+	EG_Widget *next_page_widget_ptr;
 	EG_Widget *group_widget_ptr;
 	EG_TabGroup *tabgroup_ptr;
 	EG_TabPage *tabpage_ptr;
 	int i;
 
 	CHECK_EG_WIDGET_IS_VALID(page_widget_ptr, EG_FALSE);
-	
+
 	/* Get tab page struct.
 	 */
 	EG_TABPAGE_GET_STRUCT_PTR(page_widget_ptr, tabpage_ptr, EG_FALSE);
@@ -573,7 +568,7 @@ EG_BOOL EG_TabGroup_SelectPageByIndex(EG_Widget *widget_ptr, int page)
 		/* Remember which page has been de-selected so we can
 		 * update it's tab page button.
 		 */
-		old_selected_tab_page_widget = 
+		old_selected_tab_page_widget =
 	 	 tabgroup_ptr->page_widget_ptr[tabgroup_ptr->selected];
 
 		if(EG_TabPage_Hide(
@@ -623,7 +618,7 @@ EG_Widget* EG_TabGroup_GetSelectedPageWidget(EG_Widget *widget_ptr)
         CHECK_EG_WIDGET_IS_VALID(widget_ptr, NULL);
 	EG_TABGROUP_GET_STRUCT_PTR(widget_ptr, tabgroup_ptr, NULL);
 
-	if (tabgroup_ptr->selected<0 || tabgroup_ptr->selected >= 
+	if (tabgroup_ptr->selected<0 || tabgroup_ptr->selected >=
 	 MAX_TABGROUP_PAGES)
 		return(NULL);
 	else

@@ -1100,11 +1100,11 @@ void BeebWin::LoadSerialPortPreferences(int Version)
 		    isxdigit(m_SerialPort[0]) &&
 		    isxdigit(m_SerialPort[1]))
 		{
-			int Port;
+			unsigned int Port;
 			sscanf(m_SerialPort.c_str(), "%x", &Port);
 
 			char PortName[20];
-			sprintf(PortName, "COM%d", Port);
+			sprintf(PortName, "COM%u", Port);
 			m_SerialPort = PortName;
 		}
 	}

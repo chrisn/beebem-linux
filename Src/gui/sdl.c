@@ -1,13 +1,9 @@
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include "sdl.h"
 
-#include <gui/sdl.h>
-
-#include <gui/line.h>
-#include <gui/log.h>
-#include <gui/types.h>
+#include "line.h"
+#include "log.h"
+#include "types.h"
 
 static EG_BOOL EG_DrawString_Initialise(void);
 static void EG_DrawString_Free(void);

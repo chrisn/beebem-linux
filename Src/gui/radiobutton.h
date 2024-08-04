@@ -11,18 +11,13 @@
 #ifndef _DW_RADIOBUTTON_H_
 #define _DW_RADIOBUTTON_H_
 
+#include "types.h"
+#include "sdl.h"
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "window.h"
+#include "widget.h"
 
-#include <gui/types.h>
-#include <gui/sdl.h>
-
-#include <gui/window.h>
-#include <gui/widget.h>
-
-#include <gui/tickbox.h>
+#include "tickbox.h"
 
 #include <SDL.h>
 

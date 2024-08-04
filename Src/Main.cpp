@@ -55,7 +55,7 @@ Boston, MA  02110-1301, USA.
 #include "FakeRegistry.h"
 
 // Can remove this (only needed to calc string hash)
-//#include <gui_functions.h>
+// #include "gui/gui_functions.h"
 
 #ifdef MULTITHREAD
 #undef MULTITHREAD
@@ -107,7 +107,7 @@ bool GetFullscreenState()
 	return fullscreen_val;
 }
 
-int ToggleFullscreen(void)
+bool ToggleFullscreen()
 {
 //	if (fullscreen != 0)
 //		fullscreen = 0;

@@ -11,15 +11,10 @@
 #ifndef _DW_RADIOGROUP_H_
 #define _DW_RADIOGROUP_H_
 
+#include "types.h"
 
-#if HAVE_CONFIG_H
-#	include <config.h>
-#endif
-
-#include <gui/types.h>
-
-#include <gui/widget.h>
-#include <gui/window.h>
+#include "widget.h"
+#include "window.h"
 
 #include <SDL.h>
 
@@ -58,13 +53,13 @@ extern "C"{
  *
  * #define EG_RadioGroup_SetMyCallback_OnEvent		EG_Widget_SetUserCallback_OnEvent
  * #define EG_RadioGroup_ClearMyCallback_OnEvent	EG_Widget_ClearUserCallback_OnEvent
- * 
+ *
  * #define EG_RadioGroup_Repaint			EG_Widget_Repaint
  * #define EG_RadioGroup_RepaintLot			EG_Widget_RepaintLot
- * 
+ *
  * #define EG_RadioGroup_Hide				EG_Window_HideWidget
  * #define EG_RadioGroup_Show				EG_Window_ShowWidget
- * 
+ *
  * #define EG_RadioGroup_Enable				EG_Window_EnableWidget
  * #define EG_RadioGroup_Disable			EG_Window_DisableWidget
  *

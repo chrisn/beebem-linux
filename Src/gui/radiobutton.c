@@ -7,22 +7,18 @@
  *	---
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "log.h"
 
-#include <gui/log.h>
+#include "functions.h"
 
-#include <gui/functions.h>
+#include "radiobutton.h"
+#include "radiobutton_private.h"
 
-#include <gui/radiobutton.h>
-#include <gui/radiobutton_private.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
-
-#include <gui/widget.h>
-#include <gui/widget_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
 #include <SDL.h>
 

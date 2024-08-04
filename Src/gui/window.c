@@ -7,21 +7,17 @@
  *	---
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "log.h"
 
-#include <gui/log.h>
+#include "functions.h"
 
-#include <gui/functions.h>
+#include "sdl.h"
 
-#include <gui/sdl.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
-
-#include <gui/widget.h>
-#include <gui/widget_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
 #include <SDL.h>
 
@@ -280,7 +276,7 @@ void EG_Window_Diagnositc_DumpChildren(EG_Window *window_ptr)
 
 //		printf("%8X|%10s|%d|%d|(%03d %03d %03d %03d)\n"
 //		 , tmp_widget_ptr, EG_Widget_GetName(tmp_widget_ptr), (unsigned int) EG_Widget_GetCanGetFocusToggle(tmp_widget_ptr)
-//		 , EG_Window_ThisWidgetHasFocus(tmp_widget_ptr) 
+//		 , EG_Window_ThisWidgetHasFocus(tmp_widget_ptr)
 //		 , clipping.x, clipping.y, clipping.w, clipping.h
 //		);
         }
@@ -300,7 +296,7 @@ long EG_Window_Child_GetCount(EG_Window *window_ptr)
 EG_BOOL EG_Window_Child_SetFocusedIndex(EG_Window *window_ptr, long new_index)
 {
 	CHECK_EG_WINDOW_IS_VALID(window_ptr, EG_FALSE);
-	
+
 	window_ptr->widget_with_focus = new_index;
 	return(EG_TRUE);
 }
@@ -322,7 +318,7 @@ EG_BOOL EG_Window_Child_SetFocusedIndexByWidget(EG_Window *window_ptr, EG_Widget
                 return(-1);
         }
 
-	// Get the index of this widget.	
+	// Get the index of this widget.
 	new_index = EG_Window_Child_GetIndexFromWidget(window_ptr, widget_ptr);
 	if (new_index < 0) return(EG_FALSE);
 
@@ -355,8 +351,8 @@ long EG_Window_Child_GetIndexFromWidget(EG_Window *window_ptr
 	CHECK_EG_WINDOW_IS_VALID(window_ptr, -1);
 
 	// Check widget has same window as window.
-	widget_window_ptr = (EG_Window*) EG_Widget_GetWindow(widget_ptr);	
-	if ( EG_Window_GetID(window_ptr) 
+	widget_window_ptr = (EG_Window*) EG_Widget_GetWindow(widget_ptr);
+	if ( EG_Window_GetID(window_ptr)
 	 != EG_Window_GetID(widget_window_ptr) ){
 		EG_Log(EG_LOG_ERROR, dL"Referenced widget is not on this"
 		 " window!", dR);
@@ -418,7 +414,7 @@ EG_BOOL EG_Window_Child_Remove(EG_Window *window_ptr, long from_index)
 
 	// Dec count
 	window_ptr->count--;
-	
+
 	return(EG_TRUE);
 }
 
@@ -550,7 +546,7 @@ static EG_BOOL MoveFocus(EG_Window *window_ptr, int direction)
 
 	CHECK_EG_WINDOW_IS_VALID(window_ptr, EG_FALSE);
 
-	/* If window has no child widgets, cannot move focus.  This is 
+	/* If window has no child widgets, cannot move focus.  This is
 	 * considered successful.
 	 */
 	if (EG_Window_Child_GetCount(window_ptr) == 0)
@@ -655,7 +651,7 @@ EG_Window* EG_Window_Create(const char *name_ptr,
 		dimension.w = surface_ptr->w;
 		dimension.h = surface_ptr->h;
 	}
-	EG_Window_SetDimension(window_ptr, dimension);	
+	EG_Window_SetDimension(window_ptr, dimension);
 
 	/* Set background color.
 	 */
@@ -693,7 +689,7 @@ SDL_Surface* EG_Window_GetSurface(EG_Window *window_ptr)
 SDL_Rect EG_Window_GetDimension(EG_Window *window_ptr)
 {
 	CHECK_EG_WINDOW_IS_VALID(window_ptr, ((SDL_Rect) {0,0,0,0}) );
-	return(window_ptr->dimension);	
+	return(window_ptr->dimension);
 }
 
 SDL_Color EG_Window_GetBackgroundColor(EG_Window *window_ptr)
@@ -729,13 +725,13 @@ EG_BOOL EG_Window_IsHidden(EG_Window *window_ptr)
 
 /* Return the X offset for the top left of the window including insets, relative
  * to the windows source SDL_Surface.
- * 
+ *
  * The +2 is the current hardwired left window inset.
  */
 Uint16 EG_Window_GetXDisplacement(EG_Window *window_ptr)
 {
 	CHECK_EG_WINDOW_IS_VALID(window_ptr, 0);
-	return(window_ptr->dimension.x +2);	
+	return(window_ptr->dimension.x +2);
 }
 
 /* Return the Y offset for the top left of the window including insets, relative
@@ -1124,7 +1120,7 @@ EG_BOOL EG_Window_Show(EG_Window *window_ptr)
 	/* Set window state to none hidden.
 	 */
 	window_ptr->hidden = EG_FALSE;
-	
+
 	/* If no child widget has focus, then try and
 	 * set focus to first child widget that can
 	 * get focus.
@@ -1172,7 +1168,7 @@ EG_BOOL EG_Window_SetFocusToThisWidget(EG_Widget *widget_ptr)
 		 , widget_ptr) != EG_TRUE)
 			EG_Log(EG_LOG_ERROR, dL"Window failed to switch focus"
 			 " index to new child widget. This is a bug :-(", dR);
- 
+
 		EG_Widget_RepaintLot(widget_ptr);
 
 		/* New widget has excepted focus, so loose focus for old widget
@@ -1274,7 +1270,7 @@ EG_BOOL EG_Window_ShowWidget(EG_Widget *widget_ptr)
  	 */
 	if ( (window_ptr=EG_Widget_GetWindow(widget_ptr)) == NULL )
 		return(EG_TRUE);
-	
+
 	/* Does a widget on the window already have focus?  If not, try
 	 * and set this one to it.
 	 */
@@ -1312,7 +1308,7 @@ EG_BOOL EG_Window_HideWidget(EG_Widget *widget_ptr)
 		if (EG_Window_ThisWidgetHasFocus(widget_ptr) == EG_TRUE)
 			EG_Window_ClearFocus(window_ptr);
 	}
-	
+
 	/* Return success.
 	 */
 	return(EG_TRUE);
@@ -1337,7 +1333,7 @@ EG_BOOL EG_Window_EnableWidget(EG_Widget *widget_ptr)
 	 	 */
 		if ( (window_ptr= (EG_Window*) EG_Widget_GetWindow(widget_ptr)) == NULL )
 			return(EG_TRUE);
-	
+
 		/* Does a widget on the window already have focus?  If not, set
 		 * this one to it.
 		 */
@@ -1346,7 +1342,7 @@ EG_BOOL EG_Window_EnableWidget(EG_Widget *widget_ptr)
 	}else{
 		return(EG_FALSE);
 	}
-	
+
 	return(EG_TRUE);
 }
 
@@ -1358,7 +1354,7 @@ EG_BOOL EG_Window_DisableWidget(EG_Widget *widget_ptr)
 	 */
 	if (EG_Widget_IsEnabled(widget_ptr) == EG_FALSE)
 		return(EG_TRUE);
-	
+
 	/* Disable the widget.  If disabling the widget succeeded (as not all
 	 * widgets have to support this).  Then control focus and repaint the
 	 * widget in it's new state.
@@ -1369,8 +1365,8 @@ EG_BOOL EG_Window_DisableWidget(EG_Widget *widget_ptr)
 		 */
 		if ( (window_ptr= (EG_Window*) EG_Widget_GetWindow(widget_ptr)) != NULL ){
 			CHECK_EG_WINDOW_IS_VALID(window_ptr, EG_FALSE);
-	
-			/* If have focus, then lose focus. 
+
+			/* If have focus, then lose focus.
 			 */
 			if (EG_Window_ThisWidgetHasFocus(widget_ptr) == EG_TRUE){
 				EG_Window_MoveFocusForward(window_ptr);
@@ -1378,7 +1374,7 @@ EG_BOOL EG_Window_DisableWidget(EG_Widget *widget_ptr)
 				/* If still have focus, then force window to clear focus.
 			  	 */
 				if (EG_Window_ThisWidgetHasFocus(widget_ptr) == EG_TRUE)
-					EG_Window_ClearFocus(window_ptr);		
+					EG_Window_ClearFocus(window_ptr);
         		}
 		}
 		return(EG_TRUE);

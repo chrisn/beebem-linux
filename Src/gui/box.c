@@ -7,27 +7,21 @@
  *	---
  */
 
+#include "types.h"
+#include "log.h"
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "functions.h"
 
+#include "box.h"
+#include "box_private.h"
 
-#include <gui/types.h>
-#include <gui/log.h>
+#include "widget_shared.h"
 
-#include <gui/functions.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/box.h>
-#include <gui/box_private.h>
-
-#include <gui/widget_shared.h>
-
-#include <gui/window.h>
-#include <gui/window_private.h>
-
-#include <gui/widget.h>
-#include <gui/widget_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
 #include <SDL.h>
 
@@ -45,7 +39,7 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 	SDL_Color color;
 	SDL_Surface *surface_ptr;
 
-	if ( EG_Shared_GetRenderingDetails(widget_ptr, area, 
+	if ( EG_Shared_GetRenderingDetails(widget_ptr, area,
 	 (void*) &box_ptr, &window_ptr, &surface_ptr, &color, &loc) != EG_TRUE )
 		return(EG_TRUE);
 
@@ -78,7 +72,7 @@ static EG_BOOL InitializeWidget(EG_Widget *widget_ptr, SDL_Color color
 	(void) EG_Widget_SetCallback_Destroy(widget_ptr,
 	 EG_Callback_Generic_Destroy);
 
-	(void) EG_Widget_SetCallback_Paint(widget_ptr, 
+	(void) EG_Widget_SetCallback_Paint(widget_ptr,
 	 Callback_Paint);
 
 	(void) EG_Widget_SetCallback_SDL_Event(widget_ptr,
@@ -162,7 +156,7 @@ EG_BOOL EG_Box_Resize(EG_Widget *widget_ptr, SDL_Rect area)
 		EG_Widget_RepaintLot(widget_ptr);
 		return(EG_TRUE);
 	}
-	
+
 	return(EG_FALSE);
 }
 

@@ -11,19 +11,14 @@
 #ifndef _DW_TOGGLEBUTTON_PRIVATE_H_
 #define _DW_TOGGLEBUTTON_PRIVATE_H_
 
+#include "types.h"
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "window.h"
+#include "widget.h"
 
-#include <gui/types.h>
+#include "radiogroup.h"
 
-#include <gui/window.h>
-#include <gui/widget.h>
-
-#include <gui/radiogroup.h>
-
-#include <gui/togglebutton.h>
+#include "togglebutton.h"
 
 #include <SDL.h>
 

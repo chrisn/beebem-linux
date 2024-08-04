@@ -7,20 +7,14 @@
  *	---
  */
 
-
 #ifndef _DW_WINDOW_PRIVATE_H_
 #define _DW_WINDOW_PRIVATE_H_
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include <gui/types.h>
+#include "types.h"
 #include <SDL.h>
 
-#include <gui/window.h>
-#include <gui/widget.h>
-
+#include "window.h"
+#include "widget.h"
 
 /* Convenient macro to check for more obvious EG_Window struct pointer errors.
  */

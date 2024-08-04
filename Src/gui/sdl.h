@@ -1,13 +1,9 @@
 #ifndef GUI_SDL_HEADER
 #define GUI_SDL_HEADER
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include <SDL.h>
 
-#include <gui/types.h>
+#include "types.h"
 
 #define EG_Draw_Border_Normal	0
 #define EG_Draw_Border_BoxHigh 	1

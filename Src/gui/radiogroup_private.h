@@ -1,7 +1,7 @@
 /* START OF radiogroup_private.h -----------------------------------------------
  *
  *	A Radio Button Group widget.
- * 
+ *
  *	---
  *	THIS GUI IS TOTALLY *BROKEN*! PLEASE DO NOT USE IT!
  *	---
@@ -11,15 +11,10 @@
 #ifndef _DW_RADIOGROUP_PRIVATE_H_
 #define _DW_RADIOGROUP_PRIVATE_H_
 
+#include "types.h"
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include <gui/types.h>
-
-#include <gui/widget.h>
-#include <gui/window.h>
+#include "widget.h"
+#include "window.h"
 
 #include <SDL.h>
 

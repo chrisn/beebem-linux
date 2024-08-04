@@ -13,16 +13,7 @@
  *	---
  */
 
-
-
-
-
-
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include <gui/widget_shared.h>
+#include "widget_shared.h"
 
 /* Needed for additional debugging code below.
  */
@@ -51,7 +42,7 @@ void EG_Callback_Generic_Destroy(EG_Widget *widget_ptr)
                 return;
         }
 
-	/* 
+	/*
 	 *
  	 * Freeing child widgets from a composite widget is a bit of a black
 	 * art I'm afraid!
@@ -74,7 +65,7 @@ void EG_Callback_Generic_Destroy(EG_Widget *widget_ptr)
 
 /* S D L   E V E N T:
  *
- * Do not free widgets (even if you do call the window.c function 
+ * Do not free widgets (even if you do call the window.c function
  * 'EG_Window_RemoveWidget') within this callback.
  *
  * The window.c code that handles the conversion and passing of SDL_Event
@@ -102,7 +93,7 @@ EG_BOOL EG_Callback_Generic_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_pt
 	 */
 	if (EG_Shared_IsMouseOverWidget(widget_ptr, event_ptr) == EG_TRUE)
 		EG_Widget_CallUserOnEvent(widget_ptr, event_ptr);
-	
+
 	return(EG_FALSE);
 }
 
@@ -154,7 +145,7 @@ EG_BOOL EG_Callback_Generic_Stopped(EG_Widget *widget_ptr, EG_BOOL is_stopped)
 /* E N A B L E D:
  *
  * Note: Never repaint the widget when enabling and disabling a widget.  Leave
- *       that to the callback wrappers 'EG_Window_DisableWidget' and 
+ *       that to the callback wrappers 'EG_Window_DisableWidget' and
  *       'EG_Window_EnableWidget' to handle.
  *
  * NONFUNCTIONAL:	Always fails, never changes state in EG_Widget struct
@@ -180,7 +171,7 @@ EG_BOOL EG_Callback_Generic_Enabled(EG_Widget *widget_ptr, EG_BOOL is_enabled)
 }
 
 /* G O T   F O C U S:
- * 
+ *
  * Note: The caller
  *       must repaint the widget, as if the window has not set this widget to
  * 	 the focused widget internally, then this widget will be painted
@@ -210,7 +201,7 @@ EG_BOOL EG_Callback_Generic_GotFocus(EG_Widget *widget_ptr)
 		EG_Log( EG_LOG_WARNING, dL"Tried to set focus to widget '%s'"
 		 "and it's either disabled, stopped or non-visible."
 		 , dR, EG_Widget_GetName(widget_ptr) );
-		
+
 		return(EG_FALSE);
 	}
 
@@ -269,7 +260,7 @@ void EG_Callback_Generic_LostFocus(EG_Widget *widget_ptr)
  * widgets.  For instance:- the tab group widget uses this to attach it's own
  * tab page widgets to the window (when the window calls this for the tab group
  * widget).  The tab page widgets then do the same for their own children. Thus
- * adding all widgets on the tabber to the window when you: 
+ * adding all widgets on the tabber to the window when you:
  *
  * (void) EG_Window_AddWidget(my_window, my_tab_group);
  *
@@ -311,9 +302,9 @@ void EG_Callback_Generic_Attach(EG_Widget *widget_ptr
  * If EG_TRUE:  Widget needs to be rendered, and 'color', 'window_ptr_ptr',
  *              'color_ptr', 'surface_ptr_ptr' and 'loc_ptr' are populated with
  *              the relevant values.
- * 
+ *
  * If EG_FALSE: Widget does not need to be rendered at all. You may return from
- *              your paint callback and report success. 
+ *              your paint callback and report success.
  *              -
  *              All passed pointers are returned in an undetermined state. Do
  *              not use them
@@ -323,7 +314,7 @@ void EG_Callback_Generic_Attach(EG_Widget *widget_ptr
  * Use like this (if you dare):
  *
  *      -       -       -       -       -
- *      
+ *
  *      EG_Box          *box_ptr;       // Widget payload (EG_Box for instance)
  *      EG_Window       *window_ptr;    // Window pointer
  *      SDL_Rect        loc;            // Location of widget on SDL_Surface
@@ -428,7 +419,7 @@ EG_BOOL EG_Shared_GetRenderingDetails(EG_Widget *widget_ptr, SDL_Rect area
 //	// convert a (area) to SDL_Surface.
 //	a.x += EG_Window_GetXDisplacement( *window_ptr_ptr );
 //	a.y += EG_Window_GetYDisplacement( *window_ptr_ptr );
-//	
+//
 //	EG_Draw_Box(*surface_ptr_ptr, &a, &col1);
 //
 //	SDL_Delay(5);
@@ -441,11 +432,11 @@ EG_BOOL EG_Shared_GetRenderingDetails(EG_Widget *widget_ptr, SDL_Rect area
 //	if ( overlap(a,b) ){
 ////		printf("OVERLAP\n");
 //		EG_Draw_String(s, NULL, EG_TRUE, &p ,0, "Overlaps.");
-//		
+//
 //	}else{
 ////		printf("DONT OVERLAP\n");
 //		EG_Draw_String(s, NULL, EG_TRUE, &p ,0, "Does not overlap.");
-//	}	
+//	}
 //
 //	SDL_Delay(5);
 //
@@ -484,7 +475,7 @@ EG_BOOL EG_Shared_GetRenderingDetails(EG_Widget *widget_ptr, SDL_Rect area
 
 	if (! overlap(a,b) )
 		return(EG_FALSE);
-	
+
 
 
 
@@ -514,7 +505,7 @@ EG_BOOL EG_Shared_GetRenderingDetails(EG_Widget *widget_ptr, SDL_Rect area
 //
 //	a = area;
 //	b.x = loc_ptr->x; b.y = loc_ptr->y; b.w = loc_ptr->w; b.h = loc_ptr->h;
-//	
+//
 //	EG_Draw_Box(*surface_ptr_ptr, &a, &col1);
 //	EG_Draw_Box(*surface_ptr_ptr, &b, &col2);
 //
@@ -528,7 +519,7 @@ EG_BOOL EG_Shared_GetRenderingDetails(EG_Widget *widget_ptr, SDL_Rect area
 //
 //	SDL_Delay(3000);
 
-	
+
         return(EG_TRUE);
 }
 
@@ -559,7 +550,7 @@ EG_BOOL EG_Shared_GetEventDetails(EG_Widget *widget_ptr, SDL_Event *event_ptr
                 EG_Log( EG_LOG_WARNING, dL"Tried to process SDL Event for a"
 		 " NULL widget.", dR);
                 return(EG_FALSE);
-        }	
+        }
 
 	/* Get pointers to EG_Window SDL_Surface and EG_Box:
 	 */
@@ -704,7 +695,7 @@ EG_BOOL EG_Shared_UpdateVisibleState(EG_Widget *widget_ptr, EG_BOOL is_visible)
         return(EG_TRUE);
 }
 
-/* Will update enabled state and repaint a widget 
+/* Will update enabled state and repaint a widget
  *
  * Returns EG_TRUE on success, the widget could change the enabled state and
  * EG_FALSE if the widget could not change state.
@@ -716,9 +707,9 @@ EG_BOOL EG_Shared_UpdateVisibleState(EG_Widget *widget_ptr, EG_BOOL is_visible)
 EG_BOOL EG_Shared_UpdateEnabledState(EG_Widget *widget_ptr, EG_BOOL is_enabled)
 {
         EG_Window *window_ptr;
-        
+
         CHECK_EG_WIDGET_IS_VALID(widget_ptr, EG_FALSE);
-                 
+
         if ( EG_Widget_SetEnabledToggle(widget_ptr, is_enabled) != EG_TRUE){
                 EG_Log( EG_LOG_ERROR, dL"Changing widget '%s' enabled state"
                  " failed (returned false).", dR
@@ -726,7 +717,7 @@ EG_BOOL EG_Shared_UpdateEnabledState(EG_Widget *widget_ptr, EG_BOOL is_enabled)
 
                 return(EG_FALSE);
         }
-        
+
         /* If not attached to a window yet, then don't bother to render.
          */
         if ( (window_ptr=( EG_Window*) (EG_Widget_GetWindow(widget_ptr))) == NULL)

@@ -12,27 +12,22 @@
 #ifndef _DW_WIDGET_SHARED_H_
 #define _DW_WIDGET_SHARED_H_
 
-
 /* 	Note: Includes window_private.h and widget_private.h so for widget
  * 	implementation headers only.
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include <gui/types.h>
-#include <gui/log.h>
+#include "types.h"
+#include "log.h"
 
 #include <SDL.h>
 
-#include <gui/functions.h>
+#include "functions.h"
 
-#include <gui/widget.h>
-#include <gui/widget_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
+#include "window.h"
+#include "window_private.h"
 
 
 /* Special stuff to make your code look more complicated than it needs to be.
@@ -41,7 +36,7 @@
  */
 
 /* Create new widget payload struct (see box.c for example):
- * 
+ *
  * ALLOC_PAYLOAD_STRUCT(box_ptr, EG_Box, "Unable to malloc EG_Box struct");
  */
 #define SHARED__ALLOC_PAYLOAD_STRUCT(v, s, e) \
@@ -66,7 +61,7 @@
 
 /* Attach payload struct to an EG_Widget (see box.c for example).
  *
- * 
+ *
  */
 #define SHARED__ATTACH_PAYLOAD_TO_WIDGET(v1, v2) \
         if(EG_Widget_SetPayload( v1, (void*) v2) == EG_FALSE){ \

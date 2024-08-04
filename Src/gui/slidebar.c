@@ -7,27 +7,22 @@
  *	---
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "log.h"
 
+#include "functions.h"
 
-#include <gui/log.h>
+#include "slidebar.h"
+#include "slidebar_private.h"
 
-#include <gui/functions.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/slidebar.h>
-#include <gui/slidebar_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
+#include "widget_shared.h"
 
-#include <gui/widget.h>
-#include <gui/widget_private.h>
-
-#include <gui/widget_shared.h>
-
-#include <gui/sdl.h>
+#include "sdl.h"
 
 #include <SDL.h>
 
@@ -50,7 +45,7 @@ static void 	Move_Slider(EG_Widget *widget_ptr);
 static long CalcVisibleLength(EG_Widget *widget_ptr)
 {
 	EG_SlideBar *slidebar_ptr;
-	SDL_Rect area; 
+	SDL_Rect area;
 
 	EG_SLIDEBAR_GET_STRUCT_PTR(widget_ptr, slidebar_ptr, 0);
 
@@ -77,7 +72,7 @@ static float GetPositionAsFloat(EG_Widget *widget_ptr)
 	EG_SlideBar *slidebar_ptr;
 	EG_SLIDEBAR_GET_STRUCT_PTR(widget_ptr, slidebar_ptr, 0.0);
 
-	return (float) slidebar_ptr->position / (float) ( 
+	return (float) slidebar_ptr->position / (float) (
 	 slidebar_ptr->virtual_length - CalcVisibleLength(widget_ptr) );
 }
 
@@ -102,7 +97,7 @@ static void Scroll(EG_Widget *widget_ptr, long amount)
 	EG_Widget_RepaintLot(widget_ptr);
 
 
-	slidebar_ptr->last_called = EG_Draw_GetCurrentTime();					
+	slidebar_ptr->last_called = EG_Draw_GetCurrentTime();
 
 #ifdef WITHOUT_REALTIME_SLIDER
 	EG_Widget_CallUserOnChange(widget_ptr);
@@ -240,9 +235,9 @@ static void Move_Slider(EG_Widget *widget_ptr)
 		/* Set position to it.
 		 */
 		slidebar_ptr->position = (
-		 ((float) (slidebar_ptr->virtual_length - CalcVisibleLength(widget_ptr))) 
+		 ((float) (slidebar_ptr->virtual_length - CalcVisibleLength(widget_ptr)))
 		 * ((float) new_slider_position / (float) scrollable_area_length) );
-		
+
 		slidebar_ptr->slider_area.y = new_slider_position + slidebar_ptr->background_area.y;
 		break;
 
@@ -266,9 +261,9 @@ static void Move_Slider(EG_Widget *widget_ptr)
 		/* Set position to it.
 		 */
 		slidebar_ptr->position = (
-		 ((float) (slidebar_ptr->virtual_length - CalcVisibleLength(widget_ptr))) 
+		 ((float) (slidebar_ptr->virtual_length - CalcVisibleLength(widget_ptr)))
 		 * ((float) new_slider_position / (float) scrollable_area_length) );
-		
+
 		slidebar_ptr->slider_area.x = new_slider_position + slidebar_ptr->background_area.x;
 		break;
 	}
@@ -336,7 +331,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 
 		return EG_TRUE;
 	}
-	
+
         /* Process SDL Events:
          */
 
@@ -364,7 +359,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 			else
 				mouse_is_over = OVER_TROFF_AND_BELOW_SLIDER;
 	                break;
-	
+
 		case EG_SlideBar_Horizontal:
 			if (event_ptr->motion.x < slidebar_ptr->slider_area.x
 			 + EG_Window_GetXDisplacement(window_ptr) )
@@ -382,7 +377,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 	/* Is this a mouse event?
 	 * Yes,
 	 */
-	if (event_ptr->type == SDL_MOUSEBUTTONDOWN 
+	if (event_ptr->type == SDL_MOUSEBUTTONDOWN
 	 || event_ptr->type == SDL_MOUSEBUTTONUP){
 		/* Is mouse button 1 physically depressed?
 		 * Yes,
@@ -393,9 +388,9 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
  			/* Is mouse pointer over button1 area?
 			 * Yes, does 'button1_depressed' equal false?
 			 */
-			if (mouse_is_over == OVER_BUTTON1 
+			if (mouse_is_over == OVER_BUTTON1
 			 && slidebar_ptr->button1_depressed == EG_FALSE){
- 				/* 	Yes, set 'button1_depressed' to true, scroll by step amount, 
+ 				/* 	Yes, set 'button1_depressed' to true, scroll by step amount,
  				 *	repaint widget.
  				 */
 				slidebar_ptr->button1_depressed = EG_TRUE;
@@ -408,7 +403,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 			 */
 			if (mouse_is_over == OVER_BUTTON2
 			 && slidebar_ptr->button2_depressed == EG_FALSE){
-	
+
 		 		/*	Yes, set 'button2_depressed' to true, scroll by minus step amount,
 		 		 *	repaint widget.
 		 		 */
@@ -465,7 +460,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 		 && event_ptr->button.button == SDL_BUTTON_LEFT){
 			/* Yes,
 			 */
-			
+
 			/* Is the slider button not depressed and
 		 	 * the mouse pointer within the slider area?
 			 */
@@ -875,7 +870,7 @@ EG_BOOL EG_SlideBar_SetLength(EG_Widget *widget_ptr, long length)
 	if (slidebar_ptr->position > slidebar_ptr->virtual_length - CalcVisibleLength(widget_ptr) ){
 		slidebar_ptr->position = slidebar_ptr->virtual_length - CalcVisibleLength(widget_ptr);
 		slidebar_ptr->previous_position = slidebar_ptr->position;
-		
+
 		slidebar_ptr->previous_position = slidebar_ptr->position;
 		EG_Widget_CallUserOnChange(widget_ptr);
 	}
@@ -913,7 +908,7 @@ EG_BOOL EG_SlideBar_SetPosition(EG_Widget *widget_ptr, long position)
 	if (position<0)
 		position = 0;
 
-	if (position > slidebar_ptr->virtual_length 
+	if (position > slidebar_ptr->virtual_length
 	 - CalcVisibleLength(widget_ptr) )
 		position = slidebar_ptr->virtual_length
 	 	 - CalcVisibleLength(widget_ptr);

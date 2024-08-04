@@ -11,23 +11,16 @@
 #ifndef _DW_BUTTON_PRIVATE_H_
 #define _DW_BUTTON_PRIVATE_H_
 
-
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include <gui/types.h>
+#include "types.h"
 
 #include <SDL.h>
 
-#include <gui/window.h>
-#include <gui/widget.h>
+#include "window.h"
+#include "widget.h"
 
-#include <gui/button.h>
+#include "button.h"
 
-
-/* Get EG_Button struct.
- */
+// Get EG_Button struct.
 
 #define EG_BUTTON_GET_STRUCT_PTR(w, v, r)  \
         if (w == NULL ){ \
@@ -61,4 +54,4 @@ typedef struct{
 
 /* END OF button_private.h ------------------------------------------------------
  */
-#endif                                                                           
+#endif

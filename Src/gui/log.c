@@ -1,14 +1,10 @@
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <errno.h>
 #include <string.h>
 
-#include <gui/log.h>
+#include "log.h"
 
 // Verbosity levels 0 to 4.
 // (normal value would be around eLOG_WARN)
@@ -99,9 +95,9 @@ void VLog_AlertDlg(const char *psFormat, va_list argptr)
 /* vfprintf wrapper, used internally instead of printf, fprintf.
  */
 #define EG_OUTPUT_STREAM_HARDWARED stdout
- 
+
 void EG_vprintf(const char *format, va_list argptr)
-{	
+{
 	vfprintf(EG_OUTPUT_STREAM_HARDWARED, format, argptr);
 	va_end(argptr);
 

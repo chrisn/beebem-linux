@@ -830,12 +830,11 @@ static void Main_Tick_FullScreen(EG_Widget * /* widget_ptr */, void * /* user_pt
 {
 	// [TODO] Flush sound.
 
-	(void) ToggleFullscreen();
+	ToggleFullscreen();
 
 	EG_Window_RepaintLot(gui.win_menu_ptr);
 
-	/* Slight delay to allow hardware to catchup.
-	 */
+	// Slight delay to allow hardware to catch up.
 	SDL_Delay(200);
 }
 

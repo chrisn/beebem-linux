@@ -33,10 +33,9 @@ Boston, MA  02110-1301, USA.
 #include "BeebWin.h"
 #include "Model.h"
 
-#include <functions.h>
-#include "sdl.h"
-
-#include <gui.h>
+#include "gui/functions.h"
+#include "gui/sdl.h"
+#include "gui/gui.h"
 
 /* Fudge for command line --------
  */
@@ -60,11 +59,11 @@ extern HACCEL hCurrentAccelTable;
 
 void WriteLog(char *fmt, ...);
 
-void Quit(void);
+void Quit();
 void SetActiveWindow(EG_Window *window_ptr);
 bool GetFullscreenState();
-int ToggleFullscreen(void);
-void ShowingMenu(void);
-void NoMenuShown(void);
+bool ToggleFullscreen();
+void ShowingMenu();
+void NoMenuShown();
 
 #endif

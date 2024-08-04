@@ -7,34 +7,28 @@
  *	---
  */
 
+#include "log.h"
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "functions.h"
 
+#include "radiogroup.h"
+#include "radiogroup_private.h"
 
-#include <gui/log.h>
+#include "radiobutton.h"
+#include "radiobutton_private.h"
 
-#include <gui/functions.h>
+#include "togglebutton.h"
+#include "togglebutton_private.h"
 
-#include <gui/radiogroup.h>
-#include <gui/radiogroup_private.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/radiobutton.h>
-#include <gui/radiobutton_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
-#include <gui/togglebutton.h>
-#include <gui/togglebutton_private.h>
+#include "widget_shared.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
-
-#include <gui/widget.h>
-#include <gui/widget_private.h>
-
-#include <gui/widget_shared.h>
-
-#include <gui/sdl.h>
+#include "sdl.h"
 
 #include <SDL.h>
 
@@ -96,12 +90,12 @@ static void Callback_Destroy(EG_Widget *widget_ptr)
 //					EG_ToggleButton_SetGroupParent(tmp_widget_ptr, NULL);
                 	}
         	}
-		
+
 		/* Free the EG_RadioGroup struct.
 		 */
 		EG_Free(radiogroup_ptr);
 	}
-  
+
 	/* Free EG_Widget struct.
 	 */
 	EG_Widget_Free(widget_ptr);
@@ -199,7 +193,7 @@ static EG_BOOL Callback_Enabled(EG_Widget *widget_ptr, EG_BOOL is_enabled)
 	}
 
 	return(EG_TRUE);
-}       
+}
 
 /* Remember we don't need to render the state change when a widget is stopped or
  * started!  We do however need to reflect that change to our children.
@@ -270,7 +264,7 @@ static void InitializePayload(EG_RadioGroup *radiogroup_ptr)
 	int i;
 
 	for(i=0; i<MAX_RADIOGROUP_BUTTONS; i++)
-		radiogroup_ptr->button_widget_ptr[i] = NULL;	
+		radiogroup_ptr->button_widget_ptr[i] = NULL;
 
 	radiogroup_ptr->count = 0;
 	radiogroup_ptr->selected = -1;
@@ -418,7 +412,7 @@ void EG_RadioGroup_RemoveButton(EG_Widget *group_widget_ptr
 			break;
 
 	/* If not found, log error and exit.
-	 */	
+	 */
 	if (i>=radiogroup_ptr->count){
 		EG_Log(EG_LOG_ERROR, dL"Tried to delete widget %s from"
 		 " EG_RadioGroup, when not memeber of group.", dR);
@@ -544,7 +538,7 @@ EG_BOOL EG_RadioGroup_Select(EG_Widget *button_widget_ptr)
 //			else
 //				(void) EG_Widget_RepaintLot(
 //				 next_button_widget_ptr);
-			
+
 			switch ( EG_Widget_GetType(next_button_widget_ptr) ){
 			case EG_Widget_Type_RadioButton:
 				if (EG_RadioButton_Untick(next_button_widget_ptr) != EG_TRUE)

@@ -5,22 +5,18 @@
  *	---
  *	THIS GUI IS TOTALLY *BROKEN*! PLEASE DO NOT USE IT!
  *	---
- */     
+ */
 
 
 #ifndef _DW_TABPAGE_H_
 #define _DW_TABPAGE_H_
 
-#if HAVE_CONFIG_H               
-#       include <config.h>      
-#endif
+#include "types.h"
 
-#include <gui/types.h>
+#include "widget.h"
+#include "window.h"
 
-#include <gui/widget.h>
-#include <gui/window.h>
-
-#include <SDL.h>                
+#include <SDL.h>
 
 
 /* Widget type:
@@ -44,7 +40,7 @@ extern "C" {
 
 	/* Switch focus to the first widget in this tab page (if does not have a
 	 * focusable widget, then the page button itself).
-	 * 
+	 *
 	 * If the tab page has focus and you press enter, it'll do this anyway.
 	 */
 	EG_BOOL		EG_TabPage_Show(EG_Widget *widget_ptr);

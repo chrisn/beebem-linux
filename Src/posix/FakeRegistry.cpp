@@ -5,15 +5,14 @@
 
 #include "FakeRegistry.h"
 
-#include <functions.h>
-#include <gui.h>
+#include "gui/functions.h"`
+#include "gui/gui.h"
 
 #include "UserConfig.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 /* Malloc and Free (just use EG's versions):
  */
@@ -147,7 +146,7 @@ void RemoveFakeRegistryItem(const char *key_ptr)
 
 	while( ptr != NULL){
 		if (strcasecmp(key_ptr, ptr->key_ptr) == 0){
-			
+
 			if (ptr_previous != NULL)
 				ptr_previous->next_ptr = ptr->next_ptr;
 
@@ -159,7 +158,7 @@ void RemoveFakeRegistryItem(const char *key_ptr)
 			FR_FREE(ptr);
 			return;
 		}
-	
+
 		ptr_previous = ptr;
 		ptr = ptr->next_ptr;
 	}
@@ -172,7 +171,7 @@ void DumpFakeRegistry(void)
 	while( ptr != NULL){
 		printf("[%8lX][%8lX][%8lX] [%s]=\"%s\"\n"
 		, (unsigned long) ptr, (unsigned long) ptr->key_ptr
-		, (unsigned long) ptr->value_ptr 
+		, (unsigned long) ptr->value_ptr
 		, ptr->key_ptr, ptr->value_ptr);
 
 		ptr = ptr->next_ptr;
@@ -185,7 +184,7 @@ BOOL SaveFakeRegistry(void)
 	FakeRegistry *registry_ptr = reg_head_ptr;
 
 	/* Set file path, if fail cannot continue.
-	 */ 
+	 */
         if ( GetUserConfigPath(reg_file, FR_FILENAME_LEN) == NULL)
                 return FALSE;
 

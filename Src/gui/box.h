@@ -11,18 +11,12 @@
 #ifndef _DW_BOX_H_
 #define _DW_BOX_H_
 
-
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
-
-#include <gui/types.h>
-#include <gui/sdl.h>
-#include <gui/window.h>
-#include <gui/widget.h>
+#include "types.h"
+#include "sdl.h"
+#include "window.h"
+#include "widget.h"
 
 #include <SDL.h>
-
 
 /* Widget type:
  *

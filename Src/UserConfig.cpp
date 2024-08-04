@@ -39,8 +39,8 @@ Boston, MA  02110-1301, USA.
 
 #include "UserConfig.h"
 
-#include <gui.h>
-#include <sdl.h>
+#include "gui/gui.h"
+#include "gui/sdl.h"
 
 
 /* Extra UNIX specific includes:
@@ -101,7 +101,7 @@ static BOOL ConcatenateStrings(char *destination, char *append, size_t len)
          */
 	if (strlen(destination) + strlen(append) >= len)
 		return FALSE;
-	
+
 	/* Otherwise, success.
 	 */
 	return TRUE;
@@ -118,7 +118,7 @@ static BOOL CopyString(char *destination, char *source, size_t len)
 		// qERROR("Tried to copy string to a NULL pointer.");
 		return FALSE;
 	}
-	
+
 	if (len < 1)
 	{
 		// qERROR("Tried to copy string to string with length zero.");
@@ -163,7 +163,7 @@ static BOOL CopyString(char *destination, char *source, size_t len)
 	return TRUE;
 }
 
-/* Convert path into a C path.  Assumes pointer passed is a valid terminated C 
+/* Convert path into a C path.  Assumes pointer passed is a valid terminated C
  * string.
  *
  * Depending on your OS you may need to change this. Currently just checks if
@@ -281,7 +281,7 @@ static BOOL TestFile(char *file)
 	/* If the file to test is invalid, return false.
 	 */
 	if (file == NULL || strlen(file)==0) return FALSE;
-	
+
 	/* Suck it and see!
 	 */
 	if ( (f=fopen(file, "r")) == NULL) return FALSE;
@@ -459,7 +459,7 @@ char* GetUserConfigPath(char *path, size_t len)
 
 	/* Find user in password database.
 	 */
-	errno = 0; 
+	errno = 0;
 	if ( ! (pw_ptr=getpwuid(getuid())) ){
 		/* Not found, clear config filename.
 		 */
@@ -481,7 +481,7 @@ char* GetUserConfigPath(char *path, size_t len)
 #else
 	/* Root of application data dir
 	 */
-	
+
 	if (! AppendDirToPath(path, DATA_DIR, len) ){
 		// qFATAL("Unable to determine default user config dir.");
 		exit(1);
@@ -521,7 +521,7 @@ char* GetUserConfigPath(char *path, size_t len)
 		EG_MessageBox(screen_ptr, EG_MESSAGEBOX_INFORMATION
 		 , "Welcome to BeebEm!", WELCOME_MESSAGE, "OK", NULL, NULL
 		 , NULL, 0);
-		
+
 #endif
 	}
 	return path;
@@ -737,7 +737,7 @@ char* GetLocation_tube(char *buffer, size_t length)
 		return NULL;
 
 	strcpy(buffer, DATA_DIR TUBE_ROM);
-	return buffer;	
+	return buffer;
 }
 
 #define TELETEXT_FONT "/resources/teletext.fnt"
@@ -792,9 +792,9 @@ char* GetLocation_roms(char *buffer, size_t length)
 		return NULL;
 	}
 	if ( AppendDirToPath(buffer, "roms", length) )
-		if ( TestDirectory(buffer) ) 
+		if ( TestDirectory(buffer) )
 			return buffer;
-			
+
 	/* OK, user has not created their own "roms" directory, so use the
 	 * system (and read only) one instead.
 	 */
@@ -837,7 +837,7 @@ BOOL CopyScsiImagesToUser(char *filepath)
 
 			strcpy(src_filepath, DATA_DIR"/media/scsi/");
 			strcat(src_filepath, files[i]);
-	
+
 			/* This make be slow (especially if C copy is used) so
 			 * print warning.
 		 	 */
@@ -895,7 +895,7 @@ char* GetLocation_scsi(char *buffer, size_t length)
 //		}
 //
 //	}
-//	
+//
 //	return CopyFilePathToBuffer(filepath, buffer, length);
 
 	if (MakeSureBufferIsSane(buffer, length) != TRUE)

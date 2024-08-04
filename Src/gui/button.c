@@ -9,31 +9,24 @@
 EG_BUTTON_MIN_CLICK_TIME
  */
 
-#if HAVE_CONFIG_H
-#       include <config.h>
-#endif
+#include "log.h"
 
-#include <gui/log.h>
+#include "functions.h"
 
-#include <gui/functions.h>
+#include "button.h"
+#include "button_private.h"
 
-#include <gui/button.h>
-#include <gui/button_private.h>
+#include "window.h"
+#include "window_private.h"
 
-#include <gui/window.h>
-#include <gui/window_private.h>
+#include "widget.h"
+#include "widget_private.h"
 
-#include <gui/widget.h>
-#include <gui/widget_private.h>
-
-#include <gui/widget_shared.h>
+#include "widget_shared.h"
 
 #include <SDL.h>
 
-
-
-/* Callbacks:
- */
+// Callbacks:
 
 static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 {
@@ -65,7 +58,7 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 	 */
 	if (EG_Widget_IsEnabled(widget_ptr) != EG_TRUE){
 		color.r = (int) ( color.r * 0.9);
-		color.g = (int) ( color.g * 0.9);	
+		color.g = (int) ( color.g * 0.9);
 		color.b = (int) ( color.b * 0.9);
 	}
 
@@ -87,11 +80,11 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 	if (EG_Window_ThisWidgetHasFocus(widget_ptr) == EG_TRUE)
 		bold = EG_TRUE;
 	else
-		bold = EG_FALSE;	
+		bold = EG_FALSE;
 
 	EG_Draw_String(surface_ptr, &color, bold, &loc, button_ptr->alignment
 	 , button_ptr->caption );
-	
+
 //	/* If button has focus on the window, make the caption bold.
 //	 */
 //	if (EG_Window_ThisWidgetHasFocus(widget_ptr) == EG_TRUE){
@@ -149,11 +142,11 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 		 */
 		if (button_ptr->depressed == EG_TRUE && event_ptr->button.state
 		 == SDL_RELEASED && event_ptr->button.button ==SDL_BUTTON_LEFT){
-	
+
 			/* If released with mouse pointer within area of widget
-			 * and --------the minimum click-time has been met. 
+			 * and --------the minimum click-time has been met.
 			 */
-			if (mouse_over_widget == EG_TRUE && 
+			if (mouse_over_widget == EG_TRUE &&
 			 EG_Widget_GetVisibleToggle(widget_ptr) == EG_TRUE
 			 && EG_Widget_GetStoppedToggle(widget_ptr) == EG_FALSE){
 			 	/* Call users 'OnClick' event.
@@ -166,7 +159,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 
 				EG_Widget_CallUserOnClick(widget_ptr);
 			}
-	
+
 			/* Regardless of mouse pointers location, set
 			 * depressed = false; repaint widget.
 			 */
@@ -196,7 +189,7 @@ static EG_BOOL Callback_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_ptr)
 		/* If this widget currently has focus on the window.
 		 */
 		if (EG_Window_ThisWidgetHasFocus(widget_ptr) == EG_TRUE){
-			/* Eat this event, we don't want it passed to 
+			/* Eat this event, we don't want it passed to
 			 * other widgets.
 			 */
 			return_value = EG_TRUE;
@@ -276,11 +269,11 @@ EG_Widget* EG_Button_Create(const char *name_ptr, SDL_Color color, int alignment
 
 	SHARED__ALLOC_PAYLOAD_STRUCT(ptr, EG_Button
 	 , "Unable to malloc EG_Button struct");
-	button_ptr = (EG_Button*) ptr;        
+	button_ptr = (EG_Button*) ptr;
 
         SHARED__CREATE_NEW_EG_WIDGET(widget_ptr, name_ptr, EG_Widget_Type_Button
          , button_ptr);
-        
+
         SHARED__ATTACH_PAYLOAD_TO_WIDGET(widget_ptr, button_ptr);
 
 	InitializePayload(button_ptr);
