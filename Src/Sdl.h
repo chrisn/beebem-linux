@@ -70,7 +70,7 @@ extern int cfg_WaitType;
 
 extern int InitialiseSDL();
 extern void UninitialiseSDL();
-extern void RenderLine(int, int, int);
+extern void RenderLine(int line, int isTeletext, int xoffset);
 extern void SaferSleep(unsigned int);
 extern unsigned char* GetSDLScreenLinePtr(int);
 extern void SetWindowTitle(char*);

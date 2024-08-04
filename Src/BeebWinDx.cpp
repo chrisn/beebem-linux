@@ -24,6 +24,8 @@ Boston, MA  02110-1301, USA.
 
 #ifdef WIN32
 #include <ddraw.h>
+#else
+#include "Sdl.h"
 #endif
 
 #include <stdio.h>
@@ -1032,6 +1034,28 @@ void BeebWin::updateLines(HDC hDC, int StartY, int NLines)
 				// Report(MessageType::Error,
 				//        "DirectX failure while updating screen\nFailure code %X", ddrval);
 			}
+		}
+	}
+
+	#else
+
+	UNREFERENCED_PARAMETER(hDC);
+
+
+/* #ifdef WITH_FS_FPS
+	if (m_ShowSpeedAndFPS && m_FullScreen)
+	{
+		char fps[50];
+		sprintf(fps, "%2.2f %2d", m_RelativeSpeed, (int)m_FramesPerSecond);
+		RenderFullscreenFPS(fps, TeletextEnabled ? 0: 32);
+	}
+#endif */
+
+	for (int i = 0; i < NLines; i++)
+	{
+		if (i + StartY < 600)
+		{
+			RenderLine(i + StartY, (int)TeletextEnabled, ScreenAdjust);
 		}
 	}
 
