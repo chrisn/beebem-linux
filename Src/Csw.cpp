@@ -180,7 +180,7 @@ void HexDump(const char *buff, int count)
 void CSWCreateTapeMap(std::vector<TapeMapEntry>& TapeMap)
 {
 	CSWState last_state = CSWState::Undefined;
-	char block[65535];
+	char unsigned block[65535];
 	int block_ptr = -1;
 
 	int n;

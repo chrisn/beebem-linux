@@ -1232,11 +1232,15 @@ void Close1770Disc(int Drive)
 	}
 }
 
-#define BPUT(a) fputc(a, file); CheckSum = (CheckSum + a) & 0xff
+#define BPUT(a) \
+	do { \
+		fputc(a, file); CheckSum = (CheckSum + (a)) & 0xff; \
+	} while (0)
 
 // This function creates a blank ADFS disc image.
 
-bool CreateADFSImage(const char *FileName, int Tracks) {
+bool CreateADFSImage(const char *FileName, int Tracks)
+{
 	int ent;
 	const int sectors = (Tracks * 16);
 	FILE *file = fopen(FileName, "wb");

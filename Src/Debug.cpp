@@ -1056,7 +1056,7 @@ void DebugOpenDialog(HINSTANCE hinst, HWND /* hwndMain */)
 
 	#else
 
-	UNREFERENCED_PARAMETER(hInst);
+	UNREFERENCED_PARAMETER(hinst);
 
 	#endif
 }
@@ -1147,6 +1147,7 @@ void DebugDisplayInfo(const char *info)
 
 void DebugDisplayInfo(const char *info)
 {
+	UNREFERENCED_PARAMETER(info);
 }
 
 #endif
@@ -1501,6 +1502,9 @@ void DebugDisplayTrace(DebugType type, bool host, const char *info)
 
 void DebugDisplayTrace(DebugType type, bool host, const char *info)
 {
+	UNREFERENCED_PARAMETER(type);
+	UNREFERENCED_PARAMETER(host);
+	UNREFERENCED_PARAMETER(info);
 }
 
 void DebugDisplayTraceF(DebugType type, bool host, const char *format, ...)
