@@ -100,7 +100,9 @@ Boston, MA  02110-1301, USA.
 // Some LED based constants
 constexpr int LED_COL_BASE = 64;
 
+#ifdef WIN32
 static const char *CFG_REG_KEY = "Software\\BeebEm";
+#endif
 
 CArm *arm = nullptr;
 CSprowCoPro *sprow = nullptr;
@@ -6001,12 +6003,12 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 
 /****************************************************************************/
 
-static int NftwCallback(const char* FileName, const struct stat* pStat, int Flags, struct FTW* pFtw)
+static int NftwCallback(const char* FileName, const struct stat* pStat, int /* Flags */, struct FTW* /* pFtw */)
 {
-	return mainWin->NftwCallback(FileName, pStat, Flags, pFtw);
+	return mainWin->NftwCallback(FileName, pStat);
 }
 
-int BeebWin::NftwCallback(const char* FileName, const struct stat* pStat, int Flags, struct FTW* pFtw)
+int BeebWin::NftwCallback(const char* FileName, const struct stat* pStat)
 {
 	char DestPath[MAX_PATH];
 
@@ -6073,7 +6075,7 @@ bool BeebWin::CopyFiles(const char* SourceFileSpec, const char* DestPath)
 
 	int Result = nftw(m_CopySourcePath, ::NftwCallback, 5 /* fd_limit */, 0);
 
-	return false; // TODO
+	return Result == 0;
 
 	#endif
 }

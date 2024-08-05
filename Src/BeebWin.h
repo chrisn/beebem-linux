@@ -376,7 +376,7 @@ public:
 	bool CheckUserDataPath(bool Persist);
 	bool CopyFiles(const char* SourceFileSpec, const char* DestPath);
 	#ifndef WIN32
-	int NftwCallback(const char* FileName, const struct stat* pStat, int Flags, struct FTW* pFtw);
+	int NftwCallback(const char* FileName, const struct stat* pStat);
 	#endif
 	void SelectUserDataPath(void);
 	void StoreUserDataPath(void);
