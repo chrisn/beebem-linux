@@ -438,8 +438,8 @@ EG_BOOL EG_Window_Child_Add(EG_Window *window_ptr, EG_Widget *widget_ptr)
 	window_ptr->widget_ptr[window_ptr->count-1]=widget_ptr;
 
 	// Set window and hold-value of widget.
-	(void) EG_Widget_SetWindow(widget_ptr, window_ptr);
-        (void) EG_Widget_SetHoldValue(widget_ptr, window_ptr->count-1);
+	EG_Widget_SetWindow(widget_ptr, window_ptr);
+	EG_Widget_SetHoldValue(widget_ptr, window_ptr->count-1);
 
 	return(EG_TRUE);
 }
@@ -477,9 +477,9 @@ EG_BOOL EG_Window_RemoveWidget(EG_Window *window_ptr, void *widget_ptr)
 	 * the only widget that can receive focus, then force loss of focus to
 	 * all widgets on this window.
  	 */
-	if (EG_Window_ThisWidgetHasFocus( (EG_Widget*) widget_ptr) == EG_TRUE){
-
-		(void) EG_Window_MoveFocusForward(window_ptr);
+	if (EG_Window_ThisWidgetHasFocus( (EG_Widget*) widget_ptr) == EG_TRUE)
+	{
+		EG_Window_MoveFocusForward(window_ptr);
 
 		/* If widget to be deleted STILL has focus after moveing focus
 	 	 * to the next widget (ie. this is the only widget that can have
@@ -519,12 +519,12 @@ EG_BOOL EG_Window_RemoveWidget(EG_Window *window_ptr, void *widget_ptr)
  */
 EG_BOOL EG_Window_MoveFocusForward(EG_Window *window_ptr)
 {
-	return( MoveFocus(window_ptr, 1) );
+	return MoveFocus(window_ptr, 1);
 }
 
 EG_BOOL EG_Window_MoveFocusBackward(EG_Window *window_ptr)
 {
-	return( MoveFocus(window_ptr, -1) );
+	return MoveFocus(window_ptr, -1);
 }
 
 /* Move focus to next widget (in child list) that can receive focus.
@@ -557,15 +557,14 @@ static EG_BOOL MoveFocus(EG_Window *window_ptr, int direction)
 	 *
 	 * If the window does not have a focused widget, then store index 0.
 	 */
-	if ( (widget_ptr=EG_Window_Child_GetFocusedWidget(window_ptr)) != NULL){
-		current_index = EG_Window_Child_GetIndexFromWidget(window_ptr
-		 , widget_ptr);
+	if ((widget_ptr = EG_Window_Child_GetFocusedWidget(window_ptr)) != NULL)
+	{
+		current_index = EG_Window_Child_GetIndexFromWidget(window_ptr, widget_ptr);
 
 		current_index += direction;
-		if (current_index >= EG_Window_Child_GetCount(window_ptr) )
-		 current_index = 0;
-		if (current_index < 0) current_index = EG_Window_Child_GetCount(
-		 window_ptr) - 1;
+		if (current_index >= EG_Window_Child_GetCount(window_ptr))
+			current_index = 0;
+		if (current_index < 0) current_index = EG_Window_Child_GetCount(window_ptr) - 1;
 
 		EG_Widget_CallLostFocus(widget_ptr);
 
@@ -574,7 +573,9 @@ static EG_BOOL MoveFocus(EG_Window *window_ptr, int direction)
 		window_ptr->widget_with_focus = -1;
 
 		EG_Widget_RepaintLot(widget_ptr);
-	}else{
+	}
+	else
+	{
 		current_index = 0;
 	}
 
@@ -588,7 +589,8 @@ static EG_BOOL MoveFocus(EG_Window *window_ptr, int direction)
 	/* Iterate through child widgets. End iteration after full loop of
 	 * child widgets.
 	 */
-	do{
+	do
+	{
 		/* Try and switch focus to next widget at index.  If success
 		 * then return true.
 		 */
@@ -614,10 +616,8 @@ static EG_BOOL MoveFocus(EG_Window *window_ptr, int direction)
 		if (current_index >= EG_Window_Child_GetCount(window_ptr) )
 		 current_index = 0;
 
-		if (current_index < 0) current_index =
-		 EG_Window_Child_GetCount(window_ptr) -1;
-
-	}while(current_index != start_index);
+		if (current_index < 0) current_index = EG_Window_Child_GetCount(window_ptr) - 1;
+	} while(current_index != start_index);
 
 	return(EG_TRUE);
 }

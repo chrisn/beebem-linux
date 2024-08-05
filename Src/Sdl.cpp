@@ -722,17 +722,20 @@ static void BusyWait(Uint32 u32TimeShouldWait, Uint32 u32StartTickCount)
         }while(u32AjustedTime < u32TimeShouldWait);
 }
 
-/* If the waiting period in ms is greater than the minimum delay time, then the
- * wait is passed to the OS. Otherwise we busy-wait instead.
- */
+// If the waiting period in ms is greater than the minimum delay time, then the
+// wait is passed to the OS. Otherwise we busy-wait instead.
+
 static void SleepAndBusyWait(Uint32 u32TimeShouldWait, Uint16 u16MinTime)
 {
 	Uint32 u32StartTickCount = SDL_GetTicks();
 
-        // Only sleep if we are sure the OS can honnor it:
-        if(u32TimeShouldWait >= u16MinTime){
-                SDL_Delay(u32TimeShouldWait);
-        }else{
+	// Only sleep if we are sure the OS can honour it.
+	if (u32TimeShouldWait >= u16MinTime)
+	{
+		SDL_Delay(u32TimeShouldWait);
+	}
+	else
+	{
 		BusyWait(u32TimeShouldWait, u32StartTickCount);
 	}
 }
@@ -752,30 +755,30 @@ void SaferSleep(unsigned int uiTicks)
 
 	switch (cfg_WaitType)
 	{
-	// Just pass all waits period to OS:
-	case OPT_SLEEP_OS:
-		SDL_Delay(uiTicks);
-		break;
+		// Just pass all waits period to OS:
+		case OPT_SLEEP_OS:
+			SDL_Delay(uiTicks);
+			break;
 
-	// Only pass wait to OS if period is greater or equal to 2 ms:
-	case OPT_SLEEP_F1:
-		SleepAndBusyWait(uiTicks, 2);
-		break;
+		// Only pass wait to OS if period is greater or equal to 2 ms:
+		case OPT_SLEEP_F1:
+			SleepAndBusyWait(uiTicks, 2);
+			break;
 
-	// Only pass wait to OS if period is greater or equal to 4 ms:
-	case OPT_SLEEP_F2:
-		SleepAndBusyWait(uiTicks, 4);
-		break;
+		// Only pass wait to OS if period is greater or equal to 4 ms:
+		case OPT_SLEEP_F2:
+			SleepAndBusyWait(uiTicks, 4);
+			break;
 
-	// Only pass wait to OS if period is greater or equal to 6 ms:
-	case OPT_SLEEP_F3:
-		SleepAndBusyWait(uiTicks, 6);
-		break;
+		// Only pass wait to OS if period is greater or equal to 6 ms:
+		case OPT_SLEEP_F3:
+			SleepAndBusyWait(uiTicks, 6);
+			break;
 
-	// Never pass waits to OS, use nasty Busy-wait for everything:
-	case OPT_SLEEP_BW:
-		BusyWait(uiTicks, SDL_GetTicks());
-		break;
+		// Never pass waits to OS, use nasty Busy-wait for everything:
+		case OPT_SLEEP_BW:
+			BusyWait(uiTicks, SDL_GetTicks());
+			break;
 	}
 }
 
@@ -840,7 +843,6 @@ void SaferSleep2(unsigned int uiTicks)
 }
 */
 
-
 // Clear video window
 void ClearVideoWindow()
 {
@@ -876,8 +878,10 @@ void RenderLine(int line, int isTeletext, int xoffset)
 	}
 
 	// Don't bother to render if not active.
-	if ( (SDL_GetAppState() & SDL_APPACTIVE) == 0)
+	if ((SDL_GetAppState() & SDL_APPACTIVE) == 0)
+	{
 		return;
+	}
 
 	//printf("%d\n", xoffset);
 
