@@ -29,10 +29,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	int EG_MessageBox(SDL_Surface *surface_ptr, int type
-	 , const char *title_ptr, const char *text_ptr, const char *button1_ptr
-	 , const char *button2_ptr, const char *button3_ptr
-	 , const char *button4_ptr, int has_focus);
+
+int EG_MessageBox(SDL_Surface *surface_ptr,
+                  int type,
+                  const char *title_ptr,
+                  const char *text_ptr,
+                  const char *button1_ptr,
+                  const char *button2_ptr,
+                  int has_focus);
+
 #ifdef __cplusplus
 }
 #endif

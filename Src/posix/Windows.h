@@ -186,60 +186,9 @@ void GetLocalTime(SYSTEMTIME* pTime);
 
 typedef void* TIMERPROC;
 
-// --- Windows message box:
-
-// Buttons:
-#define MB_OK 			0x00000000L
-#define MB_OKCANCEL 		0x00000001L
-#define MB_ABORTRETRYIGNORE 	0x00000002L
-#define MB_YESNOCANCEL 		0x00000003L
-#define MB_YESNO 		0x00000004L
-#define MB_RETRYCANCEL 		0x00000005L
-
-// Icons:
-#define MB_ICONHAND 		0x00000010L
-#define MB_ICONSTOP             MB_ICONHAND
-
-#define MB_ICONQUESTION 	0x00000020L
-#define MB_ICONEXCLAMATION 	0x00000030L
-#define MB_ICONWARNING 		MB_ICONEXCLAMATION
-#define MB_ICONASTERISK 	0x00000040L
-#define MB_ICONINFORMATION      MB_ICONASTERISK
-
-#define MB_USERICON		0x00000080L
-#define MB_ICONWARNING          MB_ICONEXCLAMATION
-#define MB_ICONERROR            MB_ICONHAND
-
-// Return values:
-#define IDOK 			1
-#define IDCANCEL 		2
-#define IDABORT 		3
-#define IDRETRY			4
-#define IDIGNORE		5
-#define IDYES 			6
-#define IDNO			7
-
-
-
-//' DEFAULT BUTTON
-//
-//DEFINE MB_DEFBUTTON1 &H0
-//DEFINE MB_DEFBUTTON2 &H100
-//DEFINE MB_DEFBUTTON3 &H200
-//DEFINE MB_DEFBUTTON4 &H300
-
-
-
-// ----------
-
-
-// Errors
-//#define ERROR_SUCCESS 0
-
-int MessageBox(HWND hwnd, const char *message_p, const char *title_p, int type);
-void SetWindowText(HWND hwnd, const char *title_p);
+void SetWindowText(HWND hwnd, const char *pszTitle);
 void Sleep(DWORD Milliseconds);
-DWORD GetTickCount(void);
+DWORD GetTickCount();
 DWORD CheckMenuItem(HMENU hmenu, UINT uIDCheckItem, UINT uCheck);
 BOOL ModifyMenu(HMENU hMnu, UINT uPosition, UINT uFlags, PTR uIDNewItem, LPCTSTR lpNewItem);
 BOOL MoveFileEx(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, DWORD dwFlags);

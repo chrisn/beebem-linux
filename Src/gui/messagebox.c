@@ -20,7 +20,7 @@
 #define MSGBOX_MAX_COLS (40-4)
 
 // The EG Message Box:
-static int d;
+static int done;
 static int return_value;
 static EG_Window *window_ptr;
 
@@ -170,7 +170,7 @@ static void ProcessAndCopyString(char *dest_ptr, const char *source_ptr)
 static void MsgBox_Button_Press(EG_Widget *widget_ptr, void *user_ptr)
 {
 	EG_Window_Hide(window_ptr);
-	d = 1;
+	done = 1;
 
 	return_value = atoi(EG_Widget_GetName(widget_ptr));
 }
@@ -181,21 +181,15 @@ int EG_MessageBox(SDL_Surface *surface_ptr,
                   const char *text_ptr,
                   const char *button1_ptr,
                   const char *button2_ptr,
-                  const char *button3_ptr,
-                  const char *button4_ptr,
                   int has_focus)
 {
 	int row_count, row, button_count;
 	const char *message_ptr;
 	char *next_row_ptr, *text_copy_ptr;
 
-	SDL_Rect win, loc;
-
-	EG_Widget *widget_ptr;
-
 	SDL_Event e;
 
-	char icon[2][3]={"  ", "  "};
+	char icon[2][3] = {"  ", "  "};
 
 	if (surface_ptr == NULL || title_ptr == NULL || text_ptr == NULL)
 		return 0;
@@ -232,20 +226,27 @@ int EG_MessageBox(SDL_Surface *surface_ptr,
 	// Create window.
 	SDL_Colour col = MENU_COLORS;
 
-	win = CalcRectCentered_MB(surface_ptr, 40 + 40*10
-	 , 16*5 + ((row_count<24?row_count:24)*16) );
+	SDL_Rect win = CalcRectCentered_MB(surface_ptr,
+	                                   40 + 40 * 10,
+	                                   16 * 5 + (row_count < 24 ? row_count : 24) * 16);
 
 	window_ptr = EG_Window_Create("win_msgbox", surface_ptr, col, win);
 
 	// Create title and box.
-	loc = CalcRect(5+40, 5, win.w-15-40, 16);
-	widget_ptr = EG_Label_Create("lab_msgbox", col, EG_LABEL_ALIGN_CENTER
-	 , title_ptr, loc);
+	SDL_Rect loc = CalcRect(5 + 40, 5, win.w - 15 - 40, 16);
 
-	(void) EG_Window_AddWidget(window_ptr, widget_ptr);
+	EG_Widget *widget_ptr = EG_Label_Create("lab_msgbox",
+	                                        col,
+	                                        EG_LABEL_ALIGN_CENTER,
+	                                        title_ptr,
+	                                        loc);
 
-	loc = CalcRect(5+40, 10+16, win.w-15-40
-	 , ((row_count<24?row_count:24)*16)+16 );
+	EG_Window_AddWidget(window_ptr, widget_ptr);
+
+	loc = CalcRect(5 + 40,
+	               10 + 16,
+	               win.w - 15 - 40,
+	               (row_count < 24 ? row_count : 24) * 16 + 16);
 
 	widget_ptr = EG_Box_Create("box_msgbox", EG_BOX_BORDER_SUNK, col, loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
@@ -279,41 +280,12 @@ int EG_MessageBox(SDL_Surface *surface_ptr,
 
 	button_count = 0;
 
-	if (button4_ptr != NULL)
-	{
-		loc.x -= (10*(strlen(button4_ptr)+1));
-		loc.w = (10*(strlen(button4_ptr)+1));
-		button_count++;
-
-		widget_ptr = EG_Button_Create("4", col, EG_BUTTON_ALIGN_CENTER
-		 , button4_ptr, loc);
-		(void) EG_Button_SetMyCallback_OnClick(widget_ptr
-		 , MsgBox_Button_Press, NULL);
-		(void) EG_Window_AddWidget(window_ptr, widget_ptr);
-
-		if (has_focus == 4) (void) EG_Button_GetFocus(widget_ptr);
-	}
-
-	if (button3_ptr != NULL)
-	{
-		loc.x -= (10*(strlen(button3_ptr)+1));
-		loc.x -= (button_count>0?10:0);
-		loc.w = (10*(strlen(button3_ptr)+1)); button_count++;
-
-		widget_ptr = EG_Button_Create("3", col, EG_BUTTON_ALIGN_CENTER
-		 , button3_ptr, loc);
-		(void) EG_Button_SetMyCallback_OnClick(widget_ptr
-		 , MsgBox_Button_Press, NULL);
-		(void) EG_Window_AddWidget(window_ptr, widget_ptr);
-
-		if (has_focus == 3) (void) EG_Button_GetFocus(widget_ptr);
-	}
-
 	if (button2_ptr != NULL)
 	{
-		loc.x -= (10*(strlen(button2_ptr)+1));
-		loc.x -= (button_count>0?10:0);
-		loc.w = (10*(strlen(button2_ptr)+1)); button_count++;
+		loc.x -= 10 * (strlen(button2_ptr) + 1);
+		loc.x -= button_count > 0 ? 10 : 0;
+		loc.w = 10 * (strlen(button2_ptr) + 1);
+		button_count++;
 
 		widget_ptr = EG_Button_Create("2", col, EG_BUTTON_ALIGN_CENTER, button2_ptr, loc);
 		EG_Button_SetMyCallback_OnClick(widget_ptr, MsgBox_Button_Press, NULL);
@@ -323,16 +295,17 @@ int EG_MessageBox(SDL_Surface *surface_ptr,
 
 	if (button1_ptr == NULL)
 	{
-		loc.x -= (10*3); loc.w = (10*3);
-		loc.x -= (button_count>0?10:0);
+		loc.x -= 10 * 3;
+		loc.w = 10 * 3;
+		loc.x -= button_count > 0 ? 10 : 0;
 
 		widget_ptr = EG_Button_Create("1", col, EG_BUTTON_ALIGN_CENTER, "OK", loc);
 	}
 	else
 	{
-		loc.x -= (10*(strlen(button1_ptr)+1));
-		loc.x -= (button_count>0?10:0);
-		loc.w = (10*(strlen(button1_ptr)+1));
+		loc.x -= 10 * (strlen(button1_ptr) + 1);
+		loc.x -= button_count > 0 ? 10 : 0;
+		loc.w = 10 * (strlen(button1_ptr) + 1);
 
 		widget_ptr = EG_Button_Create("1", col, EG_BUTTON_ALIGN_CENTER, button1_ptr, loc);
 	}
@@ -349,20 +322,22 @@ int EG_MessageBox(SDL_Surface *surface_ptr,
 	EG_Window_Show(window_ptr);
 
 	return_value = 1;
-	d = 0;
-	while(!d)
+	done = 0;
+	while (!done)
 	{
 		while (SDL_PollEvent(&e))
 		{
 			switch (e.type)
 			{
 				case SDL_QUIT:
-					d=1;
+					done = 1;
 					break;
 
 				case SDL_KEYDOWN:
-					if(e.key.keysym.sym == SDLK_ESCAPE)
-						d=1;
+					if (e.key.keysym.sym == SDLK_ESCAPE)
+					{
+						done = 1;
+					}
 					break;
 			}
 

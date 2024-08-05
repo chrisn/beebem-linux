@@ -44,85 +44,6 @@ int _vscprintf(const char *format, va_list pargs)
 	return retval;
 }
 
-/* Fake windows MessageBox
- */
-int MessageBox(HWND hwnd, const char *message_p, const char *title_p, int type)
-{
-	int ret = 1, icon_type=0;
-	HWND tmp_hwnd;
-
-	// [TODO] Add support for default button, BeebEm doesn't use it anyway.
-	int selected = 1;
-
-	switch (type & 0xf0)
-	{
-	case MB_ICONHAND:
-		icon_type = EG_MESSAGEBOX_STOP;
-		break;
-	case MB_ICONQUESTION:
-		icon_type = EG_MESSAGEBOX_QUESTION;
-		break;
-	case MB_ICONEXCLAMATION:
-		icon_type = EG_MESSAGEBOX_STOP;
-		break;
-	case MB_ICONASTERISK:
-		icon_type = EG_MESSAGEBOX_INFORMATION;
-		break;
-	case MB_USERICON:
-		icon_type = EG_MESSAGEBOX_STOP;
-		break;
-	default:
-		icon_type = EG_MESSAGEBOX_INFORMATION;
-		break;
-	}
-
-	switch (type & 0xf)
-	{
-	case MB_OKCANCEL:
-		if (EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "OK", "CANCEL", NULL, NULL, selected) == 1)
-			ret = IDOK;
-		else
-			ret = IDCANCEL;
-		break;
-	case MB_ABORTRETRYIGNORE:
-		ret = EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "Abort", "Retry", "Ignore", NULL, selected);
-		switch (ret){
-			case 2: ret = IDRETRY; break;
-			case 3: ret = IDIGNORE; break;
-			case 1: default: ret = IDABORT; break;
-		}
-		break;
-	case MB_YESNOCANCEL:
-		ret = EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "Yes", "No", "Cancel", NULL, selected);
-		switch (ret){
-			case 2: ret = IDNO; break;
-			case 3: ret = IDCANCEL; break;
-			case 1: default: ret = IDYES; break;
-		}
-		break;
-	case MB_YESNO:
-		if (EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "Yes", "No", NULL, NULL, selected) == 1)
-			ret = IDYES;
-		else
-			ret = IDNO;
-		break;
-	case MB_RETRYCANCEL:
-		if (EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "Retry", "Cancel", NULL, NULL, selected) == 1)
-			ret = IDRETRY;
-		else
-			ret = IDCANCEL;
-		break;
-
-	case MB_OK:
-	default:
-		EG_MessageBox(screen_ptr, icon_type, title_p, message_p, "OK", NULL, NULL, NULL, 1);
-		ret = IDOK;
-		break;
-	}
-
-	return ret;
-}
-
 void SetWindowText(HWND hwnd, const char *pszTitle)
 {
 	SetWindowTitle(pszTitle);
@@ -130,12 +51,12 @@ void SetWindowText(HWND hwnd, const char *pszTitle)
 
 void Sleep(DWORD ticks)
 {
-	SaferSleep( (unsigned int) ticks);
+	SaferSleep((unsigned int)ticks);
 }
 
-DWORD GetTickCount(void)
+DWORD GetTickCount()
 {
-	return(SDL_GetTicks());
+	return SDL_GetTicks();
 }
 
 BOOL ModifyMenu(HMENU hMnu, UINT uPosition, UINT uFlags, PTR uIDNewItem, LPCTSTR lpNewItem)

@@ -6276,6 +6276,8 @@ MessageResult BeebWin::Report(MessageType type, const char *format, ...)
 
 MessageResult BeebWin::ReportV(MessageType type, const char *format, va_list args)
 {
+	#ifdef WIN32
+
 	MessageResult Result = MessageResult::None;
 
 	// Calculate required length, +1 is for NUL terminator
@@ -6313,15 +6315,7 @@ MessageResult BeebWin::ReportV(MessageType type, const char *format, va_list arg
 				break;
 		}
 
-		#ifdef WIN32
-
 		int ID = CentreMessageBox(m_hWnd, buffer, WindowTitle, Type);
-
-		#else
-
-		int ID = MessageBox(m_hWnd, buffer, WindowTitle, Type);
-
-		#endif
 
 		if (type == MessageType::Question)
 		{
@@ -6350,6 +6344,104 @@ MessageResult BeebWin::ReportV(MessageType type, const char *format, va_list arg
 	}
 
 	return Result;
+
+	#else
+
+	MessageResult Result = MessageResult::None;
+
+	// Calculate required length, +1 is	for NUL terminator
+	const int length = _vscprintf(format, args) + 1;
+
+	char *pszMessage = (char*)malloc(length);
+
+	if (pszMessage != nullptr)
+	{
+		vsprintf(pszMessage, format, args);
+
+		int IconType = 0;
+
+		switch (type)
+		{
+			case MessageType::Error:
+			default:
+				IconType = EG_MESSAGEBOX_STOP;
+				break;
+
+			case MessageType::Warning:
+				IconType = EG_MESSAGEBOX_STOP;
+				break;
+
+			case MessageType::Info:
+				IconType = EG_MESSAGEBOX_INFORMATION;
+				break;
+
+			case MessageType::Question:
+				IconType = EG_MESSAGEBOX_QUESTION;
+				break;
+
+			case MessageType::Confirm:
+				IconType = EG_MESSAGEBOX_STOP;
+				break;
+		}
+
+		switch (type)
+		{
+			case MessageType::Error:
+			case MessageType::Warning:
+			case MessageType::Info:
+			default:
+				EG_MessageBox(screen_ptr,
+				              IconType,
+				              WindowTitle,
+				              pszMessage,
+				              "OK",
+				              nullptr,
+				              1);
+
+				Result = MessageResult::OK;
+				break;
+
+			case MessageType::Question:
+				if (EG_MessageBox(screen_ptr,
+				                  IconType,
+				                  WindowTitle,
+				                  pszMessage,
+				                  "Yes",
+				                  "No",
+				                  1) == 1)
+				{
+					Result = MessageResult::Yes;
+				}
+				else
+				{
+					Result = MessageResult::No;
+				}
+				break;
+
+			case MessageType::Confirm:
+				if (EG_MessageBox(screen_ptr,
+				                  IconType,
+				                  WindowTitle,
+				                  pszMessage,
+				                  "OK",
+				                  "Cancel",
+				                  1) == 1)
+				{
+					Result = MessageResult::OK;
+				}
+				else
+				{
+					Result = MessageResult::Cancel;
+				}
+				break;
+		}
+
+		free(pszMessage);
+	}
+
+	return Result;
+
+	#endif
 }
 
 /****************************************************************************/
