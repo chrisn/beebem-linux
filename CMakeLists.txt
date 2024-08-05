@@ -165,7 +165,6 @@ set(SRCS
     Src/FileDialog.cpp
     Src/FileType.cpp
     Src/FileUtils.cpp
-    Src/Hardware.cpp
     Src/IC32Latch.cpp
     Src/Ide.cpp
     Src/IP232.cpp
@@ -232,6 +231,9 @@ set(SRCS
     Src/gui/widget_shared.c
     Src/gui/widget.c
     Src/gui/window.c
+    Src/Hardware/Acorn1770/Acorn.cpp
+    Src/Hardware/OpusDDOS/Opus.cpp
+    Src/Hardware/Watford/Watford.cpp
     Src/posix/Windows.cpp
 )
 

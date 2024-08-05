@@ -1355,7 +1355,7 @@ bool BeebWin::LoadCSWTape(const char *FileName)
 // else the named DLL is read in
 // if save is true then DLL selection is saved in registry
 
-void BeebWin::LoadFDC(char *DLLName, bool save)
+void BeebWin::LoadFDC(const char *DLLName, bool Save)
 {
 	char CfgName[20];
 	sprintf(CfgName, "FDCDLL%d", static_cast<int>(MachineType));
@@ -1373,11 +1373,7 @@ void BeebWin::LoadFDC(char *DLLName, bool save)
 
 	if (strcmp(DLLName, "None") != 0)
 	{
-		char path[MAX_PATH];
-		strcpy(path, DLLName);
-		GetDataPath(m_AppPath, path);
-
-		Ext1770Result Result = Ext1770Init(path);
+		Ext1770Result Result = Ext1770Init(DLLName);
 
 		if (Result == Ext1770Result::Success)
 		{
@@ -1386,16 +1382,16 @@ void BeebWin::LoadFDC(char *DLLName, bool save)
 		else if (Result == Ext1770Result::LoadFailed)
 		{
 			Report(MessageType::Error, "Unable to load FDD Extension Board DLL\nReverting to native 8271");
-			strcpy(DLLName, "None");
+			DLLName = "None";
 		}
-		else // if (Result == InvalidDLL)
+		else // if (Result == Ext1770Result::InvalidDLL)
 		{
 			Report(MessageType::Error, "Invalid FDD Extension Board DLL\nReverting to native 8271");
-			strcpy(DLLName, "None");
+			DLLName = "None";
 		}
 	}
 
-	if (save)
+	if (Save)
 	{
 		m_Preferences.SetStringValue(CfgName, DLLName);
 	}

@@ -261,7 +261,7 @@ public:
 	void SelectTube(TubeDevice Device);
 	void UpdateTubeMenu();
 	void SelectFDC();
-	void LoadFDC(char *DLLName, bool save);
+	void LoadFDC(const char *DLLName, bool Save);
 	void UpdateLEDMenu();
 	void SetDriveControl(unsigned char value);
 	unsigned char GetDriveControl(void);

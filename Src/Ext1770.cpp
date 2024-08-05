@@ -23,16 +23,14 @@ Boston, MA  02110-1301, USA.
 #include "Ext1770.h"
 #include "BeebMem.h"
 #include "Disc1770.h"
+#include "DriveControlBlock.h"
+#include "StringUtils.h"
+
+#include "Hardware/Acorn1770/Acorn.h"
+#include "Hardware/OpusDDOS/Opus.h"
+#include "Hardware/Watford/Watford.h"
 
 /*--------------------------------------------------------------------------*/
-
-struct DriveControlBlock
-{
-	int FDCAddress; // 1770 FDC chip address
-	int DCAddress; // Drive Control Register Address
-	const char *BoardName; // FDC Board name
-	bool TR00_ActiveHigh; // Set true if the TR00 input is Active High
-};
 
 // FDC Board extension DLL variables
 char FDCDLL[256] = { 0 };
@@ -41,7 +39,13 @@ char FDCDLL[256] = { 0 };
 static HMODULE hFDCBoard = nullptr;
 #endif
 
-static DriveControlBlock ExtBoard = { 0, 0, nullptr };
+static DriveControlBlock ExtBoard =
+{
+	0, // FDCAddress
+	0, // DCAddress
+	nullptr, // BoardName
+	false // TR00_ActiveHigh
+};
 
 typedef void (*GetBoardPropertiesFunc)(struct DriveControlBlock *);
 typedef unsigned char (*SetDriveControlFunc)(unsigned char);
@@ -76,7 +80,11 @@ Ext1770Result Ext1770Init(const char *FileName)
 {
 	#ifdef WIN32
 
-	hFDCBoard = LoadLibrary(FileName);
+	char PathName[MAX_PATH];
+	strcpy(PathName, FileName);
+	GetDataPath(mainWin->GetAppPath(), PathName);
+
+	hFDCBoard = LoadLibrary(PathName);
 
 	if (hFDCBoard == nullptr)
 	{
@@ -102,11 +110,51 @@ Ext1770Result Ext1770Init(const char *FileName)
 	EDCAddr = ExtBoard.DCAddress;
 	InvertTR00 = ExtBoard.TR00_ActiveHigh;
 
+	return Ext1770Result::Success;
+
 	#else
 
-	#endif
+	if (StrCaseCmp(FileName, "Acorn") == 0)
+	{
+		PGetBoardProperties = Acorn1770GetBoardProperties;
+		PSetDriveControl = Acorn1770SetDriveControl;
+		PGetDriveControl = Acorn1770GetDriveControl;
+	}
+	else if (StrCaseCmp(FileName, "Opus") == 0)
+	{
+		PGetBoardProperties = OpusGetBoardProperties;
+		PSetDriveControl = OpusSetDriveControl;
+		PGetDriveControl = OpusGetDriveControl;
+	}
+	else if (StrCaseCmp(FileName, "Watford") == 0)
+	{
+		PGetBoardProperties = WatfordGetBoardProperties;
+		PSetDriveControl = WatfordSetDriveControl;
+		PGetDriveControl = WatfordGetDriveControl;
+	}
+	else
+	{
+		Ext1770Reset();
+	}
+
+	if (PGetBoardProperties == nullptr ||
+	    PSetDriveControl == nullptr ||
+	    PGetDriveControl == nullptr)
+	{
+		Ext1770Reset();
+
+		return Ext1770Result::InvalidDLL;
+	}
+
+	PGetBoardProperties(&ExtBoard);
+
+	EFDCAddr = ExtBoard.FDCAddress;
+	EDCAddr = ExtBoard.DCAddress;
+	InvertTR00 = ExtBoard.TR00_ActiveHigh;
 
 	return Ext1770Result::Success;
+
+	#endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -119,7 +167,7 @@ bool HasFDCBoard()
 
 	#else
 
-	return false;
+	return PGetBoardProperties != nullptr;
 
 	#endif
 }
