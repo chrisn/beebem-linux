@@ -97,6 +97,10 @@ Boston, MA  02110-1301, USA.
 #include "Z80mem.h"
 #include "Z80.h"
 
+#ifndef WIN32
+#include "BeebEmPages.h"
+#endif
+
 // Some LED based constants
 constexpr int LED_COL_BASE = 64;
 
@@ -3138,14 +3142,28 @@ void BeebWin::UpdateDirectXFullScreenModeMenu()
 void BeebWin::ToggleFullScreen()
 {
 	m_FullScreen = !m_FullScreen;
-	CheckMenuItem(IDM_FULLSCREEN, m_FullScreen);
-	SetWindowAttributes(!m_FullScreen);
 
 	#ifdef WIN32
+
+	CheckMenuItem(IDM_FULLSCREEN, m_FullScreen);
+	SetWindowAttributes(!m_FullScreen);
 
 	if (m_MouseCaptured)
 	{
 		ReleaseMouse();
+	}
+
+	#else
+
+	::ToggleFullscreen();
+
+	if (m_FullScreen)
+	{
+		EG_TickBox_Tick(gui.fullscreen_widget_ptr);
+	}
+	else
+	{
+		EG_TickBox_Untick(gui.fullscreen_widget_ptr);
 	}
 
 	#endif

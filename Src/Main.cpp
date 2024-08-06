@@ -37,7 +37,10 @@ Boston, MA  02110-1301, USA.
 
 #include <iostream>
 #include <fstream>
+
 #include "Windows.h"
+
+#include "gui/gui.h"
 
 #include "6502core.h"
 #include "BeebEmPages.h"
@@ -50,7 +53,6 @@ Boston, MA  02110-1301, USA.
 #include "log.h"
 #include "Sdl.h"
 
-#include "gui/gui.h"
 
 // Can remove this (only needed to calc string hash)
 // #include "gui/gui_functions.h"

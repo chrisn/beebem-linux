@@ -22,6 +22,9 @@ Boston, MA  02110-1301, USA.
 
 #include <stdint.h>
 
+#include "gui/gui.h"
+#include "gui/sdl.h"
+
 #include "BeebEmPages.h"
 #include "BeebEm.h"
 #include "BeebWin.h"
@@ -29,8 +32,6 @@ Boston, MA  02110-1301, USA.
 #include "Resource.h"
 #include "Sdl.h"
 #include "Sound.h"
-#include "gui/gui.h"
-#include "gui/sdl.h"
 
 #include <gtk/gtk.h>
 
@@ -73,66 +74,7 @@ static void Destroy_Keyboard();
 static EG_BOOL Make_AMX(SDL_Surface *dst_ptr);
 static void Destroy_AMX();
 
-struct BeebEm_GUI
-{
-	EG_Window *win_menu_ptr;
-	EG_Window *win_system_ptr;
-	EG_Window *win_screen_ptr;
-	EG_Window *win_sound_ptr;
-	EG_Window *win_roms_ptr;
-	EG_Window *win_speed_ptr;
-	EG_Window *win_about_ptr;
-	EG_Window *win_devices_ptr;
-	EG_Window *win_disks_ptr;
-	EG_Window *win_tapes_ptr;
-	EG_Window *win_keyboard_ptr;
-	EG_Window *win_amx_ptr;
-
-	EG_Widget *widget_okay_ptr;
-	EG_Widget *widget_reset_ptr;
-	EG_Widget *widget_no_reset_ptr;
-	EG_Widget *fullscreen_widget_ptr;
-
-	EG_Widget *widget_system_button;
-
-	EG_Widget *widget_machine_bbc_b;
-	EG_Widget *widget_machine_integra_b;
-	EG_Widget *widget_machine_bbc_b_plus;
-	EG_Widget *widget_machine_bbc_master_128;
-	EG_Widget *widget_machine_bbc_master_et;
-
-	EG_Widget *widget_fdc_label; //tmp
-
-	EG_Widget *widget_system_back;
-
-	EG_Widget *widget_about_slider;
-
-	EG_Widget *widget_fdc_none;
-	EG_Widget *widget_fdc_acorn_1770;
-	EG_Widget *widget_fdc_watford;
-	EG_Widget *widget_fdc_opus;
-
-	EG_Widget *widget_about[24];
-
-	EG_Widget *widget_windowed_640x512;
-	EG_Widget *widget_windowed_640x480_S;
-	EG_Widget *widget_windowed_640x480_V;
-	EG_Widget *widget_windowed_320x240_S;
-	EG_Widget *widget_windowed_320x240_V;
-	EG_Widget *widget_windowed_320x256;
-
-	EG_Widget *widget_fullscreen_640x512;
-	EG_Widget *widget_fullscreen_640x480_S;
-	EG_Widget *widget_fullscreen_640x480_V;
-	EG_Widget *widget_fullscreen_320x240_S;
-	EG_Widget *widget_fullscreen_320x240_V;
-	EG_Widget *widget_fullscreen_320x256;
-
-	EG_Widget *widget_eject_disc0;
-	EG_Widget *widget_eject_disc1;
-};
-
-static BeebEm_GUI gui;
+BeebEmGUI gui;
 
 //==================================================================
 
@@ -313,115 +255,6 @@ static void ProcessGUIOption(EG_Widget * /* widget_ptr */, void *user_ptr)
 	WindowsMenuItemBridge *ptr = (WindowsMenuItemBridge*)user_ptr;
 
 	mainWin->HandleCommand(ptr->windows_menu_id);
-}
-
-// TEMP FILE SELECTOR ======================================================
-
-static char *gtk_file_selector_filename_ptr;
-static GtkWidget *filew;
-static bool got_file;
-bool was_full_screen = false;
-
-// Get the selected filename and print it to the console
-static void file_ok_sel(GtkWidget * /* w */, GtkFileSelection *fs)
-{
-	// g_print ("%s\n", gtk_file_selection_get_filename (GTK_FILE_SELECTION (fs)));
-	strcpy(gtk_file_selector_filename_ptr, gtk_file_selection_get_filename(GTK_FILE_SELECTION(fs)));
-
-	got_file = true;
-
-	gtk_widget_destroy(filew);
-
-	if (was_full_screen)
-	{
-		ToggleFullscreen();
-		EG_TickBox_Tick(gui.fullscreen_widget_ptr);
-	}
-}
-
-bool Save_GTK_File_Selector(char *filename_ptr)
-{
-	if (filename_ptr == NULL)
-	{
-		qERROR("filename_ptr is NULL! Cannot open GTK File selector!");
-		return false;
-	}
-
-	if (mainWin->IsFullScreen())
-	{
-		ToggleFullscreen();
-		EG_TickBox_Untick(gui.fullscreen_widget_ptr);
-		was_full_screen = true;
-	}
-
-	got_file = false;
-
-	gtk_init(&__argc, &__argv);
-
-	gtk_file_selector_filename_ptr = filename_ptr;
-
-	filew = gtk_file_selection_new ("File selection");
-
-	g_signal_connect(G_OBJECT(filew), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-	g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(filew)->ok_button), "clicked", G_CALLBACK(file_ok_sel), (gpointer)filew);
-	g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(filew)->cancel_button),
-	                         "clicked",
-	                         G_CALLBACK(gtk_widget_destroy),
-	                         G_OBJECT(filew));
-
-	if (strlen(filename_ptr) > 0)
-		gtk_file_selection_set_filename(GTK_FILE_SELECTION(filew), filename_ptr);
-	else
-		gtk_file_selection_set_filename(GTK_FILE_SELECTION(filew), DATA_DIR"/media/discs/");
-
-	gtk_widget_show(filew);
-	gtk_main();
-
-	was_full_screen = false;
-	return got_file;
-}
-
-bool Open_GTK_File_Selector(char *filename_ptr)
-{
-	if (filename_ptr == NULL)
-	{
-		qERROR("filename_ptr is NULL! Cannot open GTK File selector!");
-		return false;
-	}
-
-	if (mainWin->IsFullScreen())
-	{
-		ToggleFullscreen();
-		EG_TickBox_Untick(gui.fullscreen_widget_ptr);
-		was_full_screen = true;
-	}
-
-	got_file = false;
-
-	gtk_init(&__argc, &__argv);
-
-	gtk_file_selector_filename_ptr = filename_ptr;
-
-	filew = gtk_file_selection_new("File selection");
-
-	g_signal_connect(G_OBJECT(filew), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-	g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(filew)->ok_button), "clicked", G_CALLBACK(file_ok_sel),(gpointer) filew);
-	g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(filew)->cancel_button),
-	                         "clicked",
-	                         G_CALLBACK(gtk_widget_destroy),
-	                         G_OBJECT(filew));
-
-	if (strlen(filename_ptr) > 0)
-		gtk_file_selection_set_filename(GTK_FILE_SELECTION(filew), filename_ptr);
-	else
-		gtk_file_selection_set_filename(GTK_FILE_SELECTION(filew), DATA_DIR"/media/discs/");
-
-	gtk_widget_show (filew);
-	gtk_main ();
-
-	was_full_screen = false;
-
-	return got_file;
 }
 
 static void RunDisc(EG_Widget * /* widget_ptr */, void *user_ptr)

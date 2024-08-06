@@ -54,6 +54,7 @@ private:
 
 	#else
 
+	const char *m_pszTitle;
 	char *m_pszFileName;
 
 	#endif

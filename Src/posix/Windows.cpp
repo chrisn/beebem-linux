@@ -24,12 +24,13 @@ Boston, MA  02110-1301, USA.
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
+#include "gui/gui.h"
+
 #include "log.h"
 #include "Windows.h"
 #include "BeebEmPages.h"
 #include "FileUtils.h"
 
-#include "gui/gui.h"
 #include "Sdl.h"
 
 // Fake windows stuff:
