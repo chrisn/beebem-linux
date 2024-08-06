@@ -308,16 +308,16 @@ void EG_Draw_Box(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color)
 void EG_Draw_TabBorder(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color, int type)
 {
 	SDL_Rect drawing_area = EG_Draw_CalcDrawingArea(surface, area);
-        SDL_Rect line = {0,0,0,0};
-        Uint32 bright_col = 0, dull_col = 0;
+	SDL_Rect line = {0,0,0,0};
+	Uint32 bright_col = 0, dull_col = 0;
 
-        if (surface == NULL)
-                return;
+	if (surface == NULL)
+		return;
 
-        drawing_area.x = (int) (drawing_area.x * EG_Draw_GetScale() );
-        drawing_area.y = (int) (drawing_area.y * EG_Draw_GetScale() );
-        drawing_area.w = (int) (drawing_area.w * EG_Draw_GetScale() );
-        drawing_area.h = (int) (drawing_area.h * EG_Draw_GetScale() );
+	drawing_area.x = (int) (drawing_area.x * EG_Draw_GetScale() );
+	drawing_area.y = (int) (drawing_area.y * EG_Draw_GetScale() );
+	drawing_area.w = (int) (drawing_area.w * EG_Draw_GetScale() );
+	drawing_area.h = (int) (drawing_area.h * EG_Draw_GetScale() );
 
 	if (drawing_area.w <2) return;
 	if (drawing_area.h <2) return;
@@ -396,122 +396,126 @@ void EG_Draw_TabBorder(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color, i
 	//	line.h--;
 
 	// Update: (if I was smart, I'd only draw the actual lines..)
-	EG_Draw_UpdateSurfaceAbsolute(surface, drawing_area.x, drawing_area.y
-	, drawing_area.w, drawing_area.h+2);
+	EG_Draw_UpdateSurfaceAbsolute(surface,
+	                              drawing_area.x,
+	                              drawing_area.y,
+	                              drawing_area.w,
+	                              drawing_area.h + 2);
 }
 
 void EG_Draw_Border(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color, int type)
 {
 	SDL_Rect drawing_area = EG_Draw_CalcDrawingArea(surface, area);
-        SDL_Rect line = {0,0,0,0};
-        Uint32 bright_col = 0, dull_col = 0;
+	SDL_Rect line = {0,0,0,0};
+	Uint32 bright_col = 0, dull_col = 0;
 
-        if (surface == NULL)
-                return;
+	if (surface == NULL)
+		return;
 
-        drawing_area.x = (int) ( drawing_area.x * EG_Draw_GetScale() );
-        drawing_area.y = (int) ( drawing_area.y * EG_Draw_GetScale() );
-        drawing_area.w = (int) ( drawing_area.w * EG_Draw_GetScale() );
-        drawing_area.h = (int) ( drawing_area.h * EG_Draw_GetScale() );
+	drawing_area.x = (int)(drawing_area.x * EG_Draw_GetScale());
+	drawing_area.y = (int)(drawing_area.y * EG_Draw_GetScale());
+	drawing_area.w = (int)(drawing_area.w * EG_Draw_GetScale());
+	drawing_area.h = (int)(drawing_area.h * EG_Draw_GetScale());
 
-	if (drawing_area.w <2) return;
-	if (drawing_area.h <2) return;
+	if (drawing_area.w < 2) return;
+	if (drawing_area.h < 2) return;
 
-	switch (type){
-
+	switch (type)
+	{
 		case EG_Draw_Border_Normal:
-			bright_col = SDL_MapRGB(surface->format
-			 , (Uint8) color->r
-			 , (Uint8) color->g
-			 , (Uint8) color->b );
+			bright_col = SDL_MapRGB(surface->format,
+			                        (Uint8)color->r,
+			                        (Uint8)color->g,
+			                        (Uint8)color->b);
 
 			dull_col = bright_col;
-		break;
+			break;
 
 		case EG_Draw_Border_BoxHigh:
-			bright_col = SDL_MapRGB(surface->format
-			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
-			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
-			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
+			bright_col = SDL_MapRGB(surface->format,
+			                        (int)(1.3333 * color->r > 255.0 ? 255.0 : 1.3333 * color->r),
+			                        (int)(1.3333 * color->g > 255.0 ? 255.0 : 1.3333 * color->g),
+			                        (int)(1.3333 * color->b > 255.0 ? 255.0 : 1.3333 * color->b));
 
-			dull_col = SDL_MapRGB(surface->format
-			 , (int) (color->r * 0.6666)
-			 , (int) (color->g * 0.6666)
-			 , (int) (color->b * 0.6666) );
-		break;
+			dull_col = SDL_MapRGB(surface->format,
+			                      (int)(color->r * 0.6666),
+			                      (int)(color->g * 0.6666),
+			                      (int)(color->b * 0.6666));
+			break;
 
 		case EG_Draw_Border_BoxLow:
-			dull_col = SDL_MapRGB(surface->format
-			 , (int) (1.3333*color->r >255.0 ? 255.0 : 1.3333*color->r)
-			 , (int) (1.3333*color->g >255.0 ? 255.0 : 1.3333*color->g)
-			 , (int) (1.3333*color->b >255.0 ? 255.0 : 1.3333*color->b) );
+			dull_col = SDL_MapRGB(surface->format,
+			                      (int)(1.3333 * color->r > 255.0 ? 255.0 : 1.3333 * color->r),
+			                      (int)(1.3333 * color->g > 255.0 ? 255.0 : 1.3333 * color->g),
+			                      (int)(1.3333 * color->b > 255.0 ? 255.0 : 1.3333 * color->b));
 
-			bright_col = SDL_MapRGB(surface->format
-			 , (int) (color->r * 0.6666)
-			 , (int) (color->g * 0.6666)
-			 , (int) (color->b * 0.6666) );
-		break;
+			bright_col = SDL_MapRGB(surface->format,
+			                        (int)(color->r * 0.6666),
+			                        (int)(color->g * 0.6666),
+			                        (int)(color->b * 0.6666));
+			break;
 
 		case EG_Draw_Border_Focused:
-                        dull_col = SDL_MapRGB(surface->format
-                         , (int) (color->r * 0.7)
-                         , (int) (color->g * 0.7)
-                         , (int) (color->b * 0.7) );
+			dull_col = SDL_MapRGB(surface->format,
+			                      (int)(color->r * 0.7),
+			                      (int)(color->g * 0.7),
+			                      (int)(color->b * 0.7));
 
-                        bright_col = dull_col;
-		break;
-
+			bright_col = dull_col;
+			break;
 	}
 
-        // Top line:
-        line.x = drawing_area.x  +1  ; line.y = drawing_area.y;
-	line.w = drawing_area.w  -2  ; line.h = 1;
-        SDL_FillRect(surface, &line, bright_col);
+	// Top line:
+	line.x = drawing_area.x + 1; line.y = drawing_area.y;
+	line.w = drawing_area.w - 2; line.h = 1;
+	SDL_FillRect(surface, &line, bright_col);
 
-        // Bottom line:
-        line.x = drawing_area.x  +1  ; line.y = drawing_area.y + drawing_area.h-1;
-	line.w = drawing_area.w  -2  ;
+	// Bottom line:
+	line.x = drawing_area.x + 1; line.y = drawing_area.y + drawing_area.h - 1;
+	line.w = drawing_area.w - 2;
 	line.h = 1;
-        SDL_FillRect(surface, &line, dull_col);
+	SDL_FillRect(surface, &line, dull_col);
 
-        // Left line:
-        line.x=drawing_area.x; line.y=drawing_area.y  +1  ; line.h=drawing_area.h  -2  ;
+	// Left line:
+	line.x = drawing_area.x; line.y = drawing_area.y + 1; line.h = drawing_area.h - 2;
 	line.w = 1;
-        SDL_FillRect(surface, &line, bright_col);
+	SDL_FillRect(surface, &line, bright_col);
 
-        // Right line:
-        line.x=drawing_area.x+drawing_area.w-1; line.y=drawing_area.y  +1  ;
+	// Right line:
+	line.x=drawing_area.x+drawing_area.w-1; line.y=drawing_area.y  +1  ;
 	line.w=1; line.h=drawing_area.h  -2  ;
-        SDL_FillRect(surface, &line, dull_col);
+	SDL_FillRect(surface, &line, dull_col);
 
 	// Update: (if I was smart, I'd only draw the actual lines..)
-        EG_Draw_UpdateSurfaceAbsolute(surface, drawing_area.x, drawing_area.y
-         , drawing_area.w, drawing_area.h);
+	EG_Draw_UpdateSurfaceAbsolute(surface,
+	                              drawing_area.x,
+	                              drawing_area.y,
+	                              drawing_area.w,
+	                              drawing_area.h);
 }
 
 
-void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
- , int type)
+void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color, int type)
 {
 	SDL_Rect drawing_area = EG_Draw_CalcDrawingArea(surface, area);
-        SDL_Rect line = {0,0,0,0};
-        Uint32 normal_col = 0, bright_col = 0, dull_col = 0;
+	SDL_Rect line = {0,0,0,0};
+	Uint32 normal_col = 0, bright_col = 0, dull_col = 0;
 
-        if (surface == NULL)
-                return;
+	if (surface == NULL)
+		return;
 
-        drawing_area.x = (int) ( drawing_area.x * EG_Draw_GetScale() );
-        drawing_area.y = (int) ( drawing_area.y * EG_Draw_GetScale() );
-        drawing_area.w = (int) ( drawing_area.w * EG_Draw_GetScale() );
-        drawing_area.h = (int) ( drawing_area.h * EG_Draw_GetScale() );
+	drawing_area.x = (int) ( drawing_area.x * EG_Draw_GetScale() );
+	drawing_area.y = (int) ( drawing_area.y * EG_Draw_GetScale() );
+	drawing_area.w = (int) ( drawing_area.w * EG_Draw_GetScale() );
+	drawing_area.h = (int) ( drawing_area.h * EG_Draw_GetScale() );
 
 	if (drawing_area.w <2) return;
 	if (drawing_area.h <2) return;
 
 	normal_col = SDL_MapRGB(surface->format, color->r, color->g, color->b);
 
-	switch (type){
-
+	switch (type)
+	{
 		case EG_Draw_Border_Normal:
 			bright_col = SDL_MapRGB(surface->format
 			 , (Uint8) color->r
@@ -556,8 +560,7 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 
 	}
 
-	int corner;
-	corner = 4 * EG_Draw_GetScale();
+	int corner = 4 * EG_Draw_GetScale();
 
 	Uint32 fill_col;
 
@@ -583,29 +586,26 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 	line.x++; line.w-=2; line.y++;
 	SDL_FillRect(surface, &line, fill_col);
 
-
-
-        // Top line:
-        line.x = drawing_area.x  +1  ; line.y = drawing_area.y;
+	// Top line:
+	line.x = drawing_area.x  +1  ; line.y = drawing_area.y;
 	line.w = drawing_area.w  -2  ; line.h = 1;
-        SDL_FillRect(surface, &line, bright_col);
+	SDL_FillRect(surface, &line, bright_col);
 
-        // Bottom line:
-        line.x = drawing_area.x  +1+corner  ; line.y = drawing_area.y + drawing_area.h-1;
+	// Bottom line:
+	line.x = drawing_area.x  +1+corner  ; line.y = drawing_area.y + drawing_area.h-1;
 	line.w = drawing_area.w  -2-(corner*2)  ;
 	line.h = 1;
-        SDL_FillRect(surface, &line, dull_col);
+	SDL_FillRect(surface, &line, dull_col);
 
-        // Left line:
-        line.x=drawing_area.x; line.y=drawing_area.y  +1  ; line.h=drawing_area.h  -2-corner  ;
+	// Left line:
+	line.x=drawing_area.x; line.y=drawing_area.y  +1  ; line.h=drawing_area.h  -2-corner  ;
 	line.w = 1;
-        SDL_FillRect(surface, &line, bright_col);
+	SDL_FillRect(surface, &line, bright_col);
 
-        // Right line:
-        line.x=drawing_area.x+drawing_area.w-1; line.y=drawing_area.y  +1  ;
+	// Right line:
+	line.x=drawing_area.x+drawing_area.w-1; line.y=drawing_area.y  +1  ;
 	line.w=1; line.h=drawing_area.h  -2-corner;
-        SDL_FillRect(surface, &line, dull_col);
-
+	SDL_FillRect(surface, &line, dull_col);
 
 	Uint16 x, y;
 	x = drawing_area.x;
@@ -621,124 +621,104 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color
 
 	x = drawing_area.x + drawing_area.w-1;
 
-        PutPixel(surface,x,   y-4*s, dull_col);
-        PutPixel(surface,x-1*s, y-3*s, dull_col);
-        PutPixel(surface,x-2*s, y-2*s, dull_col);
-        PutPixel(surface,x-3*s, y-1*s, dull_col);
-        PutPixel(surface,x-4*s, y, dull_col);
+	PutPixel(surface,x,   y-4*s, dull_col);
+	PutPixel(surface,x-1*s, y-3*s, dull_col);
+	PutPixel(surface,x-2*s, y-2*s, dull_col);
+	PutPixel(surface,x-3*s, y-1*s, dull_col);
+	PutPixel(surface,x-4*s, y, dull_col);
 
 
-        EG_Draw_UpdateSurfaceAbsolute(surface, drawing_area.x, drawing_area.y
-         , drawing_area.w, drawing_area.h);
+	EG_Draw_UpdateSurfaceAbsolute(surface,
+	                              drawing_area.x,
+	                              drawing_area.y,
+	                              drawing_area.w,
+	                              drawing_area.h);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Uint32 EG_Draw_CalcTimePassed(Uint32 starttime, Uint32 endtime)
 {
-        if (starttime > endtime)
-                return(0xffffffff - starttime + endtime);
-        else
-                return(endtime - starttime);
+	if (starttime > endtime)
+		return(0xffffffff - starttime + endtime);
+	else
+		return(endtime - starttime);
 }
-
-
-
 
 SDL_Rect CalcRectCentered(int width, int height)
 {
-        SDL_Rect tmp;
+	SDL_Rect tmp;
 
-        tmp.x = (SCREEN_WIDTH-width)/2;
-        tmp.y = (SCREEN_HEIGHT-height)/2;
+	tmp.x = (SCREEN_WIDTH-width)/2;
+	tmp.y = (SCREEN_HEIGHT-height)/2;
 
-        tmp.w = width;
-        tmp.h = height;
+	tmp.w = width;
+	tmp.h = height;
 
-        return(tmp);
+	return tmp;
 }
 
 SDL_Rect CalcRect(int x, int y, int w, int h)
 {
-        SDL_Rect tmp;
-        tmp.x = x; tmp.y = y; tmp.w = w; tmp.h = h;
-        return(tmp);
+	SDL_Rect tmp;
+	tmp.x = x; tmp.y = y; tmp.w = w; tmp.h = h;
+	return(tmp);
 }
 
 SDL_Color CalcColor(int r, int g, int b)
 {
-        SDL_Color tmp;
-        tmp.r = r; tmp.g = g; tmp.b = b;
-        tmp.unused = 0;
-        return(tmp);
+	SDL_Color tmp;
+	tmp.r = r; tmp.g = g; tmp.b = b;
+	tmp.unused = 0;
+	return(tmp);
 }
-
 
 void PutPixel(SDL_Surface *surface, Uint16 x, Uint16 y, Uint32 color)
 {
-     //   Uint32 color = SDL_MapRGB(surface->format, col.r, col.g, col.b);
+	// Uint32 color = SDL_MapRGB(surface->format, col.r, col.g, col.b);
 
-//        x *= EG_Draw_GetScale();
-//        y *= EG_Draw_GetScale();
+	// x *= EG_Draw_GetScale();
+	// y *= EG_Draw_GetScale();
 
-        if (x > surface->w-1) return;
-        if (y > surface->h-1) return;
+	if (x > surface->w-1) return;
+	if (y > surface->h-1) return;
 
-        switch (surface->format->BytesPerPixel){
+	switch (surface->format->BytesPerPixel)
+	{
+		case 1: { // 8-bpp
+			Uint8 *bufp = (Uint8 *)surface->pixels + y*surface->pitch + x;
 
-        case 1: /* 8-bpp */
-        {
-        Uint8 *bufp;
+			*bufp = color;
+			break;
+		}
 
-        bufp = (Uint8 *)surface->pixels + y*surface->pitch + x;
-        *bufp = color;
-        }
-        break;
+		case 2: { // Probably 15-bpp or 16-bpp
+			Uint16 *bufp = (Uint16 *)surface->pixels + y*surface->pitch/2 + x;
 
-    case 2: // Probably 15-bpp or 16-bpp
-      {
-        Uint16 *bufp;
+			*bufp = color;
+			break;
+		}
 
-        bufp = (Uint16 *)surface->pixels + y*surface->pitch/2 + x;
-        *bufp = color;
-      }
-      break;
-    case 3: // Slow 24-bpp mode, usually not used
-      {
-        Uint8 *bufp;
+		case 3: { // Slow 24-bpp mode, usually not used
+			Uint8 *bufp = (Uint8 *)surface->pixels + y*surface->pitch + x * 3;
 
-        bufp = (Uint8 *)surface->pixels + y*surface->pitch + x * 3;
-        if(SDL_BYTEORDER == SDL_LIL_ENDIAN)
-        {
-          bufp[0] = color;
-          bufp[1] = color >> 8;
-          bufp[2] = color >> 16;
-        } else {
-          bufp[2] = color;
-          bufp[1] = color >> 8;
-          bufp[0] = color >> 16;
-        }
-      }
-      break;
-    case 4: // Probably 32-bpp
-      {
-        Uint32 *bufp;
+			if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+			{
+				bufp[0] = color;
+				bufp[1] = color >> 8;
+				bufp[2] = color >> 16;
+			}
+			else
+			{
+				bufp[2] = color;
+				bufp[1] = color >> 8;
+				bufp[0] = color >> 16;
+			}
+			break;
+		}
 
-        bufp = (Uint32 *)surface->pixels + y*surface->pitch/4 + x;
-        *bufp = color;
-      }
-      break;
-  }
+		case 4: { // Probably 32-bpp
+			Uint32 *bufp = (Uint32 *)surface->pixels + y*surface->pitch/4 + x;
+			*bufp = color;
+			break;
+		}
+	}
 }
-
