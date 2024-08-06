@@ -38,7 +38,7 @@ void Update_FDC_Buttons();
 void Update_Resolution_Buttons();
 
 void SetNameForDisc(int drive, char *name_ptr);
-void SetFullScreenTickbox(int state);
+void SetFullScreenTickbox(bool State);
 
 void ClearWindowsBackgroundCacheAndResetSurface();
 
