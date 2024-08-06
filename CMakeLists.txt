@@ -145,7 +145,6 @@ set(SRCS
     Src/AviWriter.cpp
     Src/Bcd.cpp
     Src/BeebEmPages.cpp
-    Src/BeebEmPagesDisks.cpp
     Src/BeebMem.cpp
     Src/BeebWin.cpp
     Src/BeebWinDx.cpp
