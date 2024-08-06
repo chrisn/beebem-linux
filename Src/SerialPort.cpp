@@ -145,6 +145,8 @@ Fail:
 
 	#else
 
+	UNREFERENCED_PARAMETER(PortName);
+
 	return false;
 
 	#endif
@@ -391,6 +393,8 @@ bool SerialPort::SetRTS(bool RTS)
 
 	#else
 
+	UNREFERENCED_PARAMETER(RTS);
+
 	return false;
 
 	#endif
@@ -429,6 +433,8 @@ bool SerialPort::WriteChar(unsigned char Data)
 	return Success;
 
 	#else
+
+	UNREFERENCED_PARAMETER(Data);
 
 	return true;
 

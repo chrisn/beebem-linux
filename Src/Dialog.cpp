@@ -95,6 +95,11 @@ INT_PTR CALLBACK Dialog::sDlgProc(HWND   hwnd,
 
 	#else
 
+	UNREFERENCED_PARAMETER(hwnd);
+	UNREFERENCED_PARAMETER(nMessage);
+	UNREFERENCED_PARAMETER(wParam);
+	UNREFERENCED_PARAMETER(lParam);
+
 	return FALSE;
 
 	#endif
@@ -117,6 +122,8 @@ std::string Dialog::GetDlgItemText(int nID)
 
 	#else
 
+	UNREFERENCED_PARAMETER(nID);
+
 	return "";
 
 	#endif
@@ -129,6 +136,11 @@ void Dialog::SetDlgItemText(int nID, const std::string& str)
 	#ifdef WIN32
 
 	SetWindowText(GetDlgItem(m_hwnd, nID), str.c_str());
+
+	#else
+
+	UNREFERENCED_PARAMETER(nID);
+	UNREFERENCED_PARAMETER(str);
 
 	#endif
 }
@@ -143,6 +155,8 @@ bool Dialog::IsDlgItemChecked(int nID)
 
 	#else
 
+	UNREFERENCED_PARAMETER(nID);
+
 	return false;
 
 	#endif
@@ -156,6 +170,11 @@ void Dialog::SetDlgItemChecked(int nID, bool bChecked)
 
 	SendDlgItemMessage(m_hwnd, nID, BM_SETCHECK, bChecked ? BST_CHECKED : BST_UNCHECKED, 0);
 
+	#else
+
+	UNREFERENCED_PARAMETER(nID);
+	UNREFERENCED_PARAMETER(bChecked);
+
 	#endif
 }
 
@@ -167,6 +186,10 @@ void Dialog::SetDlgItemFocus(int nID)
 
 	SetFocus(GetDlgItem(m_hwnd, nID));
 
+	#else
+
+	UNREFERENCED_PARAMETER(nID);
+
 	#endif
 }
 
@@ -177,6 +200,11 @@ void Dialog::EnableDlgItem(int nID, bool bEnable)
 	#ifdef WIN32
 
 	EnableWindow(GetDlgItem(m_hwnd, nID), bEnable);
+
+	#else
+
+	UNREFERENCED_PARAMETER(nID);
+	UNREFERENCED_PARAMETER(bEnable);
 
 	#endif
 }

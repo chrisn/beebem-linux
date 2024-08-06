@@ -2567,7 +2567,8 @@ Disc8271Result LoadFSDDiscImage(const char *FileName, int DriveNum)
 
 		for (int Track = 0; Track < DiscStatus[DriveNum].TotalTracks; Track++)
 		{
-			/* unsigned char TrackNumber = */(unsigned char)Input.get(); // Read current track details
+			// unsigned char TrackNumber = (unsigned char)Input.get();
+			Input.get(); // Read current track details
 			unsigned char SectorsPerTrack = (unsigned char)Input.get(); // Read number of sectors on track
 			DiscStatus[DriveNum].Tracks[Head][Track].LogicalSectors = SectorsPerTrack;
 

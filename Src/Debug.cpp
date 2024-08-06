@@ -42,7 +42,7 @@ Boston, MA  02110-1301, USA.
 #include "6502core.h"
 #include "BeebMem.h"
 #include "DebugTrace.h"
-// #include "FileDialog.h"
+#include "FileDialog.h"
 #include "Main.h"
 #include "Resource.h"
 #include "Serial.h"
@@ -79,6 +79,8 @@ constexpr int ADRMASK = IMM | ABS | ACC | IMP | INX | INY | ZPX | ABX | ABY | RE
 constexpr int MAX_BUFFER = 65536;
 
 bool DebugEnabled = false; // Debug dialog visible
+
+#ifdef WIN32
 static DebugType DebugSource = DebugType::None; // Debugging active?
 static int LinesDisplayed = 0;  // Lines in info window
 static int InstCount = 0;       // Instructions to execute before breaking
@@ -100,12 +102,16 @@ static bool DebugParasite = false;
 static bool WatchDecimal = false;
 static bool WatchRefresh = false;
 static bool WatchBigEndian = false;
+#endif
+
+#ifdef WIN32
 HWND hwndDebug;
 static HWND hwndInvisibleOwner;
 static HWND hwndInfo;
 static HWND hwndBP;
 static HWND hwndW;
 static HACCEL haccelDebug;
+#endif
 
 static std::vector<Label> Labels;
 static std::vector<Breakpoint> Breakpoints;

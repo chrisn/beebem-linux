@@ -99,7 +99,7 @@ if(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7"
     set(CMAKE_CXX_FLAGS "-std=c++11")
 endif()
 
-set(COMMON_FLAGS "-Wall -Wextra -pedantic") # -Wconversion
+set(COMMON_FLAGS "-Wall -Wextra -Wno-deprecated-declarations -pedantic") # -Wconversion
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
 set(CMAKE_C_FLAGS ${COMMON_FLAGS})
 

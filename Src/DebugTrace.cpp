@@ -47,7 +47,7 @@ void DebugTrace(const char *format, ...)
 
 		#else
 
-		printf(buffer);
+		puts(buffer);
 
 		#endif
 

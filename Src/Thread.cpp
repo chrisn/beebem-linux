@@ -144,12 +144,13 @@ unsigned int __stdcall Thread::s_ThreadFunc(void *parameter)
 
 	return pThread->ThreadFunc();
 
-    #else
+	#else
 
-    return 0;
+	UNREFERENCED_PARAMETER(parameter);
 
-    #endif
+	return 0;
 
+	#endif
 }
 
 /****************************************************************************/

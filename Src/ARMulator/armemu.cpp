@@ -792,10 +792,14 @@ ARMul_Emulate26 (ARMul_State * state)
 
                 if (cp14r0 & ARMul_CP14_R0_CCD)
                 {
-                    if (state->CP14R0_CCD == -1)
+                    if (state->CP14R0_CCD == (ARMword)-1)
+                    {
                         state->CP14R0_CCD = (ARMword)newcycles;
+                    }
                     else
+                    {
                         state->CP14R0_CCD += newcycles;
+                    }
 
                     if (state->CP14R0_CCD >= 64)
                     {
@@ -961,9 +965,13 @@ mainswitch:
                         state->Reg[MULDESTReg] = 0;
                     }
                     else if (MULDESTReg != 15)
+                    {
                         state->Reg[MULDESTReg] = state->Reg[MULLHSReg] * rhs;
+                    }
                     else
+                    {
                         UNDEF_MULPCDest;
+                    }
 
                     for (dest = 0, temp = 0; dest < 32; dest ++)
                         if (rhs & (1L << dest))
@@ -1007,7 +1015,9 @@ mainswitch:
                         state->Reg[MULDESTReg] = dest;
                     }
                     else
+                    {
                         UNDEF_MULPCDest;
+                    }
 
                     for (dest = 0, temp = 0; dest < 32; dest ++)
                         if (rhs & (1L << dest))
@@ -1035,7 +1045,8 @@ mainswitch:
                 }
 #endif
                 if (BITS (4, 7) == 9)
-                {		/* MLA */
+                {
+                    /* MLA */
                     rhs = state->Reg[MULRHSReg];
                     if (MULLHSReg == MULDESTReg)
                     {
@@ -1043,10 +1054,14 @@ mainswitch:
                         state->Reg[MULDESTReg] = state->Reg[MULACCReg];
                     }
                     else if (MULDESTReg != 15)
+                    {
                         state->Reg[MULDESTReg] =
                         state->Reg[MULLHSReg] * rhs + state->Reg[MULACCReg];
+                    }
                     else
+                    {
                         UNDEF_MULPCDest;
+                    }
 
                     for (dest = 0, temp = 0; dest < 32; dest ++)
                         if (rhs & (1L << dest))
@@ -1090,7 +1105,9 @@ mainswitch:
                         state->Reg[MULDESTReg] = dest;
                     }
                     else
+                    {
                         UNDEF_MULPCDest;
+                    }
 
                     for (dest = 0, temp = 0; dest < 32; dest ++)
                         if (rhs & (1L << dest))
@@ -1665,8 +1682,6 @@ mainswitch:
                 {
                     if (BITS (4, 7) == 0x7)
                     {
-                        extern int SWI_vector_installed;
-
                         /* Hardware is allowed to optionally override this
                         instruction and treat it as a breakpoint.  Since
                         this is a simulator not hardware, we take the position
@@ -1678,8 +1693,12 @@ mainswitch:
                         Thumb mode it does).  So intercept the instruction here
                         and generate a breakpoint SWI instead.  */
 #ifndef BEEBEM
-                        if (! SWI_vector_installed)
+                        extern int SWI_vector_installed;
+
+                        if (!SWI_vector_installed)
+                        {
                             ARMul_OSHandleSWI (state, SWI_Breakpoint);
+                        }
                         else
                         {
                             /* BKPT - normally this will cause an abort, but on the
@@ -1706,8 +1725,9 @@ mainswitch:
                     ARMul_FixCPSR (state, instr, temp);
                 }
                 else
+                {
                     UNDEF_Test;
-
+                }
                 break;
 
             case 0x13:		/* TEQP reg */
@@ -1836,8 +1856,9 @@ mainswitch:
                     DEST = GETSPSR (state->Bank);
                 }
                 else
+                {
                     UNDEF_Test;
-
+                }
                 break;
 
             case 0x15:		/* CMPP reg.  */
@@ -2351,15 +2372,19 @@ mainswitch:
                 }
                 break;
 
-            case 0x32:		/* TEQ immed and MSR immed to CPSR */
+            case 0x32: /* TEQ immed and MSR immed to CPSR */
                 if (DESTReg == 15)
+                {
                     /* MSR immed to CPSR.  */
                     ARMul_FixCPSR (state, instr, DPImmRHS);
+                }
                 else
+                {
                     UNDEF_Test;
+                }
                 break;
 
-            case 0x33:		/* TEQP immed */
+            case 0x33: /* TEQP immed */
                 if (DESTReg == 15)
                 {
                     /* TEQP immed.  */
@@ -2419,9 +2444,13 @@ mainswitch:
 
             case 0x36:		/* CMN immed and MSR immed to SPSR */
                 if (DESTReg == 15)
+                {
                     ARMul_FixSPSR (state, instr, DPImmRHS);
+                }
                 else
+                {
                     UNDEF_Test;
+                }
                 break;
 
             case 0x37:		/* CMNP immed.  */
@@ -3542,9 +3571,9 @@ mainswitch:
                         ARMul_UndefInstr (state, instr);
                     break;
                 }
-                /* Drop through.  */
+                /* Fall through.  */
 
-            case 0xc0:		/* Store , No WriteBack , Post Dec.  */
+            case 0xc0: /* Store , No WriteBack , Post Dec.  */
                 ARMul_STC (state, instr, LHS);
                 break;
 
@@ -3587,7 +3616,7 @@ mainswitch:
                         ARMul_UndefInstr (state, instr);
                     break;
                 }
-                /* Drop through.  */
+                /* Fall through. */
 
             case 0xc1:		/* Load , No WriteBack , Post Dec.  */
                 ARMul_LDC (state, instr, LHS);
@@ -3774,7 +3803,7 @@ mainswitch:
                     default:
                         break;
                 }
-                /* Drop through.  */
+                /* Fall through.  */
 
             case 0xe0:
             case 0xe4:

@@ -45,7 +45,7 @@ int _vscprintf(const char *format, va_list pargs)
 	return retval;
 }
 
-void SetWindowText(HWND hwnd, const char *pszTitle)
+void SetWindowText(HWND /* hWnd */, const char *pszTitle)
 {
 	SetWindowTitle(pszTitle);
 }
@@ -60,84 +60,37 @@ DWORD GetTickCount()
 	return SDL_GetTicks();
 }
 
-BOOL ModifyMenu(HMENU hMnu, UINT uPosition, UINT uFlags, PTR uIDNewItem, LPCTSTR lpNewItem)
+BOOL ModifyMenu(HMENU /* hMenu */,
+                UINT uPosition,
+                UINT /* uFlags */,
+                PTR /* uIDNewItem */,
+                LPCTSTR lpNewItem)
 {
-	int v;
-
 	// Only supports changing the title.
 	//SetGUIOptionCaption(int windows_menu_id, const char *str)
 
-	v = SetGUIOptionCaption( (int) uPosition, (const char*) lpNewItem);
+	int v = SetGUIOptionCaption((int)uPosition, (const char*)lpNewItem);
 
-/*
-Return Value
-
-    If the function succeeds, the return value is nonzero.
-
-    If the function fails, the return value is zero. To get extended error information, call GetLastError.
-*/
-
-	if (v==EG_TRUE) return 1;
-	else return 0;
+	return v == EG_TRUE;
 }
 
-UINT GetMenuState(HMENU hMenu, UINT uId, UINT uFlags)
+UINT GetMenuState(HMENU /* hMenu */, UINT uId, UINT /* uFlags */)
 {
-	int v;
+	int v = GetGUIOption(uId);
 
-//	printf("GetMenuState\n");
-
-	v = GetGUIOption(uId);
-
-	if (v == EG_TRUE) v = MF_CHECKED;
-	if (v == EG_FALSE) v = MF_UNCHECKED;
-
-	return(v);
-
-/*
-Return Value
-
-    If the specified item does not exist, the return value is -1.
-
-    If the menu item opens a submenu, the low-order byte of the return value contains the menu flags associated with the item, and the high-order byte contains the number of items in the submenu opened by the item.
-
-    Otherwise, the return value is a mask (Bitwise OR) of the menu flags. Following are the menu flags associated with the menu item.
-
-    MF_CHECKED	A check mark is placed next to the item (for drop-down menus, submenus, and shortcut menus only).
-    MF_DISABLED	The item is disabled.
-    MF_GRAYED	The item is disabled and grayed.
-    MF_HILITE	The item is highlighted.
-    MF_MENUBARBREAK	This is the same as the MF_MENUBREAK flag, except for drop-down menus, submenus, and shortcut menus, where the new column is separated from the old column by a vertical line.
-    MF_MENUBREAK	The item is placed on a new line (for menu bars) or in a new column (for drop-down menus, submenus, and shortcut menus) without separating columns.
-    MF_OWNERDRAW	The item is owner-drawn.
-    MF_POPUP	Menu item is a submenu.
-    MF_SEPARATOR	There is a horizontal dividing line (for drop-down menus, submenus, and shortcut menus only).
-
-
-
-Remarks
-
-    Note  The GetMenuState function has been superseded by the GetMenuItemInfo. You can still use GetMenuState, however, if you do not need any of the extended features of GetMenuItemInfo.
-
-    In addition, it is possible to test an item for a flag value of MF_ENABLED, MF_STRING, MF_UNCHECKED, or MF_UNHILITE. However, since these values equate to zero you must use an expression to test for them.
-    Flag 	Expression to test for the flag
-    MF_ENABLED	! (Flag&(MF_DISABLED | MF_GRAYED))
-    MF_STRING	! (Flag&(MF_BITMAP | MF_OWNERDRAW))
-    MF_UNCHECKED	! (Flag&MF_CHECKED)
-    MF_UNHILITE	! (Flag&HILITE)
-
-
-*/
+	return v ? MF_CHECKED : MF_UNCHECKED;
 }
 
 DWORD CheckMenuItem(HMENU /* hMenu */, UINT uIDCheckItem, UINT uCheck)
 {
-	//printf("Asked to set %d to %d\n", uIDCheckItem, uCheck);
-
 	if (uCheck == MF_CHECKED)
-		return( UpdateGUIOption(uIDCheckItem, 1) );
+	{
+		return UpdateGUIOption(uIDCheckItem, 1);
+	}
 	else
-		return( UpdateGUIOption(uIDCheckItem, 0) );
+	{
+		return UpdateGUIOption(uIDCheckItem, 0);
+	}
 }
 
 BOOL CheckMenuRadioItem(HMENU /* hMenu */, UINT FirstID, UINT LastID, UINT SelectedID, UINT /* Flags */)
@@ -146,17 +99,19 @@ BOOL CheckMenuRadioItem(HMENU /* hMenu */, UINT FirstID, UINT LastID, UINT Selec
 	{
 		UpdateGUIOption(MenuItemID, MenuItemID == SelectedID);
 	}
+
+	return TRUE;
 }
 
-BOOL MoveFileEx(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, DWORD dwFlags)
+BOOL MoveFileEx(LPCTSTR /* lpExistingFileName */, LPCTSTR /* lpNewFileName */, DWORD /* dwFlags */)
 {
 	printf("MoveFileEx\n");
-	return(FALSE);
+	return FALSE;
 }
 
-BOOL EnableMenuItem(HMENU hMenu,UINT uIDEnableItem,UINT uEnable)
+BOOL EnableMenuItem(HMENU /* hMenu */, UINT /* uIDEnableItem */, UINT /* uEnable */)
 {
-	return(TRUE);
+	return TRUE;
 }
 
 void GetLocalTime(SYSTEMTIME* pTime)
@@ -238,14 +193,14 @@ void LeaveCriticalSection(CRITICAL_SECTION* pCriticalSection)
 {
 }
 
-BOOL GetWindowRect(HWND hWnd, RECT* pRect)
+BOOL GetWindowRect(HWND /* hWnd */, RECT* pRect)
 {
 	ZeroMemory(pRect, sizeof(RECT));
 
 	return TRUE;
 }
 
-BOOL MessageBeep(UINT uType)
+BOOL MessageBeep(UINT /* uType */)
 {
 	return TRUE;
 }
