@@ -23,6 +23,10 @@ Boston, MA  02110-1301, USA.
 
 #include "FileDialog.h"
 
+#ifndef WIN32
+#include "BeebEmPages.h"
+#endif
+
 FileDialog::FileDialog(HWND hwndOwner, LPTSTR result, DWORD resultLength,
                        LPCTSTR initialFolder, LPCTSTR filter)
 {
@@ -38,6 +42,10 @@ FileDialog::FileDialog(HWND hwndOwner, LPTSTR result, DWORD resultLength,
 	m_ofn.nMaxFile = resultLength;
 	m_ofn.lpstrInitialDir = initialFolder;
 	m_ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+	#else
+
+	m_pszFileName = result;
 
 	#endif
 }
@@ -109,7 +117,14 @@ bool FileDialog::ShowDialog(bool open)
 
 	#else
 
-	return false;
+	if (open)
+	{
+		return Open_GTK_File_Selector(m_pszFileName);
+	}
+	else
+	{
+		return Save_GTK_File_Selector(m_pszFileName);
+	}
 
 	#endif
 }

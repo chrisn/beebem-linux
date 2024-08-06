@@ -168,6 +168,7 @@ bool BeebWin::ReadDisc(int Drive, bool bCheckForPrefs)
 		switch (Dialog.GetFilterIndex())
 		{
 			case 1:
+			default:
 				Type = GetFileTypeFromExtension(FileName);
 				break;
 
@@ -427,9 +428,9 @@ bool BeebWin::NewTapeImage(char *FileName, int Size)
 	m_Preferences.GetStringValue(CFG_TAPES_PATH, DefaultPath);
 	GetDataPath(m_UserDataPath, DefaultPath);
 
-	FileDialog fileDialog(m_hWnd, FileName, Size, DefaultPath, filter);
+	FileDialog Dialog(m_hWnd, FileName, Size, DefaultPath, filter);
 
-	bool Result = fileDialog.Save();
+	bool Result = Dialog.Save();
 
 	if (Result)
 	{
@@ -462,8 +463,9 @@ void BeebWin::SelectFDC()
 	strcpy(DefaultPath, m_AppPath);
 	strcat(DefaultPath, "Hardware");
 
-	FileDialog fileDialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, filter);
-	if (fileDialog.Open())
+	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, filter);
+
+	if (Dialog.Open())
 	{
 		// Make path relative to app path
 		if (_strnicmp(FileName, m_AppPath, strlen(m_AppPath)) == 0)
@@ -1536,6 +1538,7 @@ void BeebWin::GetDataPath(const char *folder, char *path)
 }
 
 /****************************************************************************/
+
 void BeebWin::LoadUserKeyMap()
 {
 	char FileName[MAX_PATH];
@@ -1543,8 +1546,9 @@ void BeebWin::LoadUserKeyMap()
 
 	const char* filter = "Key Map File (*.kmap)\0*.kmap\0";
 
-	FileDialog fileDialog(m_hWnd, FileName, sizeof(FileName), m_UserDataPath, filter);
-	if (fileDialog.Open())
+	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), m_UserDataPath, filter);
+
+	if (Dialog.Open())
 	{
 		if (ReadKeyMap(FileName, &UserKeyMap))
 			strcpy(m_UserKeyMapPath, FileName);
@@ -1552,6 +1556,7 @@ void BeebWin::LoadUserKeyMap()
 }
 
 /****************************************************************************/
+
 void BeebWin::SaveUserKeyMap()
 {
 	char FileName[MAX_PATH];
@@ -1559,9 +1564,9 @@ void BeebWin::SaveUserKeyMap()
 
 	const char* filter = "Key Map File (*.kmap)\0*.kmap\0";
 
-	FileDialog fileDialog(m_hWnd, FileName, sizeof(FileName), m_UserDataPath, filter);
+	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), m_UserDataPath, filter);
 
-	if (fileDialog.Save())
+	if (Dialog.Save())
 	{
 		if (!HasFileExt(FileName, ".kmap"))
 		{
@@ -1779,6 +1784,10 @@ void BeebWin::ExportDiscFiles(int menuId)
 		m_Preferences.SetStringValue(CFG_EXPORT_PATH, ExportPath.c_str());
 	}
 
+	#else
+
+	UNREFERENCED_PARAMETER(menuId);
+
 	#endif
 }
 
@@ -1958,9 +1967,9 @@ void BeebWin::SelectHardDriveFolder()
 	m_Preferences.GetStringValue(CFG_HARD_DRIVE_PATH, DefaultPath);
 	GetDataPath(m_UserDataPath, DefaultPath);
 
-	FileDialog fileDialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, filter);
+	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, filter);
 
-	if (fileDialog.Open())
+	if (Dialog.Open())
 	{
 		unsigned int PathLength = (unsigned int)(strrchr(FileName, '\\') - FileName);
 		strncpy(DefaultPath, FileName, PathLength);

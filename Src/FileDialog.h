@@ -49,7 +49,13 @@ public:
 
 private:
 	#ifdef WIN32
+
 	OPENFILENAME m_ofn;
+
+	#else
+
+	char *m_pszFileName;
+
 	#endif
 
 	bool ShowDialog(bool open);

@@ -31,8 +31,8 @@ int UpdateGUIOption(int windows_menu_id, int is_selected);
 int GetGUIOption(int windows_menu_id);
 int SetGUIOptionCaption(int windows_menu_id, const char *str);
 
-int Open_GTK_File_Selector(char *filename_ptr);
-int Save_GTK_File_Selector(char *filename_ptr);
+bool Open_GTK_File_Selector(char *filename_ptr);
+bool Save_GTK_File_Selector(char *filename_ptr);
 
 void Update_FDC_Buttons();
 void Update_Resolution_Buttons();

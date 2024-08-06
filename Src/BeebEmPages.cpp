@@ -319,7 +319,7 @@ static void ProcessGUIOption(EG_Widget * /* widget_ptr */, void *user_ptr)
 
 static char *gtk_file_selector_filename_ptr;
 static GtkWidget *filew;
-int got_file;
+static bool got_file;
 bool was_full_screen = false;
 
 // Get the selected filename and print it to the console
@@ -339,7 +339,7 @@ static void file_ok_sel(GtkWidget * /* w */, GtkFileSelection *fs)
 	}
 }
 
-int Save_GTK_File_Selector(char *filename_ptr)
+bool Save_GTK_File_Selector(char *filename_ptr)
 {
 	if (filename_ptr == NULL)
 	{
@@ -381,7 +381,7 @@ int Save_GTK_File_Selector(char *filename_ptr)
 	return got_file;
 }
 
-int Open_GTK_File_Selector(char *filename_ptr)
+bool Open_GTK_File_Selector(char *filename_ptr)
 {
 	if (filename_ptr == NULL)
 	{
