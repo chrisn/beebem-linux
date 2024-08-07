@@ -353,28 +353,31 @@ static EG_BOOL Callback_Stopped(EG_Widget *widget_ptr, EG_BOOL is_stopped)
 // the parent], so they will need to detatch their children from window resources themselves).
 static void Callback_Attach(EG_Widget *widget_ptr, EG_StringHash attach_to_type, void *attach_to_ptr, EG_BOOL attached)
 {
-        EG_TabPage *tabpage_ptr;
-        EG_Window *window_ptr;
-        int i;
+	(void)attach_to_type;
 
-        /* We only need to add the pages to the window when attaching, we do
-         * nothing when detatching.
-         */
-        if (attached != EG_TRUE)
-                return;
+	EG_TabPage *tabpage_ptr;
+	EG_Window *window_ptr;
+	int i;
 
-        CHECK_EG_WIDGET_IS_VALID_VOID(widget_ptr);
+	/* We only need to add the pages to the window when attaching, we do
+	 * nothing when detatching.
+	 */
+	if (attached != EG_TRUE)
+		return;
+
+	CHECK_EG_WIDGET_IS_VALID_VOID(widget_ptr);
 	EG_TABPAGE_GET_STRUCT_PTR_VOID(widget_ptr, tabpage_ptr);
 
-        /* Get parent window.
-         */
+	/* Get parent window.
+	 */
 	window_ptr = (EG_Window*) attach_to_ptr;
 
-        /* Add the page widgets to the parent window.
-         */
-        for(i=0; i<tabpage_ptr->count; i++){
-                EG_Window_AddWidget(window_ptr, tabpage_ptr->child[i].widget_ptr);
-        }
+	/* Add the page widgets to the parent window.
+	 */
+	for (i = 0; i< tabpage_ptr->count; i++)
+	{
+		EG_Window_AddWidget(window_ptr, tabpage_ptr->child[i].widget_ptr);
+	}
 }
 
 
@@ -573,6 +576,9 @@ EG_BOOL EG_TabPage_AddWidget(EG_Widget *page_widget_ptr, EG_Widget *child_widget
 
 void EG_TabPage_RemoveWidget(EG_Widget *page_widget_ptr, EG_Widget *child_widget_ptr)
 {
+	(void)page_widget_ptr;
+	(void)child_widget_ptr;
+
 	// [TODO] If this widget has focus, movefocus, if this widget still has focus, clear focus.
 
 	// [TODO] DONT FORGET TO CLEAR ALL ORIGIN RELATED STUFF.

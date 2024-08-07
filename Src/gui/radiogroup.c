@@ -105,29 +105,27 @@ static void Callback_Destroy(EG_Widget *widget_ptr)
  */
 static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 {
-        EG_RadioGroup *radiogroup_ptr;
-	SDL_Rect *tmp_area;
-	int i;
+	(void)area;
 
-	/* Loose compiler warning.
-	 */
-	tmp_area = &area;
+	EG_RadioGroup *radiogroup_ptr;
+	int i;
 
 	/* If asked to paint, paint the children.
 	 */
-        EG_RADIOGROUP_GET_STRUCT_PTR(widget_ptr, radiogroup_ptr, EG_FALSE);
+	EG_RADIOGROUP_GET_STRUCT_PTR(widget_ptr, radiogroup_ptr, EG_FALSE);
 
 	/* Repaint children. Repaint the whole area of the widget as the
 	 * Radio Group knows  nothing about the size or location of it's
 	 * children.
 	 */
-	for(i=0; i<radiogroup_ptr->count; i++)
-		(void) EG_Widget_RepaintLot(
-		 radiogroup_ptr->button_widget_ptr[i]);
+	for (i = 0; i < radiogroup_ptr->count; i++)
+	{
+		EG_Widget_RepaintLot(radiogroup_ptr->button_widget_ptr[i]);
+	}
 
 	/* Return success a painting.
 	 */
-	return(EG_TRUE);
+	return EG_TRUE;
 }
 
 /* If a Radio Groups visibility state chages, then reflect that change to
@@ -221,17 +219,16 @@ static EG_BOOL Callback_Stopped(EG_Widget *widget_ptr, EG_BOOL is_stopped)
 /* When Radio Group is attached to a window, make sure all children are also
  * attached.
  */
-static void Callback_Attach(EG_Widget *widget_ptr, EG_StringHash attach_to_type
- , void *attach_to_ptr, EG_BOOL attached)
+static void Callback_Attach(EG_Widget *widget_ptr,
+                            EG_StringHash attach_to_type,
+                            void *attach_to_ptr,
+                            EG_BOOL attached)
 {
+	(void)attach_to_type;
+
 	EG_RadioGroup *radiogroup_ptr;
 	EG_Window *window_ptr;
-	EG_StringHash tmp_attach_to_type;
 	int i;
-
-	/* Loose compiler warning.
-	 */
-	tmp_attach_to_type = attach_to_type;
 
 	/* We only need to add the buttons to the window when attaching, we do
 	 * nothing when detatching.
@@ -425,10 +422,13 @@ void EG_RadioGroup_RemoveButton(EG_Widget *group_widget_ptr
 	// [TODO] Tell window to repaint removed widgets area.
 }
 
-void EG_RadioGroup_DeleteButton(EG_Widget *group_widget_ptr
- , EG_Widget *button_widget_ptr)
+void EG_RadioGroup_DeleteButton(EG_Widget *group_widget_ptr,
+                                EG_Widget *button_widget_ptr)
 {
 	// [TODO] Same as above, but deletes widgets too.
+
+	(void)group_widget_ptr;
+	(void)button_widget_ptr;
 }
 
 EG_BOOL EG_RadioGroup_Select(EG_Widget *button_widget_ptr)

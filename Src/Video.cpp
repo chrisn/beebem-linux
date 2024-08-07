@@ -173,6 +173,9 @@ void VideoAddLEDs(void);
 //## Just for now.. Hack to fudge scanline width in graphic/teletext code:
 //## Dave Eggleston - will go when video support is rewritten.
 static int screen_width;
+
+#if 0
+
 static void set_screen_width(void)
 {
 //	screen_width = fullscreen;
@@ -188,6 +191,9 @@ static void set_screen_width(void)
 		screen_width=320;
 	}
 }
+
+#endif
+
 //<+
 
 /*-------------------------------------------------------------------------------------------------------------*/

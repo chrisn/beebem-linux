@@ -67,21 +67,26 @@ static const char* FormatText(const char *source_ptr, char *next_row_ptr)
 	 * is found, mark position, if a carriage return is found
 	 * break out of the loop and mark the position.
 	 */
-	for ( i=word_end=0; i<MSGBOX_MAX_COLS-1 && i<strlen(source_ptr); i++ ){
-		if ( source_ptr[i]==10){
-			word_end=i;
-
+	for (i = word_end = 0; i < MSGBOX_MAX_COLS - 1 && i < (int)strlen(source_ptr); i++)
+	{
+		if (source_ptr[i] == 10)
+		{
+			word_end = i;
 			break;
-
-		}else if ( source_ptr[i]<=32 ){
-			word_end=i;
 		}
-	} i--;
+		else if (source_ptr[i] <= 32)
+		{
+			word_end = i;
+		}
+	}
+
+	i--;
 
 	/* If no characters marked, (i.e.: a 10 found and loop broken) then next
 	 * char is a carriage return, so return as blank string.
 	 */
-	if ( i<0 ){
+	if (i < 0)
+	{
 		next_row_ptr[0]=0;
 		source_ptr++;
 
@@ -94,15 +99,19 @@ static const char* FormatText(const char *source_ptr, char *next_row_ptr)
 		/* If the next character after 'max row width' is a seperator,
 		 * inc. mark to this position.
 		 */
-		if ( i+1<strlen(source_ptr) && source_ptr[i+1]<=32 )
-			word_end=i+1;
+		if (i + 1 < (int)strlen(source_ptr) && source_ptr[i + 1] <= 32)
+		{
+			word_end = i + 1;
+		}
 
 		/* If this row sucked-up all remaining characters in the source
 		 * string, then up the mark to the end of the text (we'll take
 		 * everything).
 		 */
-		if ( i==strlen(source_ptr)-1 )
-			word_end=i;
+		if (i == (int)strlen(source_ptr) - 1)
+		{
+			word_end = i;
+		}
 
 		/* If no mark was set, then split at index
 		 * (word is longer than max width so we must split it).
@@ -169,6 +178,8 @@ static void ProcessAndCopyString(char *dest_ptr, const char *source_ptr)
 
 static void MsgBox_Button_Press(EG_Widget *widget_ptr, void *user_ptr)
 {
+	(void)user_ptr;
+
 	EG_Window_Hide(window_ptr);
 	done = 1;
 

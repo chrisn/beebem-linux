@@ -243,20 +243,16 @@ static EG_BOOL Callback_Stopped(EG_Widget *widget_ptr, EG_BOOL is_stopped)
         return(EG_TRUE);
 }
 
-static void Callback_Attach(EG_Widget *widget_ptr, EG_StringHash attach_to_type
- , void *attach_to_ptr, EG_BOOL attached)
+static void Callback_Attach(EG_Widget *widget_ptr,
+                            EG_StringHash attach_to_type,
+                            void *attach_to_ptr,
+                            EG_BOOL attached)
 {
-	EG_StringHash tmp_attach_to_type;
+	(void)attach_to_type;
 
 	EG_TabGroup *tabgroup_ptr;
 	EG_Window *window_ptr;
 	int i;
-
-	printf("attached = %d\n", attached);
-
-	/* Loose compiler warning.
-	 */
-	tmp_attach_to_type = attach_to_type;
 
 	/* We only need to add the pages to the window when attaching, we do
 	 * nothing when detatching.
@@ -483,10 +479,13 @@ void EG_TabGroup_RemovePage(EG_Widget *group_widget_ptr
 	// [TODO] Delete Page (but leave child widgets intact).
 }
 
-void EG_TabGroup_DeletePage(EG_Widget *group_widget_ptr
- , EG_Widget *page_widget_ptr)
+void EG_TabGroup_DeletePage(EG_Widget *group_widget_ptr,
+                            EG_Widget *page_widget_ptr)
 {
 	// [TODO] Same as remove page, but deletes widgets too.
+
+	(void)group_widget_ptr;
+	(void)page_widget_ptr;
 }
 
 EG_BOOL EG_TabGroup_SelectPage(EG_Widget *page_widget_ptr)

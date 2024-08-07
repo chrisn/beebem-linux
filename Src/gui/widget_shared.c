@@ -95,6 +95,9 @@ EG_BOOL EG_Callback_Generic_SDL_Event(EG_Widget *widget_ptr, SDL_Event *event_pt
 EG_BOOL EG_Callback_Generic_Visible_NoSupport(EG_Widget *widget_ptr,
                                               EG_BOOL is_visible)
 {
+	(void)widget_ptr;
+	(void)is_visible;
+
 	return EG_FALSE;
 }
 
@@ -134,12 +137,15 @@ EG_BOOL EG_Callback_Generic_Stopped(EG_Widget *widget_ptr, EG_BOOL is_stopped)
  */
 EG_BOOL EG_Callback_Generic_Enabled_NoSupport(EG_Widget *widget_ptr, EG_BOOL is_enabled)
 {
+	(void)widget_ptr;
+	(void)is_enabled;
+
 	return EG_FALSE;
 }
 
 EG_BOOL EG_Callback_Generic_Enabled(EG_Widget *widget_ptr, EG_BOOL is_enabled)
 {
-	return( EG_Shared_UpdateEnabledState(widget_ptr, is_enabled) );
+	return EG_Shared_UpdateEnabledState(widget_ptr, is_enabled);
 }
 
 /* G O T   F O C U S:
@@ -151,6 +157,8 @@ EG_BOOL EG_Callback_Generic_Enabled(EG_Widget *widget_ptr, EG_BOOL is_enabled)
  */
 EG_BOOL EG_Callback_Generic_GotFocus_NoSupport(EG_Widget *widget_ptr)
 {
+	(void)widget_ptr;
+
 	return EG_FALSE;
 }
 
@@ -195,6 +203,7 @@ EG_BOOL EG_Callback_Generic_GotFocus(EG_Widget *widget_ptr)
  */
 void EG_Callback_Generic_LostFocus_NoSupport(EG_Widget *widget_ptr)
 {
+	(void)widget_ptr;
 }
 
 void EG_Callback_Generic_LostFocus(EG_Widget *widget_ptr)
@@ -231,6 +240,10 @@ void EG_Callback_Generic_Attach(EG_Widget *widget_ptr,
                                 void *attach_to_ptr,
                                 EG_BOOL attached)
 {
+	(void)widget_ptr;
+	(void)attach_to_type;
+	(void)attach_to_ptr;
+	(void)attached;
 }
 
 /* Functions to help with physically rendering widgets:

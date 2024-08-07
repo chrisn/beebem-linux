@@ -680,24 +680,26 @@ static EG_BOOL Callback_Paint(EG_Widget *widget_ptr, SDL_Rect area)
 
 static void InitializePayload(EG_SlideBar *slidebar_ptr, SDL_Color color, int orientation, SDL_Rect area)
 {
-	switch(orientation){
+	(void)color;
+	(void)area;
+
+	switch (orientation)
+	{
 		case EG_SlideBar_Vertical:
+			slidebar_ptr->button1_label[0] = 1;
+			slidebar_ptr->button1_label[1] = 0;
 
-		slidebar_ptr->button1_label[0] = 1;
-		slidebar_ptr->button1_label[1] = 0;
-
-		slidebar_ptr->button2_label[0] = 2;
-		slidebar_ptr->button2_label[1] = 0;
-		break;
+			slidebar_ptr->button2_label[0] = 2;
+			slidebar_ptr->button2_label[1] = 0;
+			break;
 
 		case EG_SlideBar_Horizontal:
+			slidebar_ptr->button1_label[0] = 4;
+			slidebar_ptr->button1_label[1] = 0;
 
-		slidebar_ptr->button1_label[0] = 4;
-		slidebar_ptr->button1_label[1] = 0;
-
-		slidebar_ptr->button2_label[0] = 3;
-		slidebar_ptr->button2_label[1] = 0;
-		break;
+			slidebar_ptr->button2_label[0] = 3;
+			slidebar_ptr->button2_label[1] = 0;
+			break;
 	}
 
 	slidebar_ptr->slider_label[0] = 9;

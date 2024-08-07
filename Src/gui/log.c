@@ -45,10 +45,10 @@ void pWARN (const char *psFormat, ...){ CALL_VLOG_PRINTF( eLOG_WARN); }
 void pINFO (const char *psFormat, ...){ CALL_VLOG_PRINTF( eLOG_INFO); }
 
 #ifndef WITH_DEBUG_OUTPUT
-	void pDEBUG(const char *psFormat, ...){}
-	void pDISABLED(const char *psFormat, ...){}
-	void pTRACKER_E(const char *psFormat, ...){}
-	void pTRACKER_L(const char *psFormat, ...){}
+	void pDEBUG(const char *psFormat, ...){ (void)psFormat; }
+	void pDISABLED(const char *psFormat, ...){ (void)psFormat; }
+	void pTRACKER_E(const char *psFormat, ...){ (void)psFormat; }
+	void pTRACKER_L(const char *psFormat, ...){ (void)psFormat; }
 #else
 	void pDEBUG(const char *psFormat, ...){ CALL_VLOG_PRINTF(eLOG_DEBUG); }
 	void pDISABLED(const char *psFormat, ...){ CALL_VLOG_PRINTF( eLOG_DISABLED); }
@@ -84,13 +84,12 @@ void VLog_Printf(eLOGTYPE nType, const char *psFormat, va_list argptr)
 
 void VLog_AlertDlg(const char *psFormat, va_list argptr)
 {
+	(void)psFormat;
+
 	// GUI not finished yet..
 
 	va_end(argptr);
 }
-
-
-
 
 /* vfprintf wrapper, used internally instead of printf, fprintf.
  */
@@ -109,6 +108,8 @@ void EG_vprintf(const char *format, va_list argptr)
  */
 void EG_Log(EG_LOGTYPE type, const char *format, ...)
 {
+	(void)type;
+
 	va_list argptr;
 
 	va_start(argptr, format);

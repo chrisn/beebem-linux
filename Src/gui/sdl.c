@@ -231,6 +231,8 @@ void EG_Draw_String(SDL_Surface *surface,
 
 void EG_Draw_Char(SDL_Surface *surface, SDL_Color *color, EG_BOOL bold, Uint16 x, Uint16 y, char c)
 {
+	(void)color;
+
 	SDL_Rect src, dst;
 	SDL_Surface *source_surface;
 
@@ -547,17 +549,16 @@ void EG_Draw_Toggle(SDL_Surface *surface, SDL_Rect *area, SDL_Color *color, int 
 			 , (int) (color->r * 0.6666)
 			 , (int) (color->g * 0.6666)
 			 , (int) (color->b * 0.6666) );
-		break;
+			break;
 
 		case EG_Draw_Border_Focused:
-                        dull_col = SDL_MapRGB(surface->format
-                         , (int) (color->r * 0.7)
-                         , (int) (color->g * 0.7)
-                         , (int) (color->b * 0.7) );
+			dull_col = SDL_MapRGB(surface->format,
+			                      (int)(color->r * 0.7),
+			                      (int)(color->g * 0.7),
+			                      (int)(color->b * 0.7));
 
-                        bright_col = dull_col;
-		break;
-
+			bright_col = dull_col;
+			break;
 	}
 
 	int corner = 4 * EG_Draw_GetScale();
