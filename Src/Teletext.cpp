@@ -86,7 +86,6 @@ static unsigned char TeletextStatus = 0x0f;
 static bool TeletextInts = false;
 static bool TeletextEnable = false;
 static int TeletextChannel = 0;
-static int rowPtrOffset = 0x00;
 static int rowPtr = 0x00;
 static int colPtr = 0x00;
 
@@ -182,8 +181,6 @@ static bool TeletextConnect(int ch)
                            "Teletext: socket %d created, connecting to server", ch);
     }
 
-    u_long iMode = 1;
-    
     SetSocketBlocking(TeletextSocket[ch], false); // non blocking
 
     struct sockaddr_in teletext_serv_addr;
@@ -426,7 +423,7 @@ void TeletextAdapterUpdate()
             if (TeletextSource == TeletextSourceType::IP)
             {
                 char tmpBuff[672*20]; // big enough to hold 20 fields of data
-                
+
                 if (!(TeletextCurrentField&1)) // an even field
                 {
                     for (int i = 0; i < TELETEXT_CHANNEL_COUNT; i++)
@@ -496,7 +493,7 @@ void TeletextAdapterUpdate()
                                 if (result == 0 || result == SOCKET_ERROR)
                                 {
                                     int Error = GetLastSocketError();
-                                    
+
                                     if (WouldBlock(Error))
                                     {
                                         if (DebugEnabled)
@@ -572,7 +569,7 @@ void TeletextAdapterUpdate()
                         }
                     }
                 }
-                
+
                 TeletextCurrentField ^= 1; // toggle field
             }
             else
