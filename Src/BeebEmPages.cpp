@@ -1129,17 +1129,17 @@ static EG_BOOL Make_System(SDL_Surface *dst_ptr)
 
 	EG_Window_AddWidget(window_ptr, group1_ptr);
 
-	SYSTEM_CALC_LOC(7, 0);
+	SYSTEM_CALC_LOC(8, 0);
 	widget_ptr = EG_Label_Create("system:6502:title", col, EG_LABEL_ALIGN_CENTER, "Floppy Disc Controller:", loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
 
-	SYSTEM_CALC_LOC(8,0); loc.x-=10; loc.y+=8; loc.h = 17*3; loc.w+=20;
+	SYSTEM_CALC_LOC(9,0); loc.x-=10; loc.y+=8; loc.h = 17*3; loc.w+=20;
 	widget_ptr = EG_Box_Create("system:6502:box", EG_BOX_BORDER_SUNK, col, loc);
 	EG_Window_AddWidget(window_ptr, widget_ptr);
 
 	group3_ptr = EG_RadioGroup_Create("system:FDC");
 
-	SYSTEM_CALC_LOC(9, 0); loc.w /=2; loc.w -=5;
+	SYSTEM_CALC_LOC(10, 0); loc.w /=2; loc.w -=5;
 	widget_ptr = EG_ToggleButton_Create("disks:nativeFDC", col, "Native", loc);
 	// EG_Window_AddWidget(window_ptr, widget_ptr);
 	EG_RadioGroup_AddButton(group3_ptr, widget_ptr);
@@ -1153,7 +1153,7 @@ static EG_BOOL Make_System(SDL_Surface *dst_ptr)
 	EG_ToggleButton_SetMyCallback_OnClick(widget_ptr, Disks_AcornDFS, NULL);
 	gui.widget_fdc_acorn_1770 = widget_ptr;
 
-	SYSTEM_CALC_LOC(10, 0); loc.w /=2; loc.w -=5;
+	SYSTEM_CALC_LOC(11, 0); loc.w /=2; loc.w -=5;
 	widget_ptr = EG_ToggleButton_Create("disks:watford", col, "Watford", loc);
 	// EG_Window_AddWidget(window_ptr, widget_ptr);
 	EG_RadioGroup_AddButton(group3_ptr, widget_ptr);
