@@ -263,7 +263,6 @@ typedef struct tagMSG {
 	DWORD  lPrivate;
 } MSG;
 
-
 #ifndef MAKEWORD
 #define MAKEWORD(b1, b2) ((WORD)(((BYTE)(b1)) | ((WORD)((BYTE)(b2))) << 8))
 #endif
