@@ -849,7 +849,6 @@ void BeebWin::updateLines(HDC hDC, int StartY, int NLines)
 	}
 
 	++m_ScreenRefreshCount;
-	int TeletextLines = 500 / TeletextStyle;
 
 	// Do motion blur
 	if (m_MotionBlur != 0)
@@ -882,6 +881,8 @@ void BeebWin::updateLines(HDC hDC, int StartY, int NLines)
 	}
 
 	#ifdef Win32
+
+	int TeletextLines = 500 / TeletextStyle;
 
 	if (m_DisplayRenderer == DisplayRendererType::GDI)
 	{

@@ -1312,7 +1312,7 @@ void BeebWin::LoadTeletextAdapterPreferences(int Version)
 
 			m_Preferences.GetDWORDValue(key, Value, TELETEXT_BASE_PORT + ch);
 
-			if (Value >= 0 && Value <= 65535)
+			if (Value <= 65535)
 			{
 				TeletextPort[ch] = (u_short)Value;
 			}
