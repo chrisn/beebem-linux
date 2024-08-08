@@ -3155,7 +3155,7 @@ void BeebWin::ToggleFullScreen()
 
 	#else
 
-	::ToggleFullscreen();
+	::ToggleFullScreen();
 
 	if (m_FullScreen)
 	{

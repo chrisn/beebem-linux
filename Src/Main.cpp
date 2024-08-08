@@ -53,20 +53,13 @@ Boston, MA  02110-1301, USA.
 #include "log.h"
 #include "Sdl.h"
 
-
-// Can remove this (only needed to calc string hash)
-// #include "gui/gui_functions.h"
-
 #ifdef MULTITHREAD
 #undef MULTITHREAD
 #endif
 
 // Make global reference to command line args
 int __argc = 0;
-char **__argv = NULL;
-
-// Load/Save path.
-extern char *cfg_LoadAndSavePath_ptr;
+char **__argv = nullptr;
 
 /****************************************************************************/
 
@@ -87,16 +80,7 @@ void SetActiveWindow(EG_Window *window_ptr)
 	displayed_window_ptr = window_ptr;
 }
 
-bool GetFullscreenState()
-{
-	bool fullscreen_val = false;
-
-	if (mainWin!=NULL) fullscreen_val = mainWin->IsFullScreen();
-
-	return fullscreen_val;
-}
-
-bool ToggleFullscreen()
+bool ToggleFullScreen()
 {
 	mainWin->SetFullScreenToggle(!mainWin->IsFullScreen());
 
@@ -127,7 +111,7 @@ void UnfullscreenBeforeExit(void)
 	// vanishes on exit. Is that me, or is it SDL?
 	if (mainWin->IsFullScreen())
 	{
-		ToggleFullscreen();
+		ToggleFullScreen();
 	}
 }
 
@@ -153,7 +137,7 @@ int main(int argc, char *argv[])
 
 	// Create global reference to command line args (like windows does)
 	__argc = argc;
-	__argv = (char**) argv;
+	__argv = (char**)argv;
 
 	// Initialise debugging subsystem.
 	Log_Init();
@@ -166,17 +150,13 @@ int main(int argc, char *argv[])
 	}
 
 	// Initialize GUI API
-	if (EG_Initialize())
-	{
-		qINFO("EG initialized.");
-	}
-	else
+	if (!EG_Initialize())
 	{
 		qFATAL("EG failed to initialize! Quiting.");
 		return 1;
 	}
 
-	// Build menus:
+	// Build menus
 	if (!InitializeBeebEmGUI(screen_ptr))
 	{
 		return 1;
@@ -210,10 +190,14 @@ int main(int argc, char *argv[])
 		 * it's 1, we assume enough time has passed to pass the core a release of the Beebs Caps Lock
 		 * key.
 		 */
-		if (X11_CapsLock_Down>0){
+		if (X11_CapsLock_Down > 0)
+		{
 			X11_CapsLock_Down--;
+
 			if (X11_CapsLock_Down == 0)
+			{
 				BeebKeyUp(4, 0);
+			}
 		}
 
 		// Toggle processing of either events to the emulator core, or events to the menu.
@@ -223,7 +207,9 @@ int main(int argc, char *argv[])
 		{
 			// Execute emulator:
 			if (!mainWin->IsFrozen())
+			{
 				Exec6502Instruction();
+			}
 
 			// If the mouse cursor should be hidden (set on GUI),
 			// then make sure it is hidden after a suitable delay.
@@ -247,10 +233,10 @@ int main(int argc, char *argv[])
 						if (mainWin)
 						{
 							mainWin->ScaleMousestick(event.motion.x,
-													event.motion.y);
+							                         event.motion.y);
 
 							mainWin->SetAMXPosition(event.motion.x,
-													event.motion.y);
+							                        event.motion.y);
 
 							// Experiment: show menu in full screen when cursor moved to top of window
 							//-- if (HideMenuEnabled)
@@ -405,8 +391,6 @@ int main(int argc, char *argv[])
 			// Record time so we can hide the mouse cursor after a small delay.
 			ticks = SDL_GetTicks();
 		}
-
-		// printf("%d\n", AMXButtons);
 	} while (!done);
 
 	// Sometimes the mouse pointer vanishes on exit.

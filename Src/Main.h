@@ -49,8 +49,7 @@ extern HACCEL hCurrentAccelTable;
 
 void Quit();
 void SetActiveWindow(EG_Window *window_ptr);
-bool GetFullscreenState();
-bool ToggleFullscreen();
+bool ToggleFullScreen();
 void ShowingMenu();
 void NoMenuShown();
 

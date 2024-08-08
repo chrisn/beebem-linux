@@ -1042,7 +1042,6 @@ void BeebWin::updateLines(HDC hDC, int StartY, int NLines)
 
 	UNREFERENCED_PARAMETER(hDC);
 
-
 /* #ifdef WITH_FS_FPS
 	if (m_ShowSpeedAndFPS && m_FullScreen)
 	{
