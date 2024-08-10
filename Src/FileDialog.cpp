@@ -51,11 +51,22 @@ FileDialog::FileDialog(HWND hwndOwner, LPTSTR result, DWORD resultLength,
 
 	UNREFERENCED_PARAMETER(hwndOwner);
 	UNREFERENCED_PARAMETER(resultLength);
-	UNREFERENCED_PARAMETER(initialFolder);
 	UNREFERENCED_PARAMETER(filter);
 
 	m_pszTitle = nullptr;
 	m_pszFileName = result;
+	strcpy(m_szInitialFolder, initialFolder);
+
+	size_t Length = strlen(m_szInitialFolder);
+
+	if (Length > 0)
+	{
+		if (m_szInitialFolder[Length - 1] != '/')
+		{
+			m_szInitialFolder[Length] = '/';
+			m_szInitialFolder[Length + 1] = '\0';
+		}
+	}
 
 	#endif
 }
@@ -190,7 +201,7 @@ bool FileDialog::ShowDialog(bool open)
 	}
 	else
 	{
-		gtk_file_selection_set_filename(GTK_FILE_SELECTION(filew), DATA_DIR"/media/discs/");
+		gtk_file_selection_set_filename(GTK_FILE_SELECTION(filew), m_szInitialFolder);
 	}
 
 	gtk_widget_show(filew);

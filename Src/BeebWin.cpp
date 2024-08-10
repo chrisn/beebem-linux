@@ -5567,8 +5567,8 @@ bool BeebWin::FindCommandLineFile(char *FileName)
 	{
 		// Try getting it from Tapes directory
 		strcpy(TmpPath, m_UserDataPath);
-		strcat(TmpPath, "Tapes/");
-		strcat(TmpPath, FileName);
+		AppendPath(TmpPath, "Tapes");
+		AppendPath(TmpPath, FileName);
 
 		Found = FileExists(TmpPath);
 	}
@@ -5576,8 +5576,8 @@ bool BeebWin::FindCommandLineFile(char *FileName)
 	{
 		// Try getting it from BeebState directory
 		strcpy(TmpPath, m_UserDataPath);
-		strcat(TmpPath, "BeebState/");
-		strcat(TmpPath, FileName);
+		AppendPath(TmpPath, "BeebState");
+		AppendPath(TmpPath, FileName);
 
 		Found = FileExists(TmpPath);
 	}
@@ -5585,8 +5585,8 @@ bool BeebWin::FindCommandLineFile(char *FileName)
 	{
 		// Try getting it from DiscIms directory
 		strcpy(TmpPath, m_UserDataPath);
-		strcat(TmpPath, "DiscIms/");
-		strcat(TmpPath, FileName);
+		AppendPath(TmpPath, "DiscIms");
+		AppendPath(TmpPath, FileName);
 
 		Found = FileExists(TmpPath);
 	}

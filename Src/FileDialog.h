@@ -56,6 +56,7 @@ private:
 
 	const char *m_pszTitle;
 	char *m_pszFileName;
+	char m_szInitialFolder[MAX_PATH];
 
 	#endif
 

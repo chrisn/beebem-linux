@@ -1518,22 +1518,20 @@ void BeebWin::LoadEmuUEF(FILE *SUEF, int Version)
 }
 
 /****************************************************************************/
-void BeebWin::GetDataPath(const char *folder, char *path)
-{
-	char newPath[MAX_PATH];
 
-	// If path is absolute then use it
-	if (path[0] == '\\' || path[0] == '/' ||
-		(strlen(path) > 2 && path[1] == ':' && (path[2] == '\\' || path[2] == '/')))
+void BeebWin::GetDataPath(const char *Folder, char *Path)
+{
+	char NewPath[MAX_PATH];
+
+	if (PathIsRelative(Path))
 	{
-		// Absolute path - just use it as is
+		strcpy(NewPath, Folder);
+		AppendPath(NewPath, Path);
+		strcpy(Path, NewPath);
 	}
 	else
 	{
-		// Relative path
-		strcpy(newPath, folder);
-		strcat(newPath, path);
-		strcpy(path, newPath);
+		// Absolute path - just use it as is
 	}
 }
 
