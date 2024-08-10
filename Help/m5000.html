@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>BeebEm - BBC Micro and Master Series Emulator</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=us-ascii">
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <header>
+      <div class="title">
+        <div class="logo">
+          <img src="beeb.gif" alt="BBC Micro" width="48" height="48">
+        </div>
+        <h1>
+          BeebEm - BBC Micro and Master Series Emulator
+        </h1>
+        <div class="logo">
+          <img src="beeb.gif" alt="BBC Micro" width="48" height="48">
+        </div>
+      </div>
+
+      <nav>
+        <div>
+          <a href="index.html">Home</a>
+        </div>
+        <div>
+          <a href="contents.html">Help Contents</a>
+        </div>
+        <div>
+          <a href="http://www.mkw.me.uk/beebem/software.html">Download Software</a>
+        </div>
+          <div>
+          <a href="http://www.mkw.me.uk/beebem/index.html">BeebEm Website</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <h1>Music 5000 Synthesiser</h1>
+
+      <p>
+        Hybrid Technology's Music 5000 system is a 16 channel synthesiser. The
+        system can be programmed using the AMPLE language.
+      </p>
+
+      <p>
+        The Music 5000 system disk (from
+        <a href="http://www.colinfraser.com/m5000/m5000.htm">Colin Fraser's
+        website</a>) is included in the BeebEm installation. To try it do the
+        following:
+      </p>
+
+      <ul>
+        <li>
+          Enable Music 5000 emulation on the <span class="ui">Sound</span> menu
+        </li>
+        <li>
+          Switch to Master 128 emulation using the <span class="ui">Hardware
+          &rarr; BBC Model &rarr; BBC Master 128</span> menu option
+        </li>
+        <li>
+          Run the M5000-4.ssd disc using <span class="ui">File &rarr; Run
+          Disc</span>
+        </li>
+        <li>
+          If loading stops, press <kbd>Shift</kbd> + <kbd>F12</kbd>
+        </li>
+        <li>
+          When the Studio 5000 Main Menu appears press <kbd>F9</kbd>, which will
+          load the jukebox app
+        </li>
+        <li>
+          Use <kbd>Down Arrow</kbd> to scroll down to 'from Notes' and press
+          <kbd>Enter</kbd> to play
+        </li>
+      </ul>
+
+      <p>Press <kbd>F9</kbd> again to load the menu again.</p>
+
+      <p>
+        To get the Music 5000 system running in Model B mode the AMPLE ROM needs
+        to be configured using <span class="ui">Hardware &rarr; Edit ROM
+        Configuration</span>. Load the AMPLE ROM into an empty slot and press
+        <kbd>Ctrl</kbd> + <kbd>F12</kbd>. Load the <span
+        class="file">M5000-4.ssd</span> system disc and
+        start the system using <span class="cmd">*EXEC RUNNER</span>.
+      </p>
+
+      <p>
+        There are many Music 5000 discs available on the Internet. The music
+        files on many of them can be played using the Music 5000 system disc -
+        boot the system disc first, then load the music disc and press
+        <kbd>F9</kbd>. If the jukebox app is not on the disc the files can often
+        be loaded and played using the <span class="cmd">"file"LOAD</span> and
+        <span class="cmd">RUN</span> commands in AMPLE (use <span
+        class="cmd">*CAT</span> to see the files on the disc). For example, the
+        Pachelbel file on the system disc can be played using: <span
+        class="cmd">"PPACH"LOAD RUN</span>.
+      </p>
+
+      <p>
+        To play Music 500 files, enable Music 5000 emulation and switch to
+        Master 128 emulation as above and run the <span
+        class="file">Music500.ssd</span> disc using <span class="ui">File
+        &rarr; Run Disc</span>. At the AMPLE <span class="cmd">%</span> prompt
+        files can be loaded and played with <span class="cmd">"file"LOAD</span>
+        and <span class="cmd">RUN</span>. Music 500 files give a "! Too big"
+        error if loaded in Music 5000.
+      </p>
+    </main>
+
+    <footer>
+      <p>Copyright &copy; 2024 BeebEm contributors</p>
+    </footer>
+  </body>
+</html>

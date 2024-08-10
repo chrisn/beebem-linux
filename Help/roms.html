@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>BeebEm - BBC Micro and Master Series Emulator</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=us-ascii">
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <header>
+      <div class="title">
+        <div class="logo">
+          <img src="beeb.gif" alt="BBC Micro" width="48" height="48">
+        </div>
+        <h1>
+          BeebEm - BBC Micro and Master Series Emulator
+        </h1>
+        <div class="logo">
+          <img src="beeb.gif" alt="BBC Micro" width="48" height="48">
+        </div>
+      </div>
+
+      <nav>
+        <div>
+          <a href="index.html">Home</a>
+        </div>
+        <div>
+          <a href="contents.html">Help Contents</a>
+        </div>
+        <div>
+          <a href="http://www.mkw.me.uk/beebem/software.html">Download Software</a>
+        </div>
+          <div>
+          <a href="http://www.mkw.me.uk/beebem/index.html">BeebEm Website</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <h1>ROM Software</h1>
+
+      <p>
+        Although most games software is supplied on disc images there is a large
+        selection of ROM software available for the BBC Micro. There are
+        application ROMs such as word processors and drawing packages, there are
+        programming language ROMs such as FORTH and BCPL, and a whole range of
+        other software. The BBC Micro operating system, BASIC language and disc
+        filing system are all supplied on ROM. Most ROMs are either 8kbytes or
+        16kbytes in size. Some ROMs, such as Inter-Word, are larger, and use a
+        logic carrier board to allow access to the extended memory size,
+        sometimes up to 128kbytes in the case of Spellmaster.
+      </p>
+
+      <p>
+        The BBC Micro and Master 128 (and BeebEm) support up to 16 ROM slots
+        plus one for the operating system. The BBC Micro ROMs are kept in
+        subdirectories of the <span class="file">BeebFile</span> directory. The
+        is one subdirectory for each of the four models emulated.
+      </p>
+
+      <h2>Configuring ROMs</h2>
+
+      <p>
+        The ROMs that BeebEm loads are configured in the <span
+        class="file">Roms.cfg</span> file. You can edit the ROM configuration
+        within BeebEm using the <span class="ui">Edit ROM Configuration</span>
+        option on the <span class="ui">Hardware</span> menu. Note that you
+        usually have to press the
+        <kbd>Break</kbd> key (F12) before a new ROM configuration is recognised.
+        Changes to the ROM configuration can be saved to the <span
+        class="file">Roms.cfg</span> file or another file.
+      </p>
+
+      <figure>
+        <img src="roms.png" alt="BeebEm ROM Configuration dialog box" width="448" height="359">
+      </figure>
+
+      <p>
+        In Master 128 mode some ROMS may be "unplugged". This is a feature of
+        the Master MOS that allows ROMs to be ignored. The ROM configuration
+        editor will indicate which ROMs are unplugged (as will <span
+        class="cmd">*ROMS</span>). Use the
+        <span class="cmd">*INSERT</span> command to enable ROMs.
+      </p>
+
+      <h2>Running a ROM</h2>
+
+      <p>
+        To run a ROM you will need to type a command into BeebEm. The exact
+        command will depend on the ROM itself and you may need to refer to any
+        documentation that accompanied the ROM. Some ROMs list the commands
+        available when you type <span class="cmd">*HELP</span> into BeebEm.
+      </p>
+
+      <h2>RAM Expansion</h2>
+
+      <p>
+        Any of the 16 ROM slots can be configured as RAM. Some software
+        (e.g., games) can make use of this RAM so its a good idea to leave at
+        least one slot as RAM.
+      </p>
+
+      <h2>Writable ROMs</h2>
+
+      <p>
+        ROMs are not normally writable but some ROM software was supplied on
+        small expansion boards that had some RAM on them. These ROMs should be
+        marked as writable in the <span class="file">Roms.cfg</span> file (use
+        the <span class="ui">Mark Writable</span> option in <span
+        class="ui">Edit ROM Configuration</span>). An example of this is the MRM
+        E00 DFS ROM.
+      </p>
+
+      <h2>Essential ROMs</h2>
+
+      <p>
+        Note that certain ROMs must be present for each emulation mode to work
+        so do not remove these:
+      </p>
+
+      <table>
+        <tr>
+          <td>BBC Model B</td>
+          <td>
+            <span class="file">OS12.rom</span>,
+            <span class="file">BASIC2.rom</span>,
+            <span class="file">DNFS.rom</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>BBC Model B IntegraB</td>
+          <td>
+            <span class="file">OS12.rom</span>,
+            <span class="file">IBOS126.rom</span>,
+            <span class="file">BASIC2.rom</span>,
+            <span class="file">DNFS.rom</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>BBC Model B Plus</td>
+          <td>
+            <span class="file">B+MOS.rom</span>,
+            <span class="file">BASIC2.rom</span>,
+            <span class="file">WDFS.rom</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Master 128</td>
+          <td>
+            <span class="file">MOS.rom</span>,
+            <span class="file">Terminal.rom</span>,
+            <span class="file">BASIC4.rom</span>,
+            <span class="file">DFS.rom</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Master ET</td>
+          <td>
+            <span class="file">MOS400.rom</span>,
+            <span class="file">Terminal.rom</span>,
+            <span class="file">BASIC4.rom</span>,
+            <span class="file">ANFS425.rom</span>
+          </td>
+        </tr>
+      </table>
+
+      <p>
+        The default set of ROMs configured for the Master 128 mode are MOS 3.20.
+        The MOS 3.50 ROMs are also included. To use them either rename the
+        <span class="file">BeebFile/M128</span> folder to <span
+        class="file">M128-MOS3.2</span> and rename the <span
+        class="file">M128-MOS3.5</span> folder <span class="file">M128</span> or
+        create a new configuration using the <span class="ui">Edit ROM
+        Configuration</span> option.
+      </p>
+    </main>
+
+    <footer>
+      <p>Copyright &copy; 2024 BeebEm contributors</p>
+    </footer>
+  </body>
+</html>
