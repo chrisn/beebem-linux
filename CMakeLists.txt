@@ -122,20 +122,18 @@ include_directories(Src/posix)
 add_definitions(-DDATA_DIR="/usr/local/share/beebem")
 add_definitions(-DVERSION="4.19")
 add_definitions(-DWITH_UNIX_EXTRAS) # Enable UNIX extras
-add_definitions(-DPACKAGE="beebem")
 # add_definitions(-DWITH_DEBUG_OUTPUT) # Additional debugging
 # add_definitions(-DEG_DEBUG) # GUI debugging code
 add_definitions(-DWITH_ECONET) # Econet support
 # add_definitions(-DWITHOUT_LEVEL_INDICATOR) # Disable level indicator
 add_definitions(-DWITHOUT_SHENANIGANS) # Disable all __LINE__ shenanigans
 # add_definitions(-DWITHOUT_REALTIME_SLIDER) # Disable realtime slider on slide bar
-add_definitions(-DWITHOUT_WELCOME_MESSAGE) # Disable annoying welcome message
 add_definitions(-DWITH_FS_FPS) # Enable fullscreen FPS indicator
-# add_definitions(-DWITH_SYSTEM_CP) # Compile with call to system 'cp' command when copying files
 # add_definitions(-DWITH_FORCED_CM) # Compile with a forced colormap for 8 bit displays
+add_definitions(-DBEEBEM)
 add_definitions(-DMODET) # Enable ARM Thumb instructions
 add_definitions(-DMODE32) # Enable 32-bit ARM instructions
-add_definitions(-DBEEBEM)
+add_definitions(-DENABLE_SPEECH) # Enable TMS5220 emulation
 
 set(SRCS
     Src/6502core.cpp
