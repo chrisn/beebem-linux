@@ -1209,98 +1209,98 @@ struct BeebKeyTrans
 
 static BeebKeyTrans SDLtoBeebEmKeymap[] =
 {
-	// SDL            BBC     BBC KEY NAME (see doc/keyboard.jpg)
-	{ SDLK_TAB,       6, 0 }, // TAB
-	{ SDLK_RETURN,    4, 9 }, // RETURN
+	// SDL               BBC        BBC KEY NAME (see doc/keyboard.jpg)
+	{ SDLK_TAB,          6, 0 }, // TAB
+	{ SDLK_RETURN,       4, 9 }, // RETURN
 
-	{ SDLK_LCTRL,     0, 1 }, // CONTROL
-	{ SDLK_RCTRL,     0, 1 }, // CONTROL
+	{ SDLK_LCTRL,        0, 1 }, // CONTROL
+	{ SDLK_RCTRL,        0, 1 }, // CONTROL
 
-	{ SDLK_LSHIFT,    0, 0 }, // SHIFT
-	{ SDLK_RSHIFT,    0, 0 }, // SHIFT
+	{ SDLK_LSHIFT,       0, 0 }, // SHIFT
+	{ SDLK_RSHIFT,       0, 0 }, // SHIFT
 
-	{ SDLK_CAPSLOCK,  4, 0 }, // CAPS LOCK (Totally fucked up in SDL..)
-	{ SDLK_LSUPER,    4, 0 }, // CAPS LOCK (so Alt Gr is also CAPS-LOCK..)
+	{ SDLK_CAPSLOCK,     4, 0 }, // CAPS LOCK (Totally fucked up in SDL..)
+	{ SDLK_LSUPER,       4, 0 }, // CAPS LOCK (so Alt Gr is also CAPS-LOCK..)
 
-	{ SDLK_ESCAPE,    7, 0 }, // ESCAPE
-	{ SDLK_SPACE,     6, 2 }, // SPACE
+	{ SDLK_ESCAPE,       7, 0 }, // ESCAPE
+	{ SDLK_SPACE,        6, 2 }, // SPACE
 
-	{ SDLK_LEFT,      1, 9 }, // LEFT
-	{ SDLK_UP,        3, 9 }, // UP
-	{ SDLK_RIGHT,     7, 9 }, // RIGHT
-	{ SDLK_DOWN,      2, 9 }, // DOWN
+	{ SDLK_LEFT,         1, 9 }, // LEFT
+	{ SDLK_UP,           3, 9 }, // UP
+	{ SDLK_RIGHT,        7, 9 }, // RIGHT
+	{ SDLK_DOWN,         2, 9 }, // DOWN
 
-	{ SDLK_DELETE,    5, 9 }, // DELETE
-	{ SDLK_BACKSPACE, 5, 9 }, // DELETE
+	{ SDLK_DELETE,       5, 9 }, // DELETE
+	{ SDLK_BACKSPACE,    5, 9 }, // DELETE
 
-	{ SDLK_INSERT,    6, 9 }, // COPY
+	{ SDLK_END,          6, 9 }, // COPY
 
-	{ SDLK_0, 2,7 },    // 0
-	{ SDLK_1, 3,0 },    // 1
-	{ SDLK_2, 3,1 },    // 2
-	{ SDLK_3, 1,1 },    // 3
-	{ SDLK_4, 1,2 },    // 4
-	{ SDLK_5, 1,3 },    // 5
-	{ SDLK_6, 3,4 },    // 6
-	{ SDLK_7, 2,4 },    // 7
-	{ SDLK_8, 1,5 },    // 8
-	{ SDLK_9, 2,6 },    // 9
-	{ SDLK_a, 4,1 },    // A
-	{ SDLK_b, 6,4 },    // B
-	{ SDLK_c, 5,2 },    // C
-	{ SDLK_d, 3,2 },    // D
-	{ SDLK_e, 2,2 },    // E
-	{ SDLK_f, 4,3 },    // F
-	{ SDLK_g, 5,3 },    // G
-	{ SDLK_h, 5,4 },    // H
-	{ SDLK_i, 2,5 },    // I
-	{ SDLK_j, 4,5 },    // J
-	{ SDLK_k, 4,6 },    // K
-	{ SDLK_l, 5,6 },    // L
-	{ SDLK_m, 6,5 },    // M
-	{ SDLK_n, 5,5 },    // N
-	{ SDLK_o, 3,6 },    // O
-	{ SDLK_p, 3,7 },    // P
-	{ SDLK_q, 1,0 },    // Q
-	{ SDLK_r, 3,3 },    // R
-	{ SDLK_s, 5,1 },    // S
-	{ SDLK_t, 2,3 },    // T
-	{ SDLK_u, 3,5 },    // U
-	{ SDLK_v, 6,3 },    // V
-	{ SDLK_w, 2,1 },    // W
-	{ SDLK_x, 4,2 },    // X
-	{ SDLK_y, 4,4 },    // Y
-	{ SDLK_z, 6,1 },    // Z
-	{ SDLK_F10, 2,0 },    // f0
-	{ SDLK_F1, 7,1 },    // f1
-	{ SDLK_F2, 7,2 },    // f2
-	{ SDLK_F3, 7,3 },    // f3
-	{ SDLK_F4, 1,4 },    // f4
-	{ SDLK_F5, 7,4 },    // f5
-	{ SDLK_F6, 7,5 },    // f6
-	{ SDLK_F7, 1,6 },    // f7
-	{ SDLK_F8, 7,6 },    // f8
-	{ SDLK_F9, 7,7 },    // f9
+	{ SDLK_0,            2, 7 }, // 0
+	{ SDLK_1,            3, 0 }, // 1
+	{ SDLK_2,            3, 1 }, // 2
+	{ SDLK_3,            1, 1 }, // 3
+	{ SDLK_4,            1, 2 }, // 4
+	{ SDLK_5,            1, 3 }, // 5
+	{ SDLK_6,            3, 4 }, // 6
+	{ SDLK_7,            2, 4 }, // 7
+	{ SDLK_8,            1, 5 }, // 8
+	{ SDLK_9,            2, 6 }, // 9
+	{ SDLK_a,            4, 1 }, // A
+	{ SDLK_b,            6, 4 }, // B
+	{ SDLK_c,            5, 2 }, // C
+	{ SDLK_d,            3, 2 }, // D
+	{ SDLK_e,            2, 2 }, // E
+	{ SDLK_f,            4, 3 }, // F
+	{ SDLK_g,            5, 3 }, // G
+	{ SDLK_h,            5, 4 }, // H
+	{ SDLK_i,            2, 5 }, // I
+	{ SDLK_j,            4, 5 }, // J
+	{ SDLK_k,            4, 6 }, // K
+	{ SDLK_l,            5, 6 }, // L
+	{ SDLK_m,            6, 5 }, // M
+	{ SDLK_n,            5, 5 }, // N
+	{ SDLK_o,            3, 6 }, // O
+	{ SDLK_p,            3, 7 }, // P
+	{ SDLK_q,            1, 0 }, // Q
+	{ SDLK_r,            3, 3 }, // R
+	{ SDLK_s,            5, 1 }, // S
+	{ SDLK_t,            2, 3 }, // T
+	{ SDLK_u,            3, 5 }, // U
+	{ SDLK_v,            6, 3 }, // V
+	{ SDLK_w,            2, 1 }, // W
+	{ SDLK_x,            4, 2 }, // X
+	{ SDLK_y,            4, 4 }, // Y
+	{ SDLK_z,            6, 1 }, // Z
+	{ SDLK_F10,          2, 0 }, // f0
+	{ SDLK_F1,           7, 1 }, // f1
+	{ SDLK_F2,           7, 2 }, // f2
+	{ SDLK_F3,           7, 3 }, // f3
+	{ SDLK_F4,           1, 4 }, // f4
+	{ SDLK_F5,           7, 4 }, // f5
+	{ SDLK_F6,           7, 5 }, // f6
+	{ SDLK_F7,           1, 6 }, // f7
+	{ SDLK_F8,           7, 6 }, // f8
+	{ SDLK_F9,           7, 7 }, // f9
 
-	{ SDLK_MINUS,     5, 7 }, // "+" / ";"
-	{ SDLK_COMMA,     6, 6 }, // "<" / ","
-	{ SDLK_EQUALS,    1, 7 }, // "=" / "-"
-	{ SDLK_PERIOD,    6, 7 }, // ">" / "."
-	{ SDLK_BACKQUOTE, 2, 8 }, // "-" / "�"
+	{ SDLK_MINUS,        5, 7 }, // "+" / ";"
+	{ SDLK_COMMA,        6, 6 }, // "<" / ","
+	{ SDLK_EQUALS,       1, 7 }, // "=" / "-"
+	{ SDLK_PERIOD,       6, 7 }, // ">" / "."
+	{ SDLK_BACKQUOTE,    2, 8 }, // "-" / "�"
 
-	{ SDLK_SEMICOLON, 4, 7 }, // "@"
-	{ SDLK_QUOTE,     4, 8 }, // "*" / ":"
+	{ SDLK_SEMICOLON,    4, 7 }, // "@"
+	{ SDLK_QUOTE,        4, 8 }, // "*" / ":"
 
-	{ SDLK_SLASH, 6,8 }, // "/" / "?"
+	{ SDLK_SLASH,        6, 8 }, // "/" / "?"
 
-	{ SDLK_HASH, 1,8 }, // circumflex / tilde
+	{ SDLK_HASH,         1, 8 }, // circumflex / tilde
 
-	{ SDLK_PAUSE,           2, -2 }, // BREAK
+	{ SDLK_F11,          -2, -2 }, // BREAK
 
-	{ SDLK_LEFTBRACKET,     3, 8 }, // "[" / "{" or left arrow and 1/4 (mode 7)
-	{ SDLK_RIGHTBRACKET,    5, 8 }, // "]" / "}" or right arrow and 3/4 (mode 7)
+	{ SDLK_LEFTBRACKET,  3, 8 }, // "[" / "{" or left arrow and 1/4 (mode 7)
+	{ SDLK_RIGHTBRACKET, 5, 8 }, // "]" / "}" or right arrow and 3/4 (mode 7)
 
-	{ SDLK_BACKSLASH,       7, 8 }, // "\" / "|" or 1/4 and || (mode 7)
+	{ SDLK_BACKSLASH,    7, 8 }, // "\" / "|" or 1/4 and || (mode 7)
 
 	//,   -3,-3,  // ******** PAGE UP
 	//,   -3,-4,  // ******** PAGE DOWN
@@ -1333,14 +1333,16 @@ int ConvertSDLKeyToBBCKey(SDL_keysym keysym /*, int *pressed */, int *col, int *
 	//	bsymwaspressed = keystate[keysym.sym];
 
 	// Now we can convert this key into a BBC scancode:
-	for(;((p->row != -1) && (p->sym != keysym.sym));p++);
+	for (; p->row != -1 && p->sym != keysym.sym; p++)
+	{
+	}
 
 	// Map the key pressed. If not matched sets as -1, -1
 	*(row) = p->row;
 	*(col) = p->col;
 	//	*(pressed) = (bsymwaspressed ? 1 : 0);
 
-	//	printf("KEY [%d][%d][%d]\n", keysym.sym, p->row, p->col);
+	// printf("KEY [%d][%d][%d]\n", keysym.sym, p->row, p->col);
 
 	return 1;
 }

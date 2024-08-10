@@ -290,8 +290,7 @@ int main(int argc, char *argv[])
 					case SDL_KEYDOWN:
 					case SDL_KEYUP: {
 						if (event.key.keysym.sym == SDLK_F12 ||
-							event.key.keysym.sym == SDLK_F11 ||
-							event.key.keysym.sym == SDLK_MENU)
+						    event.key.keysym.sym == SDLK_MENU)
 						{
 							Show_Main();
 						}
