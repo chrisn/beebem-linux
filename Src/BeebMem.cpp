@@ -734,26 +734,33 @@ static void FiddleACCCON(unsigned char newValue) {
 }
 
 /*----------------------------------------------------------------------------*/
-static void RomWriteThrough(int Address, unsigned char Value) {
-	int bank = 0;
+
+static void RomWriteThrough(int Address, unsigned char Value)
+{
+	int Bank = 0;
 
 	// SW RAM board - bank to write to is selected by User VIA
 	if (SWRAMBoardEnabled)
 	{
-		bank = (UserVIAState.orb & UserVIAState.ddrb) & 0xf;
+		Bank = (UserVIAState.orb & UserVIAState.ddrb) & 0xf;
 
-		if (!RomWritable[bank])
+		if (!RomWritable[Bank])
 		{
-			bank = ROM_BANK_COUNT;
+			Bank = ROM_BANK_COUNT;
 		}
 	}
 	else
 	{
 		// Find first writable bank
-		while (bank < ROM_BANK_COUNT && !RomWritable[bank])
+		while (Bank < ROM_BANK_COUNT && !RomWritable[Bank])
 		{
-			++bank;
+			++Bank;
 		}
+	}
+
+	if (Bank < ROM_BANK_COUNT)
+	{
+		Roms[Bank][Address - 0x8000] = Value;
 	}
 }
 
