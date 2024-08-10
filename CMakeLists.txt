@@ -283,6 +283,9 @@ set(RESOURCES
     RelayOff.snd
     RelayOn.snd
     Teletext.fnt
+    Font5x8.bmp
+    Font10x16.bmp
+    Icon.bmp
 )
 
 install(DIRECTORY UserData DESTINATION share/beebem)

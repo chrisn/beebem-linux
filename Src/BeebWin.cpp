@@ -287,7 +287,7 @@ BeebWin::BeebWin()
 
 	#else
 
-	strcpy(m_AppPath, "/usr/local/share/beebem");
+	strcpy(m_AppPath, DATA_DIR);
 
 	const char *HomePath = getenv("HOME");
 

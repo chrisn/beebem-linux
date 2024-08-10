@@ -132,8 +132,8 @@ static EG_BOOL EG_DrawString_Initialise()
 
 	strcpy(smallfont, largefont);
 
-	strcat(largefont, "resources/font10x16.bmp");
-	strcat(smallfont, "resources/font5x8.bmp");
+	strcat(largefont, "Font10x16.bmp");
+	strcat(smallfont, "Font5x8.bmp");
 
 	label_low = SDL_LoadBMP(smallfont);
 	label_high = SDL_LoadBMP(largefont);

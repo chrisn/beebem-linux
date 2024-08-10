@@ -592,7 +592,7 @@ int InitialiseSDL()
 		}
 	}
 
-	icon = SDL_LoadBMP(DATA_DIR"/resources/icon.bmp");
+	icon = SDL_LoadBMP(DATA_DIR"/Icon.bmp");
 
 	if (icon != NULL)
 	{
