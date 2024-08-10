@@ -43,11 +43,12 @@ void DebugTrace(const char *format, ...)
 		vsprintf(buffer, format, args);
 
 		#ifdef WIN32
+
 		OutputDebugString(buffer);
 
 		#else
 
-		puts(buffer);
+		fwrite(buffer, length - 1, 1, stdout);
 
 		#endif
 
