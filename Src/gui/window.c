@@ -83,7 +83,7 @@ static EG_BOOL InitializeWindowStruct(EG_Window *window_ptr,const char *name_ptr
 	EG_Window_SetDimension(window_ptr, ( (SDL_Rect) {0,0,0,0}) );
 	EG_Window_SetHoldValue(window_ptr, NULL);
 
-	return(EG_TRUE);
+	return EG_TRUE;
 }
 
 /* Alloc new EG_Window struct and then initialize it to default values.
@@ -228,19 +228,23 @@ EG_BOOL EG_Window_SetName(EG_Window *window_ptr, const char *name_ptr)
 	return(EG_TRUE);
 }
 
-void	EG_Window_SetSurface(EG_Window *window_ptr, SDL_Surface *surface_ptr)
+void EG_Window_SetSurface(EG_Window *window_ptr, SDL_Surface *surface_ptr)
 {
-	CHECK_EG_WINDOW_IS_VALID_VOID(window_ptr);
+	if (window_ptr == NULL)
+	{
+		return;
+	}
+
 	window_ptr->surface_ptr = surface_ptr;
 }
 
-void	EG_Window_SetHoldValue(EG_Window *window_ptr, void *hold_value_ptr)
+void EG_Window_SetHoldValue(EG_Window *window_ptr, void *hold_value_ptr)
 {
 	CHECK_EG_WINDOW_IS_VALID_VOID(window_ptr);
 	window_ptr->hold_value_ptr = hold_value_ptr;
 }
 
-void* 	EG_Window_GetHoldValue(EG_Window *window_ptr)
+void* EG_Window_GetHoldValue(EG_Window *window_ptr)
 {
 	CHECK_EG_WINDOW_IS_VALID(window_ptr, NULL);
 	return(window_ptr->hold_value_ptr);
@@ -1077,9 +1081,13 @@ EG_BOOL EG_Window_Hide(EG_Window *window_ptr)
 
 void EG_Window_ClearBackgroundCache(EG_Window *window_ptr)
 {
-	CHECK_EG_WINDOW_IS_VALID_VOID(window_ptr);
+	if (window_ptr == NULL)
+	{
+		return;
+	}
 
-	if (window_ptr->window_background_surface_ptr != NULL){
+	if (window_ptr->window_background_surface_ptr != NULL)
+	{
 		SDL_FreeSurface(window_ptr->window_background_surface_ptr);
 		window_ptr->window_background_surface_ptr = NULL;
 	}
