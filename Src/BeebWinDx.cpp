@@ -1055,7 +1055,7 @@ void BeebWin::updateLines(HDC hDC, int StartY, int NLines)
 	{
 		if (i + StartY < 600)
 		{
-			RenderLine(i + StartY, (int)TeletextEnabled, ScreenAdjust);
+			RenderLine(i + StartY, TeletextEnabled, ScreenAdjust);
 		}
 	}
 

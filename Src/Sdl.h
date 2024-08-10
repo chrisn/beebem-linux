@@ -42,19 +42,19 @@ extern SDL_Surface *screen_ptr;
 
 // Global configuration options:
 
-extern int cfg_HaveX11;
+extern bool cfg_HaveX11;
 
 #define OPT_EMULATECRTGRAPHICS 30001
 #define CFG_EMULATECRTGRAPHICS "EmulateCrtGraphics"
-extern int cfg_EmulateCrtGraphics;
+extern bool cfg_EmulateCrtGraphics;
 
 #define OPT_EMUALTECRTTELETEXT 30002
 #define CFG_EMUALTECRTTELETEXT "EmulateCrtTeletext"
-extern int cfg_EmulateCrtTeletext;
+extern bool cfg_EmulateCrtTeletext;
 
 #define OPT_WANTLOWLATENCYSOUND 30003
 #define CFG_WANTLOWLATENCYSOUND "WantLowLatencySound"
-extern int cfg_WantLowLatencySound;
+extern bool cfg_WantLowLatencySound;
 
 #define RESOLUTION_640X512   0
 #define RESOLUTION_640X480_S 1
@@ -90,7 +90,7 @@ extern int cfg_WaitType;
 
 extern int InitialiseSDL();
 extern void UninitialiseSDL();
-extern void RenderLine(int line, int isTeletext, int xoffset);
+extern void RenderLine(int line, bool isTeletext, int xoffset);
 extern void SaferSleep(unsigned int);
 extern unsigned char* GetSDLScreenLinePtr(int);
 extern void SetWindowTitle(const char *pszTitle);

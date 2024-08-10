@@ -811,7 +811,7 @@ static EG_BOOL Make_Main(SDL_Surface *dst_ptr)
 	loc = CalcRect(10, win.h-10-17, 150, 16);
 	widget_ptr = EG_TickBox_Create("main_fullscreen", col, "Fullscreen", loc);
 	gui.fullscreen_widget_ptr = widget_ptr;
-	if (mainWin->IsFullScreen()) EG_TickBox_Tick(widget_ptr);
+	// if (mainWin->IsFullScreen()) EG_TickBox_Tick(widget_ptr); // TODO
 	EG_TickBox_SetMyCallback_OnClick(widget_ptr, Main_Tick_FullScreen, &gui);
 	//EG_TickBox_Disable(widget_ptr);
 	EG_Window_AddWidget(window_ptr, widget_ptr);

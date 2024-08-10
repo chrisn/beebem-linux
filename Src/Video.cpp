@@ -168,34 +168,6 @@ static void VideoAddCursor(void);
 void AdjustVideo();
 void VideoAddLEDs(void);
 
-
-//+>
-//## Just for now.. Hack to fudge scanline width in graphic/teletext code:
-//## Dave Eggleston - will go when video support is rewritten.
-static int screen_width;
-
-#if 0
-
-static void set_screen_width(void)
-{
-//	screen_width = fullscreen;
-
-//	switch (fullscreen?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution) {
-	switch (mainWin->IsFullScreen()?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution) {
-	case RESOLUTION_640X512:
-	case RESOLUTION_640X480_S:
-	case RESOLUTION_640X480_V:
-		screen_width=640;
-		break;
-	default:
-		screen_width=320;
-	}
-}
-
-#endif
-
-//<+
-
 /*-------------------------------------------------------------------------------------------------------------*/
 
 // Build enhanced mode 7 font
@@ -679,47 +651,9 @@ static void DoFastTable() {
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/
-#define BEEB_DOTIME_SAMPLESIZE 50
 
-static void VideoStartOfFrame(void) {
-//--#ifdef BEEB_DOTIME
-//--  static int Have_GotTime=0;
-//--  static struct tms previous,now;
-//--  static int Time_FrameCount=0;
-//--
-//--  double frametime;
-//--  static CycleCountT OldCycles=0;
-//--
-//--  int CurStart;
-//--
-//--
-//--  if (!Have_GotTime) {
-//--    times(&previous);
-//--    Time_FrameCount=-1;
-//--    Have_GotTime=1;
-//--  };
-//--
-//--  if (Time_FrameCount==(BEEB_DOTIME_SAMPLESIZE-1)) {
-//--    times(&now);
-//--    frametime=now.tms_utime-previous.tms_utime;
-//--#ifndef SUNOS
-//--#ifndef HPUX
-//--                frametime/=(double)CLOCKS_PER_SEC;
-//--#else
-//--                frametime/=(double)sysconf(_SC_CLK_TCK);
-//--#endif
-//--#else
-//--                frametime/=(double)HZ;
-//--#endif
-//--    frametime/=(double)BEEB_DOTIME_SAMPLESIZE;
-//--    cerr << "Frametime: " << frametime << "s fps=" << (1/frametime) << "Total cycles=" << TotalCycles << "Cycles in last unit=" << (TotalCycles-OldCycles) << "\n";
-//--    OldCycles=TotalCycles;
-//--    previous=now;
-//--    Time_FrameCount=0;
-//--  } else Time_FrameCount++;
-//--
-//--#endif
-
+static void VideoStartOfFrame()
+{
   /* FrameNum is determined by the window handler */
   if (VideoState.IsNewTVFrame)	// RTW - only calibrate timing once per frame
   {
@@ -790,9 +724,6 @@ static void LowLevelDoScanLineNarrow() {
   unsigned char *CurrentPtr;
   int BytesToGo=CRTC_HorizontalDisplayed;
 
-//+>
-  if (screen_width == 640){
-//<+
   EightUChars *vidPtr=mainWin->GetLinePtr(VideoState.PixmapLine);
 
   /* If the step is 4 then each byte corresponds to one entry in the fasttable
@@ -808,19 +739,6 @@ static void LowLevelDoScanLineNarrow() {
     *(vidPtr++)=FastTable[*(CurrentPtr+16)];
     *(vidPtr++)=FastTable[*(CurrentPtr+24)];
   };
-//+>
-  }else{
-	unsigned char *vidPtr2
-	 = (unsigned char*) mainWin->GetLinePtr(VideoState.PixmapLine);
-
-	CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
-	for(;BytesToGo;CurrentPtr+=8,BytesToGo--) {
-		*(vidPtr2++)=FastTable[*CurrentPtr].data[0];
-		*(vidPtr2++)=FastTable[*CurrentPtr].data[2];
-		*(vidPtr2++)=FastTable[*CurrentPtr].data[4];
-		*(vidPtr2++)=FastTable[*CurrentPtr].data[6];
-	}
-  }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -830,9 +748,6 @@ static void LowLevelDoScanLineNarrow() {
 static void LowLevelDoScanLineNarrowNot4Bytes() {
   unsigned char *CurrentPtr;
   int BytesToGo=CRTC_HorizontalDisplayed;
-//+>
-  if (screen_width == 640){
-//<+
   EightUChars *vidPtr=mainWin->GetLinePtr(VideoState.PixmapLine);
 
   /* If the step is 4 then each byte corresponds to one entry in the fasttable
@@ -841,26 +756,6 @@ static void LowLevelDoScanLineNarrowNot4Bytes() {
 
   for(;BytesToGo;CurrentPtr+=8,BytesToGo--)
     (vidPtr++)->eightbyte=FastTable[*CurrentPtr].eightbyte;
-
-//+>
-  }else{
-    BytesToGo=CRTC_HorizontalDisplayed;
-    unsigned char *vidPtr2
-      = (unsigned char*) mainWin->GetLinePtr16(VideoState.PixmapLine);
-    CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
-    for(;BytesToGo;CurrentPtr+=8,BytesToGo--) {
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[0];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[2];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[4];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[6];
-//      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[8];
-//      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[10];
-//      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[12];
-//      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[14];
-    }
-  }
-//<+
-
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -869,9 +764,6 @@ static void LowLevelDoScanLineWide() {
   unsigned char *CurrentPtr;
   int BytesToGo=CRTC_HorizontalDisplayed;
 
-//+>
-  if (screen_width == 640){
-//<+
   SixteenUChars *vidPtr=mainWin->GetLinePtr16(VideoState.PixmapLine);
 
   /* If the step is 4 then each byte corresponds to one entry in the fasttable
@@ -887,23 +779,6 @@ static void LowLevelDoScanLineWide() {
     *(vidPtr++)=FastTableDWidth[*(CurrentPtr+16)];
     *(vidPtr++)=FastTableDWidth[*(CurrentPtr+24)];
   };
-//+>
-  }else{
-    BytesToGo=CRTC_HorizontalDisplayed;
-    unsigned char *vidPtr2
-      = (unsigned char*) mainWin->GetLinePtr16(VideoState.PixmapLine);
-    CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
-    for(;BytesToGo;CurrentPtr+=8,BytesToGo--) {
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[0];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[2];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[4];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[6];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[8];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[10];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[12];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[14];
-    }
-  }
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -913,32 +788,10 @@ static void LowLevelDoScanLineWideNot4Bytes() {
   unsigned char *CurrentPtr;
   int BytesToGo=CRTC_HorizontalDisplayed;
 
-//+>
-  if (screen_width == 640){
-//<+
   SixteenUChars *vidPtr=mainWin->GetLinePtr16(VideoState.PixmapLine);
   CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
   for(;BytesToGo;CurrentPtr+=8,BytesToGo--)
     *(vidPtr++)=FastTableDWidth[*CurrentPtr];
-//+>
-  }else{
-    BytesToGo=CRTC_HorizontalDisplayed;
-    unsigned char *vidPtr2
-      = (unsigned char*) mainWin->GetLinePtr16(VideoState.PixmapLine);
-    CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
-    for(;BytesToGo;CurrentPtr+=8,BytesToGo--) {
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[0];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[2];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[4];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[6];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[8];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[10];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[12];
-      *(vidPtr2++)=FastTableDWidth[*CurrentPtr].data[14];
-    }
-  }
-//<+
-
 }
 
 /*-------------------------------------------------------------------------------------------------------------*/

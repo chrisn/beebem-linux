@@ -74,18 +74,18 @@ SDL_Surface *video_output = nullptr;
 SDL_Surface *screen_ptr = nullptr;
 
 // If we're using X11, we need to release the Caps Lock key ourselves.
-int	cfg_HaveX11 = 0;
+bool cfg_HaveX11 = false;
 
 // Emulate a CRT display (odd scanlines are always dark. Will become an
 // option later on).
 
 //#define EMULATE_CRT
-int cfg_EmulateCrtGraphics = 1;
-int cfg_EmulateCrtTeletext = 0;
+bool cfg_EmulateCrtGraphics = false;
+bool cfg_EmulateCrtTeletext = false;
 
-int cfg_Fullscreen_Resolution = RESOLUTION_640X480_S; // -1;
-int cfg_Windowed_Resolution = RESOLUTION_640X480_S;  // -1;
-int cfg_VerticalOffset = ((512-480)/2);
+int cfg_Fullscreen_Resolution = RESOLUTION_640X512; // -1;
+int cfg_Windowed_Resolution = RESOLUTION_640X512;  // -1;
+int cfg_VerticalOffset = 0; // ((512-480)/2);
 
 /* If this is defined then the sound code will dump samples (causing distortion)
  * whenever the buffer becomes too large (i.e.: over 5 lots of samples or some
@@ -105,7 +105,7 @@ int cfg_VerticalOffset = ((512-480)/2);
  * latency problem) then remove the definition below.
  */
 //#define WANT_LOW_LATENCY_SOUND
-int	cfg_WantLowLatencySound = 1;
+bool cfg_WantLowLatencySound = true;
 
 // Wait type for 'sleep'.
 int	cfg_WaitType = OPT_SLEEP_OS;
@@ -587,7 +587,9 @@ int InitialiseSDL()
 	if (SDL_VideoDriverName(video_hardware, 1024) != NULL)
 	{
 		if (strncasecmp(video_hardware, "x11", 1024) == 0)
-			cfg_HaveX11 = 1;
+		{
+			cfg_HaveX11 = true;
+		}
 	}
 
 	icon = SDL_LoadBMP(DATA_DIR"/resources/icon.bmp");
@@ -852,14 +854,17 @@ void ClearVideoWindow()
 	SDL_UpdateRect(screen_ptr, 0, 0, screen_ptr->w, screen_ptr->h);
 }
 
-void RenderLine(int line, int isTeletext, int xoffset)
+void RenderLine(int line, bool isTeletext, int xoffset)
 {
-	static int last_isTeletext = 1, last_xoffset = 0, last_mode_graphics = 0, last_mode_text = 0;
+	static bool last_isTeletext = true;
+	static int last_xoffset = 0;
+	static bool last_mode_graphics = false;
+	static bool last_mode_text = false;
 
 	bool fullscreen_val = false;
 
-	int scan_double = 0;
-	int disable_grille_for_teletext = 0;
+	bool scan_double = false;
+	bool disable_grille_for_teletext = false;
 
 	if (mainWin!=NULL) fullscreen_val = mainWin->IsFullScreen();
 
@@ -931,23 +936,22 @@ void RenderLine(int line, int isTeletext, int xoffset)
 			case RESOLUTION_320X240_S:
 				//window_y = (window_y * 0.94);
 				window_y = GetScaledScanline(window_y);
-				disable_grille_for_teletext =1;
+				disable_grille_for_teletext = true;
 				break;
 			case RESOLUTION_320X240_V:
 				//window_y = (window_y * 0.94);
 				window_y = GetScaledScanline(window_y);
-				disable_grille_for_teletext=1;
+				disable_grille_for_teletext = true;
 				break;
 			case RESOLUTION_320X256:
-				disable_grille_for_teletext=1;
+				disable_grille_for_teletext = true;
 				break;
 			default:
 				break;
 			}
 
-
 //#ifdef EMULATE_CRT
-			if (cfg_EmulateCrtTeletext == 0 || (line & 1) == 1 || disable_grille_for_teletext == 1)
+			if (!cfg_EmulateCrtTeletext || (line & 1) == 1 || disable_grille_for_teletext)
 			{
 //#endif
 //				src.x=36; src.y=line; src.w=SDL_WINDOW_WIDTH - (36 + 124); src.h=1;
@@ -979,37 +983,36 @@ void RenderLine(int line, int isTeletext, int xoffset)
 			if (window_y < 0 || window_y > 255)
 				return;
 
-//			switch ( fullscreen?cfg_Fullscreen_Resolution:cfg_Windowed_Resolution)
 			switch (fullscreen_val ? cfg_Fullscreen_Resolution : cfg_Windowed_Resolution)
 			{
 			case RESOLUTION_640X512:
 				window_y = window_y * 2;
-				scan_double = 1;
+				scan_double = true;
 				break;
 			case RESOLUTION_640X480_S:
 				//window_y = (window_y * 2 * 0.94);
-				window_y = GetScaledScanline(window_y*2);
-				scan_double = 1;
+				window_y = GetScaledScanline(window_y * 2);
+				scan_double = true;
 				break;
 			case RESOLUTION_640X480_V:
 				window_y = window_y * 2;
 				window_y -= cfg_VerticalOffset;
-				scan_double = 1;
+				scan_double = true;
 				break;
 			case RESOLUTION_320X240_S:
 				//window_y = ((window_y+1) * 0.94);
-				window_y = GetScaledScanline(window_y+1);
-				scan_double = 0;
+				window_y = GetScaledScanline(window_y + 1);
+				scan_double = false;
 				break;
 			case RESOLUTION_320X240_V:
-				window_y -= cfg_VerticalOffset>>1;
-				scan_double = 0;
+				window_y -= cfg_VerticalOffset >> 1;
+				scan_double = false;
 				break;
 			case RESOLUTION_320X256:
-				scan_double = 0;
+				scan_double = false;
 				break;
 			default:
-				scan_double = 0;
+				scan_double = false;
 				break;
 			}
 			// Only do this if 512.
