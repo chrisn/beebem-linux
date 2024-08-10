@@ -29,6 +29,10 @@ Boston, MA  02110-1301, USA.
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef WIN32
+#include "Sdl.h"
+#endif
+
 #include "Sound.h"
 #include "6502core.h"
 #include "AviWriter.h"
@@ -141,12 +145,12 @@ SoundStreamer *pSoundStreamer = nullptr;
 
 static void WriteToSoundBuffer(BYTE *pSoundData)
 {
+	#ifdef WIN32
+
 	if (pSoundStreamer != nullptr)
 	{
 		pSoundStreamer->Stream(pSoundData);
 	}
-
-	#ifdef WIN32
 
 	if (aviWriter != nullptr)
 	{
@@ -159,6 +163,10 @@ static void WriteToSoundBuffer(BYTE *pSoundData)
 			mainWin->EndVideo();
 		}
 	}
+
+	#else
+
+	AddBytesToSDLSoundBuffer(pSoundData, SoundBufferSize);
 
 	#endif
 }
@@ -527,6 +535,8 @@ static double CyclesToSamples(int BeebCycles)
 
 static void InitAudioDev()
 {
+	#ifdef WIN32
+
 	if (pSoundStreamer != nullptr)
 	{
 		delete pSoundStreamer;
@@ -535,6 +545,12 @@ static void InitAudioDev()
 	pSoundStreamer = CreateSoundStreamer(SoundSampleRate, 8, 1);
 
 	SoundEnabled = pSoundStreamer != nullptr;
+
+	#else
+
+	InitializeSDLSound(SoundSampleRate);
+
+	#endif
 }
 
 /****************************************************************************/
@@ -724,11 +740,19 @@ void SetSound(SoundState state)
 
 void SoundReset()
 {
+	#ifdef WIN32
+
 	if (pSoundStreamer != nullptr)
 	{
 		delete pSoundStreamer;
 		pSoundStreamer = nullptr;
 	}
+
+	#else
+
+	FreeSDLSound();
+
+	#endif
 
 	ClearTrigger(SoundTrigger);
 
