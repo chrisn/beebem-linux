@@ -205,22 +205,13 @@ BOOL MessageBeep(UINT /* uType */)
 	return TRUE;
 }
 
-void _splitpath(const char *path,
-                char *drive,
-                char *dir,
-                char *fname,
-                char *ext)
-{
-	// TODO
-}
-
 void _makepath(char *path,
                const char *drive,
                const char *dir,
                const char *fname,
                const char *ext)
 {
-	AppendPath(path, drive);
+	strcpy(path, drive);
 	AppendPath(path, dir);
 	AppendPath(path, fname);
 	strcat(path, ext);

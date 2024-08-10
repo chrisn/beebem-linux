@@ -268,8 +268,7 @@ BeebWin::BeebWin()
 	char AppDrive[_MAX_DRIVE];
 	char AppDir[_MAX_DIR];
 	GetModuleFileName(nullptr, AppPath, MAX_PATH);
-	_splitpath(AppPath, AppDrive, AppDir, nullptr, nullptr);
-	_makepath(m_AppPath, AppDrive, AppDir, nullptr, nullptr);
+	GetPathFromFileName(AppPath, m_AppPath, MAX_PATH);
 
 	// Read user data path from registry
 	if (!RegGetStringValue(HKEY_CURRENT_USER, CFG_REG_KEY, "UserDataFolder",
@@ -5482,13 +5481,10 @@ void BeebWin::CheckForLocalPrefs(const char *path, bool bLoadPrefs)
 		return;
 
 	char file[MAX_PATH];
-	char drive[_MAX_DRIVE];
-	char dir[_MAX_DIR];
-
-	_splitpath(path, drive, dir, NULL, NULL);
 
 	// Look for prefs file
-	_makepath(file, drive, dir, "Preferences", "cfg");
+	GetPathFromFileName(path, file, MAX_PATH);
+	AppendPath(file, "Preferences.cfg");
 
 	if (FileExists(file))
 	{
@@ -5518,7 +5514,8 @@ void BeebWin::CheckForLocalPrefs(const char *path, bool bLoadPrefs)
 	}
 
 	// Look for ROMs file
-	_makepath(file, drive, dir, "Roms", "cfg");
+	GetPathFromFileName(path, file, MAX_PATH);
+	AppendPath(file, "Roms.cfg");
 
 	if (FileExists(file))
 	{

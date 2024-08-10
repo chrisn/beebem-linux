@@ -200,14 +200,6 @@ BOOL KillTimer(HWND hWnd, UINT_PTR nIDEvent);
 
 BOOL PathIsRelative(LPCSTR pszPath);
 
-void _splitpath(
-   const char *path,
-   char *drive,
-   char *dir,
-   char *fname,
-   char *ext
-);
-
 void _makepath(
    char *path,
    const char *drive,
