@@ -128,7 +128,7 @@ int DebugHistoryIndex = 0;
 
 INT_PTR CALLBACK DebugDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
-static void DebugParseCommand(char *command);
+static void DebugParseCommand(const char *command);
 static void DebugWriteMem(int addr, bool host, unsigned char data);
 static int DebugDisassembleCommand(int addr, int count, bool host);
 static void DebugMemoryDump(int addr, int count, bool host);
@@ -137,7 +137,7 @@ static void DebugToggleRun();
 static void DebugUpdateWatches(bool all);
 static bool DebugLookupAddress(int addr, AddrInfo* addrInfo);
 static void DebugHistoryMove(int delta);
-static void DebugHistoryAdd(char* command);
+static void DebugHistoryAdd(const char* command);
 static void DebugSetCommandString(const char* str);
 
 #endif
@@ -170,41 +170,41 @@ static bool DebugCmdClear(const char* args);
 // Aliases are supported, put these below the command they reference and leave argspec/help
 // empty.
 static const DebugCmd DebugCmdTable[] = {
-	{ "bp",         DebugCmdToggleBreak,   "start[-end] [name]", "Sets/Clears a breakpoint or break range." },
+	{ "bp",         DebugCmdToggleBreak,   "<start>[-<end>] [<name>]", "Set or clear a breakpoint or break range" },
 	{ "b",          DebugCmdToggleBreak,   "", ""}, // Alias of "bp"
 	{ "breakpoint", DebugCmdToggleBreak,   "", ""}, // Alias of "bp"
-	{ "labels",     DebugCmdLabels,        "load/show [filename]", "Loads labels from VICE file, or display known labels." },
+	{ "labels",     DebugCmdLabels,        "<load|show> [<filename>]", "Load labels from VICE file, or display known labels" },
 	{ "l",          DebugCmdLabels,        "", ""}, // Alias of "labels"
-	{ "help",       DebugCmdHelp,          "[command/addr]", "Displays help for the specified command or address." },
+	{ "help",       DebugCmdHelp,          "[<item>]", "Display help for the specified command or address" },
 	{ "?",          DebugCmdHelp,          "", ""}, // Alias of "help"
 	{ "q",          DebugCmdHelp,          "", ""}, // Alias of "help"
-	{ "break",      DebugCmdBreakContinue, "", "Break/Continue." },
+	{ "break",      DebugCmdBreakContinue, "", "Break or continue" },
 	{ ".",          DebugCmdBreakContinue, "",""}, // Alias of "break"
-	{ "set",        DebugCmdSet,           "host/parasite/rom/os/endian/breakpoints/decimal/brk on/off", "Turns various UI checkboxes on or off." },
-	{ "next",       DebugCmdNext,          "[count]", "Execute the specified number instructions, default 1." },
+	{ "set",        DebugCmdSet,           "<host|parasite|rom|os|endian|breakpoints|decimal|brk> <on|off>", "Turn various UI checkboxes on or off" },
+	{ "next",       DebugCmdNext,          "[<count>]", "Execute the specified number instructions, default 1" },
 	{ "n",          DebugCmdNext,          "", ""}, // Alias of "next"
-	{ "over",       DebugCmdOver,          "", "Step over JSR (host only)." },
+	{ "over",       DebugCmdOver,          "", "Step over JSR (host only)" },
 	{ "o",          DebugCmdOver,          "", ""}, // Alias of "over"
-	{ "peek",       DebugCmdPeek,          "[p] [start] [count]", "Dumps memory to console." },
+	{ "peek",       DebugCmdPeek,          "[p] [<start>] [<count>]", "Dump memory to the console" },
 	{ "m",          DebugCmdPeek,          "", ""}, // Alias of "peek"
-	{ "code",       DebugCmdCode,          "[p] [start] [count]", "Disassembles specified range." },
+	{ "code",       DebugCmdCode,          "[p] [<start>] [<count>]", "Disassembles specified range" },
 	{ "d",          DebugCmdCode,          "", ""}, // Alias of "code"
-	{ "watch",      DebugCmdWatch,         "[p] addr [b/w/d] [name]", "Sets/Clears a byte/word/dword watch at addr." },
+	{ "watch",      DebugCmdWatch,         "[p] <addr> <b|w|d> [<name>]", "Set or clear a byte, word, or dword watch at addr" },
 	{ "e",          DebugCmdWatch,         "", ""}, // Alias of "watch"
-	{ "state",      DebugCmdState,         "v/u/s/e/t/m/r", "Displays state of Video/UserVIA/SysVIA/Serial/Tube/Memory/Roms." },
+	{ "state",      DebugCmdState,         "<v|u|s|e|t|m|r>", "Display state of Video/UserVIA/SysVIA/Serial/Tube/Memory/ROMs" },
 	{ "s",          DebugCmdState,         "", ""}, // Alias of "state"
-	{ "save",       DebugCmdSave,          "[count] [file]", "Writes console lines to file." },
+	{ "save",       DebugCmdSave,          "[<count>] [<filename>]", "Write console lines to file" },
 	{ "w",          DebugCmdSave,          "", ""}, // Alias of "save"
-	{ "poke",       DebugCmdPoke,          "[p] start byte [byte...]", "Write bytes to memory." },
+	{ "poke",       DebugCmdPoke,          "[p] <start> <byte> [<byte> ...]", "Write bytes to memory" },
 	{ "c",          DebugCmdPoke,          "", ""}, // Alias of "poke"
-	{ "goto",       DebugCmdGoto,          "[p] addr", "Jump to address." },
+	{ "goto",       DebugCmdGoto,          "[p] <addr>", "Jump to address" },
 	{ "g",          DebugCmdGoto,          "", ""}, // Alias of "goto"
-	{ "file",       DebugCmdFile,          "r/w addr [count] [filename]", "Read/Write memory at address from/to file." },
+	{ "file",       DebugCmdFile,          "<r|w> <addr> [<count>] [<filename>]", "Read/Write memory at address from/to file" },
 	{ "f",          DebugCmdFile,          "", ""}, // Alias of "file"
-	{ "echo",       DebugCmdEcho,          "string", "Write string to console." },
+	{ "echo",       DebugCmdEcho,          "<string>", "Write a string to the console" },
 	{ "!",          DebugCmdEcho,          "", "" }, // Alias of "echo"
-	{ "script",     DebugCmdScript,        "[filename]", "Executes a debugger script." },
-	{ "clear",      DebugCmdClear,         "", "Clears the console." }
+	{ "script",     DebugCmdScript,        "[<filename>]", "Execute a debugger script" },
+	{ "clear",      DebugCmdClear,         "", "Clear the console." }
 };
 
 static const InstInfo optable_6502[256] =
@@ -1043,6 +1043,8 @@ void DebugOpenDialog(HINSTANCE hinst, HWND /* hwndMain */)
 
 	hCurrentDialog = hwndDebug;
 	hCurrentAccelTable = haccelDebug;
+
+	DisableRoundedCorners(hwndDebug);
 	ShowWindow(hwndDebug, SW_SHOW);
 
 	hwndInfo = GetDlgItem(hwndDebug, IDC_DEBUGINFO);
@@ -2157,26 +2159,23 @@ void DebugLoadLabels(const char* filename)
 	}
 }
 
-void DebugRunScript(const char* filename)
+void DebugRunScript(const char* FileName)
 {
-	FILE *infile = fopen(filename,"r");
-	if (infile == NULL)
+	std::ifstream Input(FileName);
+
+	if (!Input)
 	{
-		DebugDisplayInfoF("Failed to read script file:\n  %s", filename);
+		DebugDisplayInfoF("Failed to read script file:\n  %s", FileName);
+		return;
 	}
-	else
+
+	DebugDisplayInfoF("Running script %s", FileName);
+
+	std::string Line;
+
+	while (std::getline(Input, Line))
 	{
-		DebugDisplayInfoF("Running script %s",filename);
-
-		char buf[1024];
-
-		while(fgets(buf, _countof(buf), infile) != NULL)
-		{
-			DebugChompString(buf);
-			if(strlen(buf) > 0)
-				DebugParseCommand(buf);
-		}
-		fclose(infile);
+		DebugParseCommand(Line.c_str());
 	}
 }
 
@@ -2304,7 +2303,7 @@ int DebugParseLabel(char *label)
 	return it != Labels.end() ? it->addr : -1;
 }
 
-static void DebugHistoryAdd(char *command)
+static void DebugHistoryAdd(const char *command)
 {
 	// Do nothing if this is the same as the last command
 
@@ -2371,76 +2370,92 @@ static void DebugSetCommandString(const char* str)
 	}
 }
 
-static void DebugParseCommand(char *command)
+static void DebugParseCommand(const char *command)
 {
-	char label[65], addrStr[6];
-	char info[MAX_PATH + 100];
-
-	while(command[0] == '\n' || command[0] == '\r' || command[0] == '\t' || command[0] == ' ')
+	while (isspace(command[0]))
+	{
 		command++;
+	}
 
 	if (command[0] == '\0' || command[0] == '/' || command[0] == ';' || command[0] == '#')
+	{
 		return;
+	}
 
 	DebugHistoryAdd(command);
 
+	char info[MAX_PATH + 100];
 	info[0] = '\0';
-	char *args = strchr(command, ' ');
-	if(args == NULL)
+
+	const char *p = command;
+
+	std::string cmd;
+
+	while (!isspace(*p) && *p != '\0')
 	{
-		args = "";
+		cmd.push_back(*p);
+		p++;
 	}
-	else
+
+	const char *args = p;
+
+	// Resolve labels:
+	while (args[0] != '\0')
 	{
-		char* commandEnd = args;
-		// Resolve labels:
-		while(args[0] != '\0')
+		if (isspace(args[0]) && args[1] == '.')
 		{
-			if(args[0] == ' ' && args[1] == '.')
+			char label[65];
+
+			if (sscanf(&args[2], "%64s", label) == 1)
 			{
-				if(sscanf(&args[2], "%64s", label) == 1)
+				// Try to resolve label:
+				int addr = DebugParseLabel(label);
+
+				if (addr == -1)
 				{
-					// Try to resolve label:
-					int addr = DebugParseLabel(label);
-					if(addr == -1)
-					{
-						DebugDisplayInfoF("Error: Label %s not found", label);
-						return;
-					}
-					sprintf(addrStr, " %04X", addr);
-					strncat(info, addrStr, _countof(addrStr));
-					args += strnlen(label,_countof(label)) + 1;
+					DebugDisplayInfoF("Error: Label %s not found", label);
+					return;
 				}
+
+				char addrStr[6];
+				sprintf(addrStr, " %04X", addr);
+				strncat(info, addrStr, _countof(addrStr));
+				args += strnlen(label,_countof(label)) + 1;
 			}
-			else
-			{
-				size_t end = strnlen(info, _countof(info));
-				info[end] = args[0];
-				info[end+1] = '\0';
-			}
-			args++;
+		}
+		else
+		{
+			size_t end = strnlen(info, _countof(info));
+			info[end] = args[0];
+			info[end + 1] = '\0';
 		}
 
-		args = info;
-		while(args[0] == ' ')
-			args++;
+		args++;
+	}
 
-		commandEnd[0] = '\0';
+	args = info;
+
+	while (isspace(args[0]))
+	{
+		args++;
 	}
 
 	SetDlgItemText(hwndDebug, IDC_DEBUGCOMMAND, "");
 
-	for(int i = 0; i < _countof(DebugCmdTable); i++)
+	for (int i = 0; i < _countof(DebugCmdTable); i++)
 	{
-		if(_stricmp(DebugCmdTable[i].name, command) == 0)
+		if (_stricmp(DebugCmdTable[i].name, cmd.c_str()) == 0)
 		{
-			if(!DebugCmdTable[i].handler(args))
+			if (!DebugCmdTable[i].handler(args))
+			{
 				DebugCmdHelp(command);
+			}
+
 			return;
 		}
 	}
 
-	DebugDisplayInfoF("Invalid command %s - try 'help'",command);
+	DebugDisplayInfoF("Invalid command %s - try 'help'", command);
 }
 
 /**************************************************************
@@ -2480,28 +2495,29 @@ static bool DebugCmdGoto(const char* args)
 
 static bool DebugCmdFile(const char* args)
 {
-	char mode;
-	int addr = 0;
-	unsigned char buffer[MAX_BUFFER];
-	int count = MAX_BUFFER;
-	char filename[MAX_PATH];
-	memset(filename, 0, MAX_PATH);
+	char Mode;
+	int StartAddress = 0;
+	unsigned char Buffer[MAX_BUFFER];
+	int Count = MAX_BUFFER;
+	char FileName[MAX_PATH];
+	memset(FileName, 0, MAX_PATH);
 
-	int result = sscanf(args,"%c %x %u %259c", &mode, &addr, &count, filename);
+	int Result = sscanf(args,"%c %x %u %259c", &Mode, &StartAddress, &Count, FileName);
 
-	if (result < 3) {
-		sscanf(args,"%c %x %259c", &mode, &addr, filename);
+	if (Result < 3)
+	{
+		sscanf(args,"%c %x %259c", &Mode, &StartAddress, FileName);
 	}
 
-	mode = static_cast<char>(tolower(mode));
+	Mode = static_cast<char>(tolower(Mode));
 
-	if (filename[0] == '\0')
+	if (FileName[0] == '\0')
 	{
-		const char* filter = "Memory Dump Files (*.dat)\0*.dat\0" "All Files (*.*)\0*.*\0";
+		const char* Filter = "Memory Dump Files (*.dat)\0*.dat\0" "All Files (*.*)\0*.*\0";
 
-		FileDialog Dialog(hwndDebug, filename, MAX_PATH, nullptr, filter);
+		FileDialog Dialog(hwndDebug, FileName, MAX_PATH, nullptr, Filter);
 
-		if (mode == 'w')
+		if (Mode == 'w')
 		{
 			if (!Dialog.Save())
 			{
@@ -2509,9 +2525,9 @@ static bool DebugCmdFile(const char* args)
 			}
 
 			// Add a file extension if the user did not specify one
-			if (strchr(filename, '.') == nullptr)
+			if (strchr(FileName, '.') == nullptr)
 			{
-				strcat(filename, ".dat");
+				strcat(FileName, ".dat");
 			}
 		}
 		else
@@ -2523,55 +2539,78 @@ static bool DebugCmdFile(const char* args)
 		}
 	}
 
-	if (filename[0] != '\0')
+	if (FileName[0] != '\0')
 	{
-		addr &= 0xFFFF;
+		StartAddress &= 0xFFFF;
 
-		if (mode == 'r')
+		if (Mode == 'r')
 		{
-			FILE *fd = fopen(filename, "rb");
-			if (fd)
+			FILE *pFile = fopen(FileName, "rb");
+
+			if (pFile != nullptr)
 			{
-				if(count > MAX_BUFFER)
-					count = MAX_BUFFER;
-				count = (int)fread(buffer, 1, count, fd);
-				fclose(fd);
+				if (Count > MAX_BUFFER)
+				{
+					Count = MAX_BUFFER;
+				}
 
-				for (int i = 0; i < count; ++i)
-					BeebWriteMem((addr + i) & 0xffff, buffer[i] & 0xff);
+				size_t BytesRead = fread(Buffer, 1, Count, pFile);
 
-				DebugDisplayInfoF("Read %d bytes from %s to address 0x%04X", count,filename, addr);
+				fclose(pFile);
+
+				size_t i = 0;
+				int Address = StartAddress;
+
+				while (i < BytesRead && Address < 0x10000)
+				{
+					BeebWriteMem(Address, Buffer[i]);
+
+					i++;
+					Address++;
+				}
+
+				DebugDisplayInfoF("Read %u bytes from %s to address 0x%04X", i, FileName, StartAddress);
 
 				DebugUpdateWatches(true);
 			}
 			else
 			{
-				DebugDisplayInfoF("Failed to open file: %s", filename);
+				DebugDisplayInfoF("Failed to open file: %s", FileName);
 			}
 
 			return true;
 		}
-		else if (mode == 'w')
+		else if (Mode == 'w')
 		{
-			FILE *fd = fopen(filename, "wb");
+			FILE *pFile = fopen(FileName, "wb");
 
-			if (fd)
+			if (pFile != nullptr)
 			{
-				if (count + addr > MAX_BUFFER)
+				if (StartAddress + Count > MAX_BUFFER)
 				{
-					count = MAX_BUFFER - addr;
+					Count = MAX_BUFFER - StartAddress;
 				}
 
-				for (int i = 0; i < count; ++i)
-					buffer[i] = DebugReadMem((addr + i) & 0xffff, true);
+				int i = 0;
+				int Address = StartAddress;
 
-				count = (int)fwrite(buffer, 1, count, fd);
-				fclose(fd);
-				DebugDisplayInfoF("Wrote %d bytes from address 0x%04X to %s", count, addr,filename);
+				while (i < Count && Address < 0x10000)
+				{
+					Buffer[i] = DebugReadMem(Address, true);
+
+					i++;
+					Address++;
+				}
+
+				size_t BytesWritten = fwrite(Buffer, 1, i, pFile);
+
+				fclose(pFile);
+
+				DebugDisplayInfoF("Wrote %u bytes from address 0x%04X to %s", BytesWritten, StartAddress, FileName);
 			}
 			else
 			{
-				DebugDisplayInfoF("Failed to open file: %s", filename);
+				DebugDisplayInfoF("Failed to open file: %s", FileName);
 			}
 
 			return true;

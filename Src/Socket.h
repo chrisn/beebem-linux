@@ -23,5 +23,11 @@ Boston, MA  02110-1301, USA.
 
 int CloseSocket(SOCKET Socket);
 int GetLastSocketError();
+bool SetSocketBlocking(SOCKET Socket, bool Blocking);
+bool WouldBlock(int Error);
+
+#define S_ADDR(s) (s).sin_addr.s_addr
+
+#define IN_ADDR(addr) (addr).s_addr
 
 #endif

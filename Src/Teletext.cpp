@@ -110,46 +110,18 @@ bool ConnectSocket(SOCKET Socket, const sockaddr* Name, int Length)
 {
     #ifdef WIN32
 
-    if (connect(Socket, Name, Length) == SOCKET_ERROR)
+    if (connect(Socket, Name, Length) == 0)
     {
-        return WSAGetLastError() != WSAEWOULDBLOCK; // WSAEWOULDBLOCK is expected
+        return true;
+    }
+    else
+    {
+        return WSAGetLastError() == WSAEWOULDBLOCK; // WSAEWOULDBLOCK is expected
     }
 
     #else
 
     return connect(Socket, Name, Length) == EAGAIN;
-
-    #endif
-
-    return false;
-}
-
-static bool SetSocketBlocking(int fd, bool blocking)
-{
-    #ifdef WIN32
-
-    unsigned long mode = blocking ? 0 : 1;
-    return ioctlsocket(fd, FIONBIO, &mode) == 0;
-
-    #else
-
-    int flags = fcntl(fd, F_GETFL, 0);
-    if (flags == -1) return false;
-    flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
-    return (fcntl(fd, F_SETFL, flags) == 0);
-
-    #endif
-}
-
-static bool WouldBlock(int Error)
-{
-    #ifdef WIN32
-
-    return Error == WSAEWOULDBLOCK;
-
-    #else
-
-    return Error == EWOULDBLOCK; // TODO: EAGAIN?
 
     #endif
 }
@@ -584,6 +556,7 @@ void TeletextAdapterUpdate()
                     }
 
                     fseek(TeletextFile[TeletextChannel], TeletextCurrentField * TELETEXT_FIELD_SIZE + 3L * 43L, SEEK_SET);
+
                     fread(buff, 16 * 43, 1, TeletextFile[TeletextChannel]);
                 }
 

@@ -26,11 +26,11 @@ Boston, MA  02110-1301, USA.
 #include <limits.h>
 
 /* Used for accelerating copies */
-//--#ifdef WIN32
-//--typedef __int64 EightByteType;	// $NRM for MSVC. Will it work though?
-//--#else
+#ifdef WIN32
+typedef __int64 EightByteType;	// $NRM for MSVC. Will it work though?
+#else
 typedef long long EightByteType;
-//--#endif
+#endif
 
 /* Used to keep a count of total number of cycles executed */
 typedef int CycleCountT;
@@ -41,4 +41,3 @@ typedef int CycleCountT;
 #define DEFAULTSAMPLERATE 40000
 
 #endif
-

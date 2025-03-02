@@ -91,8 +91,6 @@ void SyncIO(void);
 void AdjustForIORead(void);
 void AdjustForIOWrite(void);
 
-int i186_execute(int num_cycles);
-
 extern int OpCodes;
 extern bool BasicHardwareOnly;
 

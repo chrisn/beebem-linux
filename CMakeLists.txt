@@ -180,7 +180,6 @@ set(SRCS
     Src/Scsi.cpp
     Src/Sdl.cpp
     Src/Serial.cpp
-    Src/SerialDevices.cpp
     Src/SerialPort.cpp
     Src/Socket.cpp
     Src/Sound.cpp
@@ -193,6 +192,7 @@ set(SRCS
     Src/TapeMap.cpp
     Src/Teletext.cpp
     Src/Thread.cpp
+    Src/TouchScreen.cpp
     Src/Tube.cpp
     Src/Uef.cpp
     Src/UefState.cpp
@@ -202,6 +202,7 @@ set(SRCS
     Src/UserVia.cpp
     Src/Via.cpp
     Src/Video.cpp
+    Src/WindowUtils.cpp
     Src/Z80Support.cpp
     Src/Z80.cpp
     Src/Z80dis.cpp

@@ -50,10 +50,9 @@ Thanks to the maintainers and contributors for its continued development: Alista
 Copyright
 ---------
 
-Copyright (C) 1994-2024 David Alan Gilbert and contributors.
+Copyright (C) 1994-2025 David Alan Gilbert and contributors.
 
 License
 -------
 
 BeebEm is distributed under the terms of the GNU General Public License as described in [COPYRIGHT.txt](COPYRIGHT.txt).
-

@@ -25,7 +25,10 @@ Boston, MA  02110-1301, USA.
 #ifndef WIN32
 #include <errno.h>
 #include <unistd.h>
+#include <fcntl.h>
 #endif
+
+/****************************************************************************/
 
 int CloseSocket(SOCKET Socket)
 {
@@ -40,6 +43,8 @@ int CloseSocket(SOCKET Socket)
 	#endif
 }
 
+/****************************************************************************/
+
 int GetLastSocketError()
 {
 	#ifdef WIN32
@@ -52,3 +57,49 @@ int GetLastSocketError()
 
 	#endif
 }
+
+/****************************************************************************/
+
+bool SetSocketBlocking(SOCKET Socket, bool Blocking)
+{
+	#ifdef WIN32
+
+	unsigned long Mode = Blocking ? 0 : 1;
+	return ioctlsocket(Socket, FIONBIO, &Mode) == 0;
+
+	#else
+
+	int Flags = fcntl(Socket, F_GETFL, 0);
+	if (Flags == -1) return false;
+
+	if (Blocking)
+	{
+		Flags &= ~O_NONBLOCK;
+	}
+	else
+	{
+		Flags |= O_NONBLOCK;
+	}
+
+	return fcntl(Socket, F_SETFL, Flags) == 0;
+
+	#endif
+}
+
+/****************************************************************************/
+
+bool WouldBlock(int Error)
+{
+
+	#ifdef WIN32
+
+	return Error == WSAEWOULDBLOCK;
+
+	#else
+
+	return Error == EWOULDBLOCK; // TODO: EAGAIN?
+
+	#endif
+}
+
+/****************************************************************************/

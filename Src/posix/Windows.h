@@ -71,6 +71,7 @@ typedef char* LPTSTR;
 typedef int PTR;
 
 typedef void* PVOID;
+typedef const void* LPCVOID;
 typedef const char* LPCTSTR;
 typedef const char* LPCSTR;
 
@@ -115,6 +116,7 @@ typedef void* HACCEL;
 typedef void* HMENU;
 typedef void* HDC;
 typedef void* HWND;
+typedef void* HMODULE;
 typedef void* HMONITOR;
 typedef int JOYCAPS;
 typedef void* HGDIOBJ;
@@ -222,6 +224,7 @@ DWORD GetFullPathName(LPCSTR pszFileName, DWORD BufferLength, LPSTR pszBuffer, L
 DWORD GetCurrentThreadId();
 
 #define CALLBACK
+#define STDAPICALLTYPE
 
 int _stricmp(
    const char *string1,

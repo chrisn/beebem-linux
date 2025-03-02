@@ -1197,7 +1197,7 @@ char *ReadRomTitle(int bank, char *Title, int BufSize)
 
 static std::string GetRomFileName(const std::string& RomName)
 {
-	if (PathIsRelative(RomName.c_str()))
+	if (IsRelativePath(RomName.c_str()))
 	{
 		char PathName[MAX_PATH];
 		strcpy(PathName, mainWin->GetUserDataPath());
@@ -1225,15 +1225,30 @@ static bool ReadRom(const std::string& RomFileName, int Bank)
 		long Size = ftell(File);
 		fseek(File, 0, SEEK_SET);
 
-		if (Size <= MAX_PALROM_SIZE)
+		if (Size == -1)
+		{
+			mainWin->Report(MessageType::Error,
+			                "Failed to read ROM file:\n %s", RomFileName.c_str());
+
+			return false;
+		}
+		else if (Size <= MAX_PALROM_SIZE)
 		{
 			// Read ROM:
-			fread(Roms[Bank], 1, MAX_ROM_SIZE, File);
+			size_t BytesRead = fread(Roms[Bank], 1, MAX_ROM_SIZE, File);
 
 			// Read PAL ROM:
 			fseek(File, 0L, SEEK_SET);
-			fread(PALRom[Bank].Rom, 1, Size, File);
+			BytesRead = fread(PALRom[Bank].Rom, 1, Size, File);
 			fclose(File);
+
+			if (BytesRead != (size_t)Size)
+			{
+				mainWin->Report(MessageType::Error,
+				                "Failed to read ROM file:\n %s", RomFileName.c_str());
+
+				return false;
+			}
 
 			PALRom[Bank].Type = GuessRomType(PALRom[Bank].Rom, Size);
 
@@ -1290,15 +1305,25 @@ void BeebReadRoms()
 
 	if (InFile != nullptr)
 	{
-		fread(WholeRam + 0xc000, 1, MAX_ROM_SIZE, InFile);
+		size_t BytesRead = fread(WholeRam + 0xc000, 1, MAX_ROM_SIZE, InFile);
+
 		fclose(InFile);
+
+		if (BytesRead != MAX_ROM_SIZE)
+		{
+			mainWin->Report(MessageType::Error,
+			                "OS ROM has wrong file size (expected %d bytes):\n %s",
+			                OSRomFileName.c_str(),
+			                MAX_ROM_SIZE);
+		}
 
 		// Try to read OS ROM memory map:
 		std::string MapFileName = ReplaceFileExt(OSRomFileName, ".map");
 
 		DebugLoadMemoryMap(MapFileName.c_str(), 16);
 	}
-	else {
+	else
+	{
 		mainWin->Report(MessageType::Error,
 		                "Cannot open specified OS ROM:\n %s", OSRomFileName.c_str());
 	}

@@ -261,7 +261,7 @@ public:
 	void SelectTube(TubeDevice Device);
 	void UpdateTubeMenu();
 	void SelectFDC();
-	void LoadFDC(const char *DLLName, bool Save);
+	bool LoadFDC(const char *DLLName, bool Save);
 	void UpdateLEDMenu();
 	void SetDriveControl(unsigned char value);
 	unsigned char GetDriveControl(void);
@@ -380,14 +380,10 @@ public:
 	#endif
 	void SelectUserDataPath(void);
 	void StoreUserDataPath(void);
-	bool NewTapeImage(char *FileName, int Size);
 	const char *GetAppPath() const { return m_AppPath; }
 	const char *GetUserDataPath() const { return m_UserDataPath; }
 	void GetDataPath(const char *Folder, char *Path);
-	void QuickLoad();
-	void QuickSave();
-	void LoadUEFState(const char *FileName);
-	void SaveUEFState(const char *FileName);
+
 	bool LoadUEFTape(const char *FileName);
 	bool LoadCSWTape(const char *FileName);
 
@@ -417,14 +413,10 @@ public:
 	#ifdef WIN32
 	bool InitClass();
 	bool CreateBeebWindow();
+	DWORD SetWindowStyle(DWORD StylesToAdd, DWORD StylesToClear);
 	#endif
 
 	void UpdateOptionsMenu();
-
-	#ifdef WIN32
-	void DisableRoundedCorners(HWND hWnd);
-	#endif
-
 	void FlashWindow();
 	void CreateBitmap(void);
 	void InitMenu();
@@ -437,6 +429,8 @@ public:
 	void UpdateSerialMenu();
 	void OnIP232Error(int Error);
 
+	// Econet
+	void ToggleEconet();
 	void UpdateEconetMenu();
 
 	void UpdateSFXMenu();
@@ -510,14 +504,24 @@ public:
 	bool ReadDisc(int Drive, bool bCheckForPrefs);
 	bool Load1770DiscImage(const char *FileName, int Drive, DiscType Type);
 	bool Load8271DiscImage(const char *FileName, int Drive, int Tracks, DiscType Type);
+
+	// Tape
 	void LoadTape();
 	bool LoadTape(const char *FileName);
+	bool NewTape(char* FileName, int Size);
 
 	void SetJoystickOption(JoystickOption Option);
 	void UpdateJoystickMenu();
 
-	void RestoreState(void);
-	void SaveState(void);
+	// Save/Restore State
+	void RestoreState();
+	void SaveState();
+	void QuickLoad();
+	void QuickSave();
+	void LoadUEFState(const char* FileName);
+	void SaveUEFState(const char* FileName);
+	void EnableSaveState(bool Enable);
+
 	void NewDiscImage(int Drive);
 	void CreateDFSDiscImage(const char *FileName, int Drive, int Heads, int Tracks);
 	void EjectDiscImage(int Drive);
@@ -538,7 +542,7 @@ public:
 	void SetPrinterPort(PrinterPortType PrinterPort);
 	void UpdatePrinterPortMenu();
 	bool GetPrinterFileName();
-	bool TogglePrinter();
+	bool EnablePrinter(bool Enable);
 	void TranslatePrinterPort();
 
 	// AVI recording
@@ -604,8 +608,8 @@ public:
 
 	// Preferences
 	void LoadPreferences();
-	void LoadHardwarePreferences();
-	void LoadTubePreferences();
+	void LoadHardwarePreferences(int Version);
+	void LoadTubePreferences(int Version);
 	void LoadWindowPosPreferences(int Version);
 	void LoadTimingPreferences(int Version);
 	void LoadDisplayPreferences(int Version);
@@ -633,9 +637,9 @@ public:
 	int FindEnum(const std::string& Value, const char* const* Names, int Default);
 
 	// Timers
-	const int TIMER_KEYBOARD       = 1;
-	const int TIMER_AUTOBOOT_DELAY = 2;
-	const int TIMER_PRINTER        = 3;
+	const UINT TIMER_KEYBOARD       = 1;
+	const UINT TIMER_AUTOBOOT_DELAY = 2;
+	const UINT TIMER_PRINTER        = 3;
 
 	// Main window
 	HWND m_hWnd;

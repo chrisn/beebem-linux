@@ -29,6 +29,7 @@ Boston, MA  02110-1301, USA.
 #include "Resource.h"
 #include "SelectKeyDialog.h"
 #include "UserVia.h"
+#include "WindowUtils.h"
 
 /****************************************************************************/
 
@@ -79,6 +80,8 @@ bool UserPortBreakoutDialog::Open()
 
 	if (m_hwnd != nullptr)
 	{
+		DisableRoundedCorners(m_hwnd);
+
 		hCurrentDialog = m_hwnd;
 		return true;
 	}

@@ -179,18 +179,22 @@ DWORD GetFullPathName(LPCSTR pszFileName, DWORD BufferLength, LPSTR pszBuffer, L
 
 void InitializeCriticalSection(CRITICAL_SECTION* pCriticalSection)
 {
+	// TODO
 }
 
 void DeleteCriticalSection(CRITICAL_SECTION* pCriticalSection)
 {
+	// TODO
 }
 
 void EnterCriticalSection(CRITICAL_SECTION* pCriticalSection)
 {
+	// TODO
 }
 
 void LeaveCriticalSection(CRITICAL_SECTION* pCriticalSection)
 {
+	// TODO
 }
 
 BOOL GetWindowRect(HWND /* hWnd */, RECT* pRect)

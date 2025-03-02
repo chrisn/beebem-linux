@@ -23,6 +23,8 @@ Boston, MA  02110-1301, USA.
 
 // #include "Windows.h"
 
+#include <algorithm>
+
 #include "SoundStreamer.h"
 #include "Main.h"
 #include "Sound.h"
@@ -32,31 +34,43 @@ Boston, MA  02110-1301, USA.
 #include "XAudio2Streamer.h"
 #endif
 
-std::list<SoundStreamer*> SoundStreamer::m_streamers;
+std::vector<SoundStreamer*> SoundStreamer::m_streamers;
+
+/****************************************************************************/
 
 SoundStreamer::SoundStreamer()
 {
 	m_streamers.push_back(this);
 }
 
+/****************************************************************************/
+
 SoundStreamer::~SoundStreamer()
 {
-	m_streamers.remove(this);
+	m_streamers.erase(std::find(m_streamers.begin(), m_streamers.end(), this));
 }
+
+/****************************************************************************/
 
 void SoundStreamer::PlayAll()
 {
-	std::list<SoundStreamer*>::iterator li;
-	for (li = m_streamers.begin(); li != m_streamers.end(); li++)
-		(*li)->Play();
+	for (auto i = m_streamers.begin(); i != m_streamers.end(); ++i)
+	{
+		(*i)->Play();
+	}
 }
+
+/****************************************************************************/
 
 void SoundStreamer::PauseAll()
 {
-	std::list<SoundStreamer*>::iterator li;
-	for (li = m_streamers.begin(); li != m_streamers.end(); li++)
-		(*li)->Pause();
+	for (auto i = m_streamers.begin(); i != m_streamers.end(); ++i)
+	{
+		(*i)->Pause();
+	}
 }
+
+/****************************************************************************/
 
 SoundStreamer *CreateSoundStreamer(int samplerate, int bits_per_sample, int channels)
 {
@@ -78,26 +92,20 @@ SoundStreamer *CreateSoundStreamer(int samplerate, int bits_per_sample, int chan
 			SelectedSoundStreamer = SoundStreamerType::DirectSound;
 		}
 	}
-	else if (SelectedSoundStreamer == SoundStreamerType::DirectSound)
+
+	SoundStreamer *pSoundStreamer = new DirectSoundStreamer();
+
+	if (pSoundStreamer->Init(samplerate, bits_per_sample, channels))
 	{
-		SoundStreamer *pSoundStreamer = new DirectSoundStreamer();
-
-		if (pSoundStreamer->Init(samplerate, bits_per_sample, channels))
-		{
-			return pSoundStreamer;
-		}
-		else
-		{
-			delete pSoundStreamer;
-			pSoundStreamer= nullptr;
-
-			mainWin->Report(MessageType::Error, "Attempt to start sound system failed");
-
-			return nullptr;
-		}
+		return pSoundStreamer;
 	}
 	else
 	{
+		delete pSoundStreamer;
+		pSoundStreamer= nullptr;
+
+		mainWin->Report(MessageType::Error, "Attempt to start sound system failed");
+
 		return nullptr;
 	}
 
@@ -112,3 +120,5 @@ SoundStreamer *CreateSoundStreamer(int samplerate, int bits_per_sample, int chan
 
 	#endif
 }
+
+/****************************************************************************/

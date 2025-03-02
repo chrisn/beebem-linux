@@ -31,8 +31,8 @@ Boston, MA  02110-1301, USA.
 #include <gtk/gtk.h>
 #endif
 
-FileDialog::FileDialog(HWND hwndOwner, LPTSTR result, DWORD resultLength,
-                       LPCTSTR initialFolder, LPCTSTR filter)
+FileDialog::FileDialog(HWND hwndOwner, LPTSTR Result, DWORD ResultLength,
+                       LPCTSTR InitialFolder, LPCTSTR Filter)
 {
 	#ifdef WIN32
 
@@ -40,22 +40,23 @@ FileDialog::FileDialog(HWND hwndOwner, LPTSTR result, DWORD resultLength,
 
 	m_ofn.lStructSize = sizeof(OPENFILENAME);
 	m_ofn.hwndOwner = hwndOwner;
-	m_ofn.lpstrFilter = filter;
+	m_ofn.lpstrFilter = Filter;
 	m_ofn.nFilterIndex = 1;
-	m_ofn.lpstrFile = result;
-	m_ofn.nMaxFile = resultLength;
-	m_ofn.lpstrInitialDir = initialFolder;
-	m_ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+	m_ofn.lpstrFile = Result;
+	m_ofn.nMaxFile = ResultLength;
+	m_ofn.lpstrInitialDir = InitialFolder;
+	m_ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
+	              OFN_OVERWRITEPROMPT;
 
 	#else
 
 	UNREFERENCED_PARAMETER(hwndOwner);
-	UNREFERENCED_PARAMETER(resultLength);
-	UNREFERENCED_PARAMETER(filter);
+	UNREFERENCED_PARAMETER(ResultLength);
+	UNREFERENCED_PARAMETER(Filter);
 
 	m_pszTitle = nullptr;
-	m_pszFileName = result;
-	strcpy(m_szInitialFolder, initialFolder);
+	m_pszFileName = Result;
+	strcpy(m_szInitialFolder, InitialFolder);
 
 	size_t Length = strlen(m_szInitialFolder);
 
@@ -71,15 +72,15 @@ FileDialog::FileDialog(HWND hwndOwner, LPTSTR result, DWORD resultLength,
 	#endif
 }
 
-void FileDialog::SetFilterIndex(DWORD index)
+void FileDialog::SetFilterIndex(DWORD Index)
 {
 	#ifdef WIN32
 
-	m_ofn.nFilterIndex = index;
+	m_ofn.nFilterIndex = Index;
 
 	#else
 
-	UNREFERENCED_PARAMETER(index);
+	UNREFERENCED_PARAMETER(Index);
 
 	#endif
 }
@@ -93,15 +94,15 @@ void FileDialog::AllowMultiSelect()
 	#endif
 }
 
-void FileDialog::SetTitle(LPCTSTR title)
+void FileDialog::SetTitle(LPCTSTR Title)
 {
 	#ifdef WIN32
 
-	m_ofn.lpstrTitle = title;
+	m_ofn.lpstrTitle = Title;
 
 	#else
 
-	m_pszTitle = title;
+	m_pszTitle = Title;
 
 	#endif
 }
@@ -115,6 +116,8 @@ bool FileDialog::Save()
 {
 	return ShowDialog(false);
 }
+
+/****************************************************************************/
 
 DWORD FileDialog::GetFilterIndex() const
 {
@@ -150,11 +153,11 @@ static void file_ok_sel(GtkWidget * /* w */, GtkFileSelection *fs)
 	}
 }
 
-bool FileDialog::ShowDialog(bool open)
+bool FileDialog::ShowDialog(bool Open)
 {
 	#ifdef WIN32
 
-	if (open)
+	if (Open)
 	{
 		return GetOpenFileName(&m_ofn) != 0;
 	}
@@ -167,7 +170,7 @@ bool FileDialog::ShowDialog(bool open)
 
 	#else
 
-	UNREFERENCED_PARAMETER(open);
+	UNREFERENCED_PARAMETER(Open);
 
 	if (m_pszFileName == nullptr)
 	{

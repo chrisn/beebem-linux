@@ -67,16 +67,11 @@ void BeebWin::SetImageName(const char *DiscName, int Drive, DiscType Type)
 
 	const int maxMenuItemLen = 100;
 	char menuStr[maxMenuItemLen+1];
-	char *fname = strrchr(DiscInfo[Drive].FileName, '\\');
-	if (fname == NULL)
-		fname = strrchr(DiscInfo[Drive].FileName, '/');
-	if (fname == NULL)
-		fname = DiscInfo[Drive].FileName;
-	else
-		fname++;
+
+	const char* FileName = GetFileNameFromPath(DiscInfo[Drive].FileName);
 
 	sprintf(menuStr, "Eject Disc %d: ", Drive);
-	strncat(menuStr, fname, maxMenuItemLen-strlen(menuStr));
+	strncat(menuStr, FileName, maxMenuItemLen-strlen(menuStr));
 	menuStr[maxMenuItemLen] = '\0';
 
 	MENUITEMINFO mii = {0};
@@ -84,6 +79,7 @@ void BeebWin::SetImageName(const char *DiscName, int Drive, DiscType Type)
 	mii.fMask = MIIM_STRING;
 	mii.fType = MFT_STRING;
 	mii.dwTypeData = menuStr;
+
 	SetMenuItemInfo(m_hMenu, Drive == 0 ? IDM_EJECTDISC0 : IDM_EJECTDISC1, FALSE, &mii);
 
 	#endif
@@ -360,7 +356,7 @@ bool BeebWin::Load8271DiscImage(const char *FileName, int Drive, int Tracks, Dis
 
 /****************************************************************************/
 
-void BeebWin::LoadTape(void)
+void BeebWin::LoadTape()
 {
 	char FileName[MAX_PATH];
 	FileName[0] = '\0';
@@ -420,7 +416,7 @@ bool BeebWin::LoadTape(const char *FileName)
 
 /****************************************************************************/
 
-bool BeebWin::NewTapeImage(char *FileName, int Size)
+bool BeebWin::NewTape(char *FileName, int Size)
 {
 	char DefaultPath[MAX_PATH];
 	const char* filter = "UEF Tape File (*.uef)\0*.uef\0";
@@ -430,22 +426,21 @@ bool BeebWin::NewTapeImage(char *FileName, int Size)
 
 	FileDialog Dialog(m_hWnd, FileName, Size, DefaultPath, filter);
 
-	bool Result = Dialog.Save();
-
-	if (Result)
-	{
-		/* Add a file extension if the user did not specify one */
-		if (strchr(FileName, '.') == NULL)
-		{
-			strcat(FileName, ".uef");
-		}
-	}
-	else
+	if (!Dialog.Save())
 	{
 		FileName[0] = '\0';
+		return false;
 	}
 
-	return Result;
+	// Add a file extension if the user did not specify one
+	if (strchr(FileName, '.') == NULL)
+	{
+		strcat(FileName, ".uef");
+	}
+
+	SerialNewTape();
+
+	return UEFFile.Save(FileName) == UEFResult::Success;
 }
 
 /*******************************************************************/
@@ -461,7 +456,7 @@ void BeebWin::SelectFDC()
 	const char* filter = "FDC Extension Board Plugin DLL (*.dll)\0*.dll\0";
 
 	strcpy(DefaultPath, m_AppPath);
-	strcat(DefaultPath, "Hardware");
+	AppendPath(DefaultPath, "Hardware");
 
 	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, filter);
 
@@ -629,73 +624,6 @@ void BeebWin::CreateDFSDiscImage(const char *FileName, int Drive,
 }
 
 /****************************************************************************/
-void BeebWin::SaveState()
-{
-	char FileName[MAX_PATH];
-	FileName[0] = '\0';
-
-	const char* Filter = "UEF State File (*.uefstate)\0*.uefstate\0";
-
-	char DefaultPath[MAX_PATH];
-	DefaultPath[0] = '\0';
-
-	m_Preferences.GetStringValue(CFG_STATES_PATH, DefaultPath);
-	GetDataPath(m_UserDataPath, DefaultPath);
-
-	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, Filter);
-
-	if (Dialog.Save())
-	{
-		if (m_AutoSavePrefsFolders)
-		{
-			GetPathFromFileName(FileName, DefaultPath, sizeof(DefaultPath));
-
-			m_Preferences.SetStringValue(CFG_STATES_PATH, DefaultPath);
-		}
-
-		// Add UEF extension if not already set and is UEF
-		if (!HasFileExt(FileName, ".uefstate"))
-		{
-			strcat(FileName, ".uefstate");
-		}
-
-		SaveUEFState(FileName);
-	}
-}
-
-/****************************************************************************/
-void BeebWin::RestoreState()
-{
-	char FileName[MAX_PATH];
-	FileName[0] = '\0';
-
-	const char* filter = "UEF State File (*.uefstate; *.uef)\0*.uefstate;*.uef\0";
-
-	char DefaultPath[MAX_PATH];
-	DefaultPath[0] = '\0';
-
-	m_Preferences.GetStringValue(CFG_STATES_PATH, DefaultPath);
-	GetDataPath(m_UserDataPath, DefaultPath);
-
-	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, filter);
-
-	if (Dialog.Open())
-	{
-		// Check for file specific preferences files
-		CheckForLocalPrefs(FileName, true);
-
-		if (m_AutoSavePrefsFolders)
-		{
-			GetPathFromFileName(FileName, DefaultPath, sizeof(DefaultPath));
-
-			m_Preferences.SetStringValue(CFG_STATES_PATH, DefaultPath);
-		}
-
-		LoadUEFState(FileName);
-	}
-}
-
-/****************************************************************************/
 
 void BeebWin::ToggleWriteProtect(int Drive)
 {
@@ -747,7 +675,7 @@ void BeebWin::SetPrinterPort(PrinterPortType PrinterPort)
 			// disable it before changing file
 			if (PrinterEnabled)
 			{
-				TogglePrinter();
+				EnablePrinter(false);
 			}
 
 			// Add file name to menu
@@ -767,7 +695,7 @@ void BeebWin::SetPrinterPort(PrinterPortType PrinterPort)
 	{
 		if (PrinterEnabled)
 		{
-			TogglePrinter();
+			EnablePrinter(false);
 		}
 
 		m_PrinterPort = PrinterPort;
@@ -782,7 +710,7 @@ void BeebWin::SetPrinterPort(PrinterPortType PrinterPort)
 			// disable it before changing file
 			if (PrinterEnabled)
 			{
-				TogglePrinter();
+				EnablePrinter(false);
 			}
 
 			m_PrinterPort = PrinterPort;
@@ -858,15 +786,17 @@ bool BeebWin::GetPrinterFileName()
 	}
 
 	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), StartPath, Filter);
+	Dialog.SetTitle("Select printer output file");
+	Dialog.NoOverwritePrompt();
 
-	bool changed = Dialog.Save();
+	bool Success = Dialog.Save();
 
-	if (changed)
+	if (Success)
 	{
 		m_PrinterFileName = FileName;
 	}
 
-	return changed;
+	return Success;
 
 	#else
 
@@ -877,15 +807,11 @@ bool BeebWin::GetPrinterFileName()
 
 /****************************************************************************/
 
-bool BeebWin::TogglePrinter()
+bool BeebWin::EnablePrinter(bool Enable)
 {
 	bool Success = true;
 
-	if (PrinterEnabled)
-	{
-		PrinterDisable();
-	}
-	else
+	if (Enable)
 	{
 		m_PrinterBuffer.clear();
 		KillTimer(m_hWnd, TIMER_PRINTER);
@@ -911,9 +837,14 @@ bool BeebWin::TogglePrinter()
 			Success = PrinterEnable(m_PrinterDevice.c_str());
 		}
 	}
+	else
+	{
+		PrinterDisable();
+	}
 
 	if (Success)
 	{
+		PrinterEnabled = Enable;
 		CheckMenuItem(IDM_PRINTERONOFF, PrinterEnabled);
 	}
 
@@ -1183,6 +1114,76 @@ bool BeebWin::IsCapturing() const
 }
 
 /****************************************************************************/
+
+void BeebWin::RestoreState()
+{
+	char FileName[MAX_PATH];
+	FileName[0] = '\0';
+
+	const char* filter = "UEF State File (*.uefstate; *.uef)\0*.uefstate;*.uef\0";
+
+	char DefaultPath[MAX_PATH];
+	DefaultPath[0] = '\0';
+
+	m_Preferences.GetStringValue(CFG_STATES_PATH, DefaultPath);
+	GetDataPath(m_UserDataPath, DefaultPath);
+
+	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, filter);
+
+	if (Dialog.Open())
+	{
+		// Check for file specific preferences files
+		CheckForLocalPrefs(FileName, true);
+
+		if (m_AutoSavePrefsFolders)
+		{
+			GetPathFromFileName(FileName, DefaultPath, sizeof(DefaultPath));
+
+			m_Preferences.SetStringValue(CFG_STATES_PATH, DefaultPath);
+		}
+
+		LoadUEFState(FileName);
+	}
+}
+
+/****************************************************************************/
+
+void BeebWin::SaveState()
+{
+	char FileName[MAX_PATH];
+	FileName[0] = '\0';
+
+	const char* Filter = "UEF State File (*.uefstate)\0*.uefstate\0";
+
+	char DefaultPath[MAX_PATH];
+	DefaultPath[0] = '\0';
+
+	m_Preferences.GetStringValue(CFG_STATES_PATH, DefaultPath);
+	GetDataPath(m_UserDataPath, DefaultPath);
+
+	FileDialog Dialog(m_hWnd, FileName, sizeof(FileName), DefaultPath, Filter);
+
+	if (Dialog.Save())
+	{
+		if (m_AutoSavePrefsFolders)
+		{
+			GetPathFromFileName(FileName, DefaultPath, sizeof(DefaultPath));
+
+			m_Preferences.SetStringValue(CFG_STATES_PATH, DefaultPath);
+		}
+
+		// Add UEF extension if not already set and is UEF
+		if (!HasFileExt(FileName, ".uefstate"))
+		{
+			strcat(FileName, ".uefstate");
+		}
+
+		SaveUEFState(FileName);
+	}
+}
+
+/****************************************************************************/
+
 void BeebWin::QuickLoad()
 {
 	char FileName[MAX_PATH];
@@ -1203,6 +1204,8 @@ void BeebWin::QuickLoad()
 		LoadUEFState(FileName);
 	}
 }
+
+/****************************************************************************/
 
 void BeebWin::QuickSave()
 {
@@ -1302,6 +1305,14 @@ void BeebWin::SaveUEFState(const char *FileName)
 
 /****************************************************************************/
 
+void BeebWin::EnableSaveState(bool Enable)
+{
+	EnableMenuItem(IDM_SAVESTATE, Enable);
+	EnableMenuItem(IDM_QUICKSAVE, Enable);
+}
+
+/****************************************************************************/
+
 bool BeebWin::LoadUEFTape(const char *FileName)
 {
 	UEFResult Result = ::LoadUEFTape(FileName);
@@ -1314,6 +1325,11 @@ bool BeebWin::LoadUEFTape(const char *FileName)
 		case UEFResult::NotUEF:
 		case UEFResult::NotTape:
 			Report(MessageType::Error, "The file selected is not a UEF tape image:\n  %s",
+			       FileName);
+			return false;
+
+		case UEFResult::ReadFailed:
+			Report(MessageType::Error, "Failed to read UEF file:\n  %s",
 			       FileName);
 			return false;
 
@@ -1335,6 +1351,11 @@ bool BeebWin::LoadCSWTape(const char *FileName)
 		case CSWResult::Success:
 			return true;
 
+		case CSWResult::ReadFailed:
+			Report(MessageType::Error, "Failed to read CSW file:\n  %s",
+			       FileName);
+			return false;
+
 		case CSWResult::InvalidCSWFile:
 			Report(MessageType::Error, "The file selected is not a CSW file:\n  %s",
 			       FileName);
@@ -1353,12 +1374,15 @@ bool BeebWin::LoadCSWTape(const char *FileName)
 }
 
 /****************************************************************************/
-// if DLLName is NULL then FDC setting is read from the registry
-// else the named DLL is read in
-// if save is true then DLL selection is saved in registry
 
-void BeebWin::LoadFDC(const char *DLLName, bool Save)
+// If DLLName is NULL then FDC setting is read from Preferences.cfg
+// else the named DLL is read in
+// If Save is true then DLL selection is saved to Preferences.cfg
+
+bool BeebWin::LoadFDC(const char *DLLName, bool Save)
 {
+	Ext1770Result Result = Ext1770Result::Success;
+
 	char CfgName[20];
 	sprintf(CfgName, "FDCDLL%d", static_cast<int>(MachineType));
 
@@ -1369,43 +1393,62 @@ void BeebWin::LoadFDC(const char *DLLName, bool Save)
 	if (DLLName == nullptr)
 	{
 		if (!m_Preferences.GetStringValue(CfgName, FDCDLL))
+		{
 			strcpy(FDCDLL, "None");
+		}
+
 		DLLName = FDCDLL;
 	}
 
 	if (strcmp(DLLName, "None") != 0)
 	{
-		Ext1770Result Result = Ext1770Init(DLLName);
+		Result = Ext1770Init(DLLName);
 
 		if (Result == Ext1770Result::Success)
 		{
 			NativeFDC = false; // at last, a working DLL!
 		}
-		else if (Result == Ext1770Result::LoadFailed)
+		else
 		{
-			Report(MessageType::Error, "Unable to load FDD Extension Board DLL\nReverting to native 8271");
-			DLLName = "None";
-		}
-		else // if (Result == Ext1770Result::InvalidDLL)
-		{
-			Report(MessageType::Error, "Invalid FDD Extension Board DLL\nReverting to native 8271");
-			DLLName = "None";
-		}
-	}
+			if (Result == Ext1770Result::LoadFailed)
+			{
+				Report(MessageType::Error, "Unable to load FDD Extension Board DLL\nReverting to native 8271");
+			}
+			else // if (Result == Ext1770Result::InvalidDLL)
+			{
+				Report(MessageType::Error, "Invalid FDD Extension Board DLL\nReverting to native 8271");
+			}
 
-	if (Save)
-	{
-		m_Preferences.SetStringValue(CfgName, DLLName);
+			DLLName = "None";
+		}
 	}
 
 	// Set menu options
 	CheckMenuItem(IDM_8271, NativeFDC);
 	CheckMenuItem(IDM_FDC_DLL, !NativeFDC);
 
-	DisplayCycles = 7000000;
+	if (Result == Ext1770Result::Success)
+	{
+		if (Save)
+		{
+			m_Preferences.SetStringValue(CfgName, DLLName);
+		}
 
-	if (NativeFDC || MachineType == Model::Master128)
-		DisplayCycles = 0;
+		if (NativeFDC || MachineType == Model::Master128)
+		{
+			DisplayCycles = 0;
+		}
+		else
+		{
+			DisplayCycles = 7000000;
+		}
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void BeebWin::SetDriveControl(unsigned char Value)
@@ -1523,7 +1566,7 @@ void BeebWin::GetDataPath(const char *Folder, char *Path)
 {
 	char NewPath[MAX_PATH];
 
-	if (PathIsRelative(Path))
+	if (IsRelativePath(Path))
 	{
 		strcpy(NewPath, Folder);
 		AppendPath(NewPath, Path);
@@ -1588,17 +1631,19 @@ void BeebWin::OnCopy()
 {
 	if (PrinterEnabled)
 	{
-		TogglePrinter();
+		EnablePrinter(false);
 	}
 
 	m_PrinterPort = PrinterPortType::Clipboard;
 
 	TranslatePrinterPort();
-	TogglePrinter(); // Turn printer back on
+	EnablePrinter(true); // Turn printer back on
 	UpdatePrinterPortMenu();
 
-	m_PrinterBuffer.resize(5);
+	m_PrinterBuffer.clear();
 
+	m_ClipboardBuffer.resize(5);
+	m_ClipboardLength = 5;
 	m_ClipboardBuffer[0] = 2;
 	m_ClipboardBuffer[1] = 'L';
 	m_ClipboardBuffer[2] = '.';
@@ -2242,13 +2287,13 @@ void BeebWin::CaptureBitmap(int SourceX,
 
 		char AutoName[MAX_PATH];
 
-		sprintf(AutoName, "\\BeebEm_%04d%02d%02d_%02d%02d%02d_%d%s",
+		sprintf(AutoName, "BeebEm_%04d%02d%02d_%02d%02d%02d_%d%s",
 		        systemTime.wYear, systemTime.wMonth,  systemTime.wDay,
 		        systemTime.wHour, systemTime.wMinute, systemTime.wSecond,
 		        systemTime.wMilliseconds / 100,
 		        fileExt);
 
-		strcat(m_CaptureFileName, AutoName);
+		AppendPath(m_CaptureFileName, AutoName);
 	}
 
 	int BitmapWidth, BitmapHeight;

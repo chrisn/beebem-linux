@@ -64,6 +64,4 @@ class Dialog
 		HWND m_hwnd;
 };
 
-void CenterDialog(HWND hWndParent, HWND hWnd);
-
 #endif

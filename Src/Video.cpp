@@ -214,9 +214,9 @@ bool BuildMode7Font(const char *filename)
 
 			Bitmap |= Value << 8;
 
-			Mode7Font[0][Character - 32][y] = Bitmap << 2; // Text bank
-			Mode7Font[1][Character - 32][y] = Bitmap << 2; // Contiguous graphics bank
-			Mode7Font[2][Character - 32][y] = Bitmap << 2; // Separated graphics bank
+			Mode7Font[0][Character - 32][y] = Bitmap; // Text bank
+			Mode7Font[1][Character - 32][y] = Bitmap; // Contiguous graphics bank
+			Mode7Font[2][Character - 32][y] = Bitmap; // Separated graphics bank
 		}
 	}
 
@@ -657,6 +657,8 @@ static void VideoStartOfFrame()
   /* FrameNum is determined by the window handler */
   if (VideoState.IsNewTVFrame)	// RTW - only calibrate timing once per frame
   {
+    VideoState.IsNewTVFrame = false;
+
     FrameNum = mainWin->StartOfFrame();
 
     CursorFieldCount--;
@@ -721,14 +723,12 @@ static void VideoStartOfFrame()
 /*--------------------------------------------------------------------------*/
 /* Scanline processing for modes with fast 6845 clock - i.e. narrow pixels  */
 static void LowLevelDoScanLineNarrow() {
-  unsigned char *CurrentPtr;
   int BytesToGo=CRTC_HorizontalDisplayed;
-
   EightUChars *vidPtr=mainWin->GetLinePtr(VideoState.PixmapLine);
 
   /* If the step is 4 then each byte corresponds to one entry in the fasttable
      and thus we can copy it really easily (and fast!) */
-  CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
+  const unsigned char *CurrentPtr = VideoState.DataPtr + VideoState.InCharLineUp;
 
   /* This should help the compiler - it doesn't need to test for end of loop
      except every 4 entries */
@@ -738,7 +738,7 @@ static void LowLevelDoScanLineNarrow() {
     *(vidPtr++)=FastTable[*(CurrentPtr+8)];
     *(vidPtr++)=FastTable[*(CurrentPtr+16)];
     *(vidPtr++)=FastTable[*(CurrentPtr+24)];
-  };
+  }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -746,13 +746,12 @@ static void LowLevelDoScanLineNarrow() {
 /* This version handles screen modes where there is not a multiple of 4     */
 /* bytes per scanline.                                                      */
 static void LowLevelDoScanLineNarrowNot4Bytes() {
-  unsigned char *CurrentPtr;
   int BytesToGo=CRTC_HorizontalDisplayed;
   EightUChars *vidPtr=mainWin->GetLinePtr(VideoState.PixmapLine);
 
   /* If the step is 4 then each byte corresponds to one entry in the fasttable
      and thus we can copy it really easily (and fast!) */
-    CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
+  const unsigned char *CurrentPtr = VideoState.DataPtr + VideoState.InCharLineUp;
 
   for(;BytesToGo;CurrentPtr+=8,BytesToGo--)
     (vidPtr++)->eightbyte=FastTable[*CurrentPtr].eightbyte;
@@ -761,14 +760,12 @@ static void LowLevelDoScanLineNarrowNot4Bytes() {
 /*-----------------------------------------------------------------------------*/
 /* Scanline processing for the low clock rate modes                            */
 static void LowLevelDoScanLineWide() {
-  unsigned char *CurrentPtr;
   int BytesToGo=CRTC_HorizontalDisplayed;
-
   SixteenUChars *vidPtr=mainWin->GetLinePtr16(VideoState.PixmapLine);
 
   /* If the step is 4 then each byte corresponds to one entry in the fasttable
      and thus we can copy it really easily (and fast!) */
-    CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
+  const unsigned char *CurrentPtr = VideoState.DataPtr + VideoState.InCharLineUp;
 
   /* This should help the compiler - it doesn't need to test for end of loop
      except every 4 entries */
@@ -778,18 +775,18 @@ static void LowLevelDoScanLineWide() {
     *(vidPtr++)=FastTableDWidth[*(CurrentPtr+8)];
     *(vidPtr++)=FastTableDWidth[*(CurrentPtr+16)];
     *(vidPtr++)=FastTableDWidth[*(CurrentPtr+24)];
-  };
+  }
 }
 
 /*-----------------------------------------------------------------------------*/
 /* Scanline processing for the low clock rate modes                            */
 /* This version handles cases where the screen width is not divisible by 4     */
 static void LowLevelDoScanLineWideNot4Bytes() {
-  unsigned char *CurrentPtr;
   int BytesToGo=CRTC_HorizontalDisplayed;
-
   SixteenUChars *vidPtr=mainWin->GetLinePtr16(VideoState.PixmapLine);
-  CurrentPtr=(unsigned char *)VideoState.DataPtr+VideoState.InCharLineUp;
+
+  const unsigned char *CurrentPtr = VideoState.DataPtr + VideoState.InCharLineUp;
+
   for(;BytesToGo;CurrentPtr+=8,BytesToGo--)
     *(vidPtr++)=FastTableDWidth[*CurrentPtr];
 }

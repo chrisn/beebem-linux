@@ -208,6 +208,7 @@
 #define IDC_UNLOCK                      1119
 #define IDC_TAPE_CONTROL_UNLOCK         1119
 #define IDC_TELETEXT_SOURCE             1120
+#define IDC_TAPE_CONTROL_NEW_TAPE       1120
 #define IDC_FILE1                       1121
 #define IDC_FILE2                       1122
 #define IDC_FILE3                       1123
@@ -313,8 +314,8 @@
 #define IDM_MODELBINT                   40105
 #define IDM_MODELBPLUS                  40106
 #define IDM_MASTER128                   40107
-#define IDM_MASTER_ET                   40327
-#define IDM_LOADTAPE                    40108
+#define IDM_MASTER_ET                   40108
+#define IDM_LOADTAPE                    40109
 #define IDM_REWINDTAPE                  40116
 #define IDM_SFX_RELAY                   40117
 #define IDM_TUBE_NONE                   40118

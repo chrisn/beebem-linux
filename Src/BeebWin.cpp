@@ -94,6 +94,7 @@ Boston, MA  02110-1301, USA.
 #include "UserVia.h"
 #include "Version.h"
 #include "Video.h"
+#include "WindowUtils.h"
 #include "Z80mem.h"
 #include "Z80.h"
 
@@ -281,7 +282,7 @@ BeebWin::BeebWin()
 		                    SHGFP_TYPE_CURRENT,
 		                    m_UserDataPath) == NOERROR)
 		{
-			strcat(m_UserDataPath, "\\BeebEm\\");
+			AppendPath(m_UserDataPath, "BeebEm");
 		}
 	}
 
@@ -397,6 +398,8 @@ BeebWin::BeebWin()
 
 bool BeebWin::Initialise()
 {
+	InitWindowUtils();
+
 	// Parse command line
 	ParseCommandLine();
 	bool bFound = FindCommandLineFile(m_CommandLineFileName1);
@@ -573,27 +576,27 @@ void BeebWin::ApplyPrefs()
 	if (EconetCfgPath[0] == '\0')
 	{
 		strcpy(EconetCfgPath, m_UserDataPath);
-		strcat(EconetCfgPath, "Econet.cfg");
+		AppendPath(EconetCfgPath, "Econet.cfg");
 	}
-	else if (PathIsRelative(EconetCfgPath))
+	else if (IsRelativePath(EconetCfgPath))
 	{
 		char Filename[MAX_PATH];
 		strcpy(Filename, EconetCfgPath);
 		strcpy(EconetCfgPath, m_UserDataPath);
-		strcat(EconetCfgPath, Filename);
+		AppendPath(EconetCfgPath, Filename);
 	}
 
 	if (AUNMapPath[0] == '\0')
 	{
 		strcpy(AUNMapPath, m_UserDataPath);
-		strcat(AUNMapPath, "AUNMap");
+		AppendPath(AUNMapPath, "AUNMap");
 	}
-	else if (PathIsRelative(AUNMapPath))
+	else if (IsRelativePath(AUNMapPath))
 	{
 		char Filename[MAX_PATH];
 		strcpy(Filename, AUNMapPath);
 		strcpy(AUNMapPath, m_UserDataPath);
-		strcat(AUNMapPath, Filename);
+		AppendPath(AUNMapPath, Filename);
 	}
 
 	strcpy(RomPath, m_UserDataPath);
@@ -631,14 +634,7 @@ void BeebWin::ApplyPrefs()
 	InitTextView();
 
 	// Initialise printer
-	if (PrinterEnabled)
-	{
-		PrinterEnable(m_PrinterDevice.c_str());
-	}
-	else
-	{
-		PrinterDisable();
-	}
+	EnablePrinter(PrinterEnabled);
 
 	#ifdef WIN32
 
@@ -704,11 +700,9 @@ BeebWin::~BeebWin()
 	if (m_hDCBitmap != NULL)
 		DeleteDC(m_hDCBitmap);
 
-	GdiplusShutdown(m_gdiplusToken);
+	Gdiplus::GdiplusShutdown(m_gdiplusToken);
 
 	CoUninitialize();
-
-	WSACleanup();
 
 	#endif
 }
@@ -740,11 +734,17 @@ void BeebWin::Shutdown()
 	SerialClose();
 	CloseTape();
 
+	#ifdef WIN32
+
+	WSACleanup();
+
+	#endif
+
 	if (m_WriteInstructionCounts)
 	{
 		char FileName[MAX_PATH];
 		strcpy(FileName, m_UserDataPath);
-		strcat(FileName, "InstructionCounts.txt");
+		AppendPath(FileName, "InstructionCounts.txt");
 
 		WriteInstructionCounts(FileName);
 	}
@@ -760,6 +760,8 @@ void BeebWin::Shutdown()
 
 	// Release FDC DLL.
 	Ext1770Reset();
+
+	ExitWindowUtils();
 }
 
 /****************************************************************************/
@@ -851,7 +853,7 @@ void BeebWin::ResetBeebSystem(Model NewModelType, bool LoadRoms)
 	{
 		R1Status = 0;
 		ResetTube();
-		init_z80();
+		Z80Init();
 	}
 	else if (TubeType == TubeDevice::AcornArm)
 	{
@@ -997,7 +999,7 @@ void BeebWin::Break()
 	{
 		R1Status = 0;
 		ResetTube();
-		init_z80();
+		Z80Init();
 	}
 	else if (TubeType == TubeDevice::AcornArm)
 	{
@@ -1068,19 +1070,23 @@ void BeebWin::CreateArmCoPro()
 
 	CArm::InitResult Result = arm->init(ArmROMPath);
 
-	switch (Result) {
-		case CArm::InitResult::FileNotFound:
+	if (Result != CArm::InitResult::Success)
+	{
+		DestroyArmCoPro();
+
+		TubeType = TubeDevice::None;
+		UpdateTubeMenu();
+
+		if (Result == CArm::InitResult::FileNotFound)
+		{
 			Report(MessageType::Error, "ARM co-processor ROM file not found:\n  %s",
 			       ArmROMPath);
-
-			DestroyArmCoPro();
-
-			TubeType = TubeDevice::None;
-			UpdateTubeMenu();
-			break;
-
-		case CArm::InitResult::Success:
-			break;
+		}
+		else if (Result == CArm::InitResult::InvalidROM)
+		{
+			Report(MessageType::Error, "Invalid ARM co-processor ROM file (expected 4096 bytes):\n  %s",
+			       ArmROMPath);
+		}
 	}
 }
 
@@ -1102,21 +1108,26 @@ void BeebWin::CreateSprowCoPro()
 	AppendPath(SprowROMPath, "Sprow.rom");
 
 	sprow = new CSprowCoPro();
+
 	CSprowCoPro::InitResult Result = sprow->Init(SprowROMPath);
 
-	switch (Result) {
-		case CSprowCoPro::InitResult::FileNotFound:
+	if (Result != CSprowCoPro::InitResult::Success)
+	{
+		DestroySprowCoPro();
+
+		TubeType = TubeDevice::None;
+		UpdateTubeMenu();
+
+		if (Result == CSprowCoPro::InitResult::FileNotFound)
+		{
 			Report(MessageType::Error, "ARM7TDMI co-processor ROM file not found:\n  %s",
 			       SprowROMPath);
-
-			DestroySprowCoPro();
-
-			TubeType = TubeDevice::None;
-			UpdateTubeMenu();
-			break;
-
-		case CSprowCoPro::InitResult::Success:
-			break;
+		}
+		else if (Result == CSprowCoPro::InitResult::InvalidROM)
+		{
+			Report(MessageType::Error, "Invalid ARM7TDMI co-processor ROM file (expected 524,288 bytes):\n  %s",
+			       SprowROMPath);
+		}
 	}
 }
 
@@ -1315,6 +1326,9 @@ bool BeebWin::CreateBeebWindow()
 		return false;
 	}
 
+	// Windows 11 draws windows with rounded corners by default,
+	// so we disable them so the Beeb video image isn't affected.
+	// See https://stardot.org.uk/forums/viewtopic.php?f=4&t=26874
 	DisableRoundedCorners(m_hWnd);
 
 	ShowWindow(m_hWnd, nCmdShow); // Show the window
@@ -1325,47 +1339,18 @@ bool BeebWin::CreateBeebWindow()
 	return true;
 }
 
-#endif
-
 /****************************************************************************/
 
-#ifdef WIN32
-
-// Windows 11 draws windows with rounded corners by default, so this function
-// disables them, so the Beeb video image isn't affected.
-//
-// See https://stardot.org.uk/forums/viewtopic.php?f=4&t=26874
-
-void BeebWin::DisableRoundedCorners(HWND hWnd)
+DWORD BeebWin::SetWindowStyle(DWORD StylesToAdd, DWORD StylesToClear)
 {
-	HMODULE hDwmApi = LoadLibrary("dwmapi.dll");
+	DWORD Style = GetWindowLong(m_hWnd, GWL_STYLE);
 
-	if (hDwmApi == nullptr)
-	{
-		return;
-	}
+	Style &= ~StylesToClear;
+	Style |= StylesToAdd;
 
-	typedef HRESULT (STDAPICALLTYPE* DWM_SET_WINDOW_ATTRIBUTE)(HWND, DWORD, LPCVOID, DWORD);
+	SetWindowLong(m_hWnd, GWL_STYLE, Style);
 
-	DWM_SET_WINDOW_ATTRIBUTE DwmSetWindowAttribute = reinterpret_cast<DWM_SET_WINDOW_ATTRIBUTE>(
-		GetProcAddress(hDwmApi, "DwmSetWindowAttribute")
-	);
-
-	if (DwmSetWindowAttribute != nullptr)
-	{
-		const DWORD DWMWCP_DONOTROUND = 1;
-		const DWORD DWMWA_WINDOW_CORNER_PREFERENCE = 33;
-		const DWORD CornerPreference = DWMWCP_DONOTROUND;
-
-		DwmSetWindowAttribute(
-			hWnd,
-			DWMWA_WINDOW_CORNER_PREFERENCE,
-			&CornerPreference,
-			sizeof(CornerPreference)
-		);
-	}
-
-	FreeLibrary(hDwmApi);
+	return Style;
 }
 
 #endif
@@ -3376,7 +3361,6 @@ void BeebWin::TranslateKeyMapping()
 		default:
 			transTable = &DefaultKeyMap;
 			break;
-
 	}
 }
 
@@ -3487,10 +3471,7 @@ void BeebWin::SetWindowAttributes(bool wasFullScreen)
 			m_YWinSize = m_YDXSize;
 			CalcAspectRatioAdjustment(m_XDXSize, m_YDXSize);
 
-			DWORD dwStyle = GetWindowLong(m_hWnd, GWL_STYLE);
-			dwStyle &= ~WS_OVERLAPPEDWINDOW;
-			dwStyle |= WS_POPUP;
-			SetWindowLong(m_hWnd, GWL_STYLE, dwStyle);
+			SetWindowStyle(WS_POPUP, WS_OVERLAPPEDWINDOW);
 
 			if (m_DXInit)
 			{
@@ -3501,10 +3482,7 @@ void BeebWin::SetWindowAttributes(bool wasFullScreen)
 		{
 			CalcAspectRatioAdjustment(m_XWinSize, m_YWinSize);
 
-			DWORD dwStyle = GetWindowLong(m_hWnd, GWL_STYLE);
-			dwStyle &= ~WS_POPUP;
-			dwStyle |= WS_OVERLAPPEDWINDOW;
-			SetWindowLong(m_hWnd, GWL_STYLE, dwStyle);
+			SetWindowStyle(WS_OVERLAPPEDWINDOW, WS_POPUP);
 
 			ShowWindow(m_hWnd, SW_MAXIMIZE);
 		}
@@ -3531,16 +3509,13 @@ void BeebWin::SetWindowAttributes(bool wasFullScreen)
 		m_XWinSize = xs;
 		m_YWinSize = ys;
 
-		DWORD dwStyle = GetWindowLong(m_hWnd, GWL_STYLE);
-		dwStyle &= ~WS_POPUP;
-		dwStyle |= WS_OVERLAPPEDWINDOW;
-		SetWindowLong(m_hWnd, GWL_STYLE, dwStyle);
+		DWORD Style = SetWindowStyle(WS_OVERLAPPEDWINDOW, WS_POPUP);
 
 		RECT Rect{ 0, 0, m_XWinSize, m_YWinSize };
-		AdjustWindowRect(&Rect, dwStyle, TRUE);
+		AdjustWindowRect(&Rect, Style, TRUE);
 
 		SetWindowPos(m_hWnd,
-		             HWND_TOP,
+		             HWND_NOTOPMOST,
 		             m_XWinPos,
 		             m_YWinPos,
 		             Rect.right - Rect.left,
@@ -3843,11 +3818,32 @@ void BeebWin::OnIP232Error(int Error)
 	       "Lost connection. Serial port has been disabled");
 }
 
-//Rob
+/****************************************************************************/
+
+void BeebWin::ToggleEconet()
+{
+	EconetEnabled = !EconetEnabled;
+
+	if (EconetEnabled)
+	{
+		// Need hard reset for DNFS to detect econet HW
+		ResetBeebSystem(MachineType, false);
+		EconetStateChanged = true;
+	}
+	else
+	{
+		EconetReset();
+	}
+
+	UpdateEconetMenu();
+}
+
 void BeebWin::UpdateEconetMenu()
 {
 	CheckMenuItem(IDM_ECONET, EconetEnabled);
 }
+
+/****************************************************************************/
 
 void BeebWin::UpdateLEDMenu()
 {
@@ -3995,7 +3991,7 @@ void BeebWin::HandleCommand(UINT MenuID)
 		break;
 
 	case IDM_PRINTERONOFF:
-		TogglePrinter();
+		EnablePrinter(!PrinterEnabled);
 		break;
 
 	case IDM_SERIAL:
@@ -4008,18 +4004,7 @@ void BeebWin::HandleCommand(UINT MenuID)
 
 	//Rob
 	case IDM_ECONET:
-		EconetEnabled = !EconetEnabled;
-		if (EconetEnabled)
-		{
-			// Need hard reset for DNFS to detect econet HW
-			ResetBeebSystem(MachineType, false);
-			EconetStateChanged = true;
-		}
-		else
-		{
-			EconetReset();
-		}
-		UpdateEconetMenu();
+		ToggleEconet();
 		break;
 
 	case IDM_DISPGDI:
@@ -4480,10 +4465,11 @@ void BeebWin::HandleCommand(UINT MenuID)
 	#ifdef WIN32
 
 	case IDM_VIEWREADME: {
-		char TmpPath[MAX_PATH];
-		strcpy(TmpPath, m_AppPath);
-		strcat(TmpPath, "Help\\index.html");
-		ShellExecute(m_hWnd, NULL, TmpPath, NULL, NULL, SW_SHOWNORMAL);
+		char HelpPath[MAX_PATH];
+		strcpy(HelpPath, m_AppPath);
+		AppendPath(HelpPath, "Help");
+		AppendPath(HelpPath, "index.html");
+		ShellExecute(m_hWnd, NULL, HelpPath, NULL, NULL, SW_SHOWNORMAL);
 		break;
 	}
 
@@ -5317,7 +5303,7 @@ void BeebWin::UserKeyboardDialogClosed()
 
 void BeebWin::ParseCommandLine()
 {
-	bool invalid;
+	bool Invalid;
 
 	m_CommandLineFileName1[0] = '\0';
 	m_CommandLineFileName2[0] = '\0';
@@ -5351,32 +5337,42 @@ void BeebWin::ParseCommandLine()
 		}
 		else // Params with additional arguments
 		{
-			invalid = false;
+			Invalid = false;
 
 			const bool Data       = StrCaseCmp(__argv[i], "-Data") == 0;
 			const bool CustomData = StrCaseCmp(__argv[i], "-CustomData") == 0;
 
 			if (Data || CustomData)
 			{
-				strcpy(m_UserDataPath, __argv[++i]);
+				++i;
 
-				if (strcmp(m_UserDataPath, "-") == 0)
+				if (strlen(__argv[i]) < MAX_PATH)
 				{
-					// Use app path
-					strcpy(m_UserDataPath, m_AppPath);
-					strcat(m_UserDataPath, "UserData\\");
+					strcpy(m_UserDataPath, __argv[++i]);
+
+					if (strcmp(m_UserDataPath, "-") == 0)
+					{
+						// Use app path
+						strcpy(m_UserDataPath, m_AppPath);
+						strcat(m_UserDataPath, "UserData\\");
+					}
+					else
+					{
+						if (m_UserDataPath[strlen(m_UserDataPath) - 1] != '\\' &&
+							m_UserDataPath[strlen(m_UserDataPath) - 1] != '/')
+						{
+							strcat(m_UserDataPath, "\\");
+						}
+					}
+
+					if (CustomData)
+					{
+						m_CustomData = true;
+					}
 				}
 				else
 				{
-					if (m_UserDataPath[strlen(m_UserDataPath) - 1] != '\\' &&
-					    m_UserDataPath[strlen(m_UserDataPath) - 1] != '/')
-					{
-						strcat(m_UserDataPath, "\\");
-					}
-				}
-
-				if (CustomData) {
-					m_CustomData = true;
+					Invalid = true;
 				}
 			}
 			else if (StrCaseCmp(__argv[i], "-Prefs") == 0)
@@ -5385,33 +5381,68 @@ void BeebWin::ParseCommandLine()
 			}
 			else if (StrCaseCmp(__argv[i], "-Roms") == 0)
 			{
-				strcpy(RomFile, __argv[++i]);
+				++i;
+
+				if (strlen(__argv[i]) < MAX_PATH)
+				{
+					strcpy(RomFile, __argv[i]);
+				}
+				else
+				{
+					Invalid = true;
+				}
 			}
 			else if (StrCaseCmp(__argv[i], "-EconetCfg") == 0)
 			{
-				strcpy(EconetCfgPath, __argv[++i]);
+				++i;
+
+				if (strlen(__argv[i]) < MAX_PATH)
+				{
+					strcpy(EconetCfgPath, __argv[i]);
+				}
+				else
+				{
+					Invalid = true;
+				}
 			}
 			else if (StrCaseCmp(__argv[i], "-AUNMap") == 0)
 			{
-				strcpy(AUNMapPath, __argv[++i]);
+				++i;
+
+				if (strlen(__argv[i]) < MAX_PATH)
+				{
+					strcpy(AUNMapPath, __argv[i]);
+				}
+				else
+				{
+					Invalid = true;
+				}
 			}
 			else if (StrCaseCmp(__argv[i], "-EcoStn") == 0)
 			{
-				int a = atoi(__argv[++i]);
+				int Value = atoi(__argv[++i]);
 
-				if (a < 1 || a > 254)
-					invalid = true;
+				if (Value < 1 || Value > 254)
+				{
+					Invalid = true;
+				}
 				else
-					EconetStationID = static_cast<unsigned char>(a);
+				{
+					EconetStationID = static_cast<unsigned char>(Value);
+				}
 			}
 			else if (StrCaseCmp(__argv[i], "-EcoFF") == 0)
 			{
-				int a = atoi(__argv[++i]);
+				int Value = atoi(__argv[++i]);
 
-				if (a < 1)
-					invalid = true;
+				if (Value < 1)
+				{
+					Invalid = true;
+				}
 				else
-					EconetFlagFillTimeout = a;
+				{
+					EconetFlagFillTimeout = Value;
+				}
 			}
 			else if (StrCaseCmp(__argv[i], "-KbdCmd") == 0)
 			{
@@ -5427,12 +5458,16 @@ void BeebWin::ParseCommandLine()
 			}
 			else if (StrCaseCmp(__argv[i], "-AutoBootDelay") == 0)
 			{
-				int a = atoi(__argv[++i]);
+				int Value = atoi(__argv[++i]);
 
-				if (a < 1)
-					invalid = true;
+				if (Value < 1)
+				{
+					Invalid = true;
+				}
 				else
-					m_AutoBootDelay = a;
+				{
+					m_AutoBootDelay = Value;
+				}
 			}
 			else if (StrCaseCmp(__argv[i], "-Model") == 0)
 			{
@@ -5446,7 +5481,7 @@ void BeebWin::ParseCommandLine()
 			}
 			else if (__argv[i][0] == '-')
 			{
-				invalid = true;
+				Invalid = true;
 				++i;
 			}
 			else
@@ -5454,15 +5489,29 @@ void BeebWin::ParseCommandLine()
 				// Assume it's a file name
 				if (m_CommandLineFileName1[0] == '\0')
 				{
-					strncpy(m_CommandLineFileName1, __argv[i], MAX_PATH);
+					if (strlen(__argv[i]) < MAX_PATH)
+					{
+						strcpy(m_CommandLineFileName1, __argv[i]);
+					}
+					else
+					{
+						Invalid = true;
+					}
 				}
 				else if (m_CommandLineFileName2[0] == '\0')
 				{
-					strncpy(m_CommandLineFileName2, __argv[i], MAX_PATH);
+					if (strlen(__argv[i]) < MAX_PATH)
+					{
+						strcpy(m_CommandLineFileName2, __argv[i]);
+					}
+					else
+					{
+						Invalid = true;
+					}
 				}
 			}
 
-			if (invalid)
+			if (Invalid)
 			{
 				Report(MessageType::Error, "Invalid command line parameter:\n  %s %s",
 				       __argv[i-1], __argv[i]);
@@ -5554,7 +5603,7 @@ bool BeebWin::FindCommandLineFile(char *FileName)
 	}
 
 	char TmpPath[MAX_PATH];
-	strncpy(TmpPath, FileName, MAX_PATH);
+	strcpy(TmpPath, FileName);
 
 	bool Found = false;
 
@@ -5827,9 +5876,9 @@ bool BeebWin::RebootSystem()
 
 bool BeebWin::CheckUserDataPath(bool Persist)
 {
-	bool bSuccess = true;
-	bool bCopyUserFiles = false;
-	bool bStoreUserDataPath = false;
+	bool Success = true;
+	bool CopyUserFiles = false;
+	bool UpdateUserDataPath = false;
 	char Path[MAX_PATH];
 
 	// Change all '/' to '\'
@@ -5846,7 +5895,7 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 			strcpy(m_UserDataPath, m_AppPath);
 			AppendPath(m_UserDataPath, "UserData");
 
-			bStoreUserDataPath = true;
+			UpdateUserDataPath = true;
 		}
 		else
 		{
@@ -5855,13 +5904,13 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 
 			if (result == ERROR_SUCCESS)
 			{
-				bCopyUserFiles = true;
+				CopyUserFiles = true;
 			}
 			else
 			{
 				Report(MessageType::Error, "Failed to create BeebEm data folder:\n  %s",
 				       m_UserDataPath);
-				bSuccess = false;
+				Success = false;
 			}
 		}
 	}
@@ -5873,54 +5922,54 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 
 		if (!FolderExists(Path))
 		{
-			bCopyUserFiles = true;
+			CopyUserFiles = true;
 		}
 
-		if (!bCopyUserFiles)
+		if (!CopyUserFiles)
 		{
 			strcpy(Path, m_UserDataPath);
 			AppendPath(Path, "BeebState");
 
 			if (!FolderExists(Path))
 			{
-				bCopyUserFiles = true;
+				CopyUserFiles = true;
 			}
 		}
 
-		if (!bCopyUserFiles)
+		if (!CopyUserFiles)
 		{
 			strcpy(Path, m_UserDataPath);
 			AppendPath(Path, "Econet.cfg");
 
 			if (!FileExists(Path))
 			{
-				bCopyUserFiles = true;
+				CopyUserFiles = true;
 			}
 		}
 
-		if (!bCopyUserFiles)
+		if (!CopyUserFiles)
 		{
 			strcpy(Path, m_UserDataPath);
 			AppendPath(Path, "AUNMap");
 
 			if (!FileExists(Path))
 			{
-				bCopyUserFiles = true;
+				CopyUserFiles = true;
 			}
 		}
 
-		if (!bCopyUserFiles)
+		if (!CopyUserFiles)
 		{
 			strcpy(Path, m_UserDataPath);
 			AppendPath(Path, "Phroms.cfg");
 
 			if (!FileExists(Path))
 			{
-				bCopyUserFiles = true;
+				CopyUserFiles = true;
 			}
 		}
 
-		if (!bCopyUserFiles)
+		if (!CopyUserFiles)
 		{
 			if (strcmp(RomFile, "Roms.cfg") == 0)
 			{
@@ -5929,24 +5978,24 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 
 				if (!FileExists(Path))
 				{
-					bCopyUserFiles = true;
+					CopyUserFiles = true;
 				}
 			}
 		}
 
-		if (bCopyUserFiles)
+		if (CopyUserFiles)
 		{
 			if (Report(MessageType::Question,
 			           "Essential or new files missing from BeebEm data folder:\n  %s"
 			           "\n\nCopy essential or new files into folder?",
 			           m_UserDataPath) != MessageResult::Yes)
 			{
-				bSuccess = false;
+				Success = false;
 			}
 		}
 	}
 
-	if (bSuccess)
+	if (Success)
 	{
 		// Get fully qualified user data path
 		char *f;
@@ -5954,7 +6003,7 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 			strcpy(m_UserDataPath, Path);
 	}
 
-	if (bSuccess && bCopyUserFiles)
+	if (Success && CopyUserFiles)
 	{
 		strcpy(Path, m_AppPath);
 		AppendPath(Path, "UserData");
@@ -5970,7 +6019,8 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 			Report(MessageType::Error, "Copy failed.  Manually copy files from:\n  %s"
 			                           "\n\nTo BeebEm data folder:\n  %s",
 			       Path, m_UserDataPath);
-			bSuccess = false;
+
+			Success = false;
 		}
 		else
 		{
@@ -5979,10 +6029,10 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 		}
 	}
 
-	if (bSuccess)
+	if (Success)
 	{
 		// Check that roms file exists and create its full path
-		if (PathIsRelative(RomFile))
+		if (IsRelativePath(RomFile))
 		{
 			strcpy(Path, m_UserDataPath);
 			AppendPath(Path, RomFile);
@@ -5992,14 +6042,14 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 		if (!FileExists(RomFile))
 		{
 			Report(MessageType::Error, "Cannot open ROMs file:\n  %s", RomFile);
-			bSuccess = false;
+			Success = false;
 		}
 	}
 
-	if (bSuccess)
+	if (Success)
 	{
 		// Fill out full path of prefs file
-		if (PathIsRelative(m_PrefsFileName.c_str()))
+		if (IsRelativePath(m_PrefsFileName.c_str()))
 		{
 			strcpy(Path, m_UserDataPath);
 			AppendPath(Path, m_PrefsFileName.c_str());
@@ -6008,12 +6058,12 @@ bool BeebWin::CheckUserDataPath(bool Persist)
 		}
 	}
 
-	if (bSuccess && Persist && (bCopyUserFiles || bStoreUserDataPath))
+	if (Success && Persist && (CopyUserFiles || UpdateUserDataPath))
 	{
 		StoreUserDataPath();
 	}
 
-	return bSuccess;
+	return Success;
 }
 
 /****************************************************************************/
@@ -6132,7 +6182,6 @@ void BeebWin::SelectUserDataPath()
 		case FolderSelectDialog::Result::OK:
 			PathBackup = m_UserDataPath;
 			strcpy(m_UserDataPath, Dialog.GetFolder().c_str());
-			strcat(m_UserDataPath, "\\");
 
 			// Check folder contents
 			if (!CheckUserDataPath(true))
@@ -6476,7 +6525,9 @@ static LRESULT CALLBACK CBTMessageBox(int nCode, WPARAM wParam, LPARAM lParam)
 	{
 		HWND hWnd = (HWND)wParam;
 
-		CenterDialog(mainWin->GethWnd(), hWnd);
+		DisableRoundedCorners(hWnd);
+
+		CentreWindow(mainWin->GethWnd(), hWnd);
 	}
 
 	return CallNextHookEx(hCBTHook, nCode, wParam, lParam);
@@ -6484,14 +6535,16 @@ static LRESULT CALLBACK CBTMessageBox(int nCode, WPARAM wParam, LPARAM lParam)
 
 /****************************************************************************/
 
-static int CentreMessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
+static int CentreMessageBox(HWND hWnd, LPCTSTR pszText, LPCTSTR pszCaption, UINT Type)
 {
 	hCBTHook = SetWindowsHookEx(WH_CBT, CBTMessageBox, nullptr, GetCurrentThreadId());
 
-	int ID = MessageBox(m_hWnd, buffer, WindowTitle, Type);
+	int Result = MessageBox(hWnd, pszText, pszCaption, Type);
 
 	UnhookWindowsHookEx(hCBTHook);
 	hCBTHook = nullptr;
+
+	return Result;
 }
 
 #endif

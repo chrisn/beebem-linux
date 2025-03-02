@@ -24,6 +24,7 @@ Boston, MA  02110-1301, USA.
 
 #ifndef MAIN_HEADER
 #define MAIN_HEADER
+
 #ifdef MULTITHREAD
 #undef MULTITHREAD
 #endif
